@@ -10,10 +10,10 @@ using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
 
 
-namespace Ephemera.MidiLibLite
+namespace Ephemera.MidiLibLiteX
 {
     /// <summary>A simpler channel UI component.</summary>
-    public partial class SimpleChannelControl : UserControl
+    public partial class SimpleChannelControl : UserControl // from MidiLib
     {
         #region Backing fields
         int _channelNumber = 0;

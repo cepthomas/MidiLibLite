@@ -5,7 +5,6 @@ using System.Text;
 using NAudio.Midi;
 
 
-// namespace Ephemera.MidiLib
 namespace Ephemera.MidiLibLite
 {
     /// <summary>Abstraction layer to support all midi-like devices.</summary>

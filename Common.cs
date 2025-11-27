@@ -2,55 +2,37 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
+using System.Windows.Forms;
+using System.ComponentModel.DataAnnotations;
 using Ephemera.NBagOfTricks;
 
-// Also has stuff from MidiCommon.cs
 
-
-//namespace Nebulua
 namespace Ephemera.MidiLibLite
 {
     /// <summary>Application level error. Above lua level.</summary>
     public class AppException(string message) : Exception(message) { }
 
-    /// <summary>Channel playing.</summary>
-    public enum PlayState { Normal, Solo, Mute }
 
-    /// <summary>Channel direction.</summary>
-    public enum Direction { None, Input, Output }
-
-    /// <summary>References one channel. Supports translation to/from script unique int handle.</summary>
-    /// <param name="DeviceId">Index in internal list</param>
-    /// <param name="ChannelNumber">Midi channel 1-based</param>
-    /// <param name="Output">T or F</param>
-    public record struct ChannelHandle(int DeviceId, int ChannelNumber, Direction Direction)
+    public class Defs
     {
-        const int OUTPUT_FLAG = 0x8000;
+        /// <summary>Default value.</summary>
+        public const double DEFAULT_VOLUME = 0.8;
 
-        /// <summary>Create from int handle.</summary>
-        /// <param name="handle"></param>
-        public ChannelHandle(int handle) : this(-1, -1, Direction.None)
-        {
-            Direction = (handle & OUTPUT_FLAG) > 0 ? Direction.Output : Direction.Input;
-            DeviceId = ((handle & ~OUTPUT_FLAG) >> 8) & 0xFF;
-            ChannelNumber = (handle & ~OUTPUT_FLAG) & 0xFF;
-        }
-
-        /// <summary>Operator to convert to int handle.</summary>
-        /// <param name="ch"></param>
-        public static implicit operator int(ChannelHandle ch)
-        {
-            return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Direction == Direction.Output ? OUTPUT_FLAG : OUTPUT_FLAG);
-        }
+        /// <summary>Allow UI controls some more headroom.</summary>
+        public const double MAX_VOLUME = 2.0;
     }
 
-    #region Events - fromMidiGenerator
-    public class UserClickNoteEventArgs : EventArgs
+    #region Events
+    /// <summary>Notify host of user clicks.</summary>
+    public class NoteEventArgs : EventArgs
     {
         /// <summary>The note number to play.</summary>
+        [Required]
         public int Note { get; set; }
 
         /// <summary>0 to 127.</summary>
+        [Required]
         public int Velocity { get; set; }
 
         /// <summary>Read me.</summary>
@@ -60,33 +42,36 @@ namespace Ephemera.MidiLibLite
         }
     }
 
-    public class UserClickControllerEventArgs : EventArgs
+    /// <summary>Notify host of user clicks.</summary>
+    public class ControllerEventArgs : EventArgs
     {
         /// <summary>Specific controller id.</summary>
-        public int Controller { get; set; }
+        [Required]
+        public int ControllerId { get; set; }
 
         /// <summary>Payload.</summary>
+        [Required]
         public int Value { get; set; }
 
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"Controller:{MidiDefs.TheDefs.GetControllerName(Controller)}({Controller}):{Value}";
+            return $"ControllerId:{MidiDefs.TheDefs.GetControllerName(ControllerId)}({ControllerId}):{Value}";
         }
+    }
+
+    /// <summary>Notify host of user clicks.</summary>
+    public class ChannelEventArgs : EventArgs
+    {
+        public bool PatchChange { get; set; } = false;
+        public bool ChannelNumberChange { get; set; } = false;
+        public bool PresetFileChange { get; set; } = false;
     }
     #endregion
 
 
-    
-    #region Event args
-    /// <summary>Notify host of asynchronous changes from user.</summary>
-    public class ChannelChangeEventArgs : EventArgs
-    {
-        public bool PatchChange { get; set; } = false;
-        public bool StateChange { get; set; } = false;
-        public bool ChannelNumberChange { get; set; } = false;
-    }
 
+    // from MidiLib
     /// <summary>
     /// Midi (real or sim) has received something. It's up to the client to make sense of it.
     /// Property value of -1 indicates invalid or not pertinent e.g a controller event doesn't have velocity.
@@ -128,11 +113,9 @@ namespace Ephemera.MidiLibLite
             return sb.ToString();
         }
     }
-    #endregion
 
 
-    /// <summary>TODO2 consolidate?</summary>
-    public class LibUtils
+    public class Utils
     {
         // Load a standard midi def file.
         public static Dictionary<int, string> LoadDefs(string fn)
@@ -145,7 +128,6 @@ namespace Ephemera.MidiLibLite
 
             defs.Values.ForEach(kv =>
             {
-                // ["011", "GlassFlute"]
                 int index = int.Parse(kv.Key); // can throw
                 if (index < 0 || index > MidiDefs.MAX_MIDI) { throw new InvalidOperationException($"Invalid def file {fn}"); }
                 res[index] = kv.Value.Length > 0 ? kv.Value : "";
@@ -154,6 +136,4 @@ namespace Ephemera.MidiLibLite
             return res;
         }
     }
-
-
 }

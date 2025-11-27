@@ -39,6 +39,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Compile Remove="ChannelControl_NL.cs" />
       <Compile Remove="SimpleChannelControl.cs" />
     </ItemGroup>
 
