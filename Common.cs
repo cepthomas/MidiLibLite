@@ -10,10 +10,6 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLibLite
 {
-    /// <summary>Application level error. Above lua level.</summary>
-    public class AppException(string message) : Exception(message) { }
-
-
     public class Defs
     {
         /// <summary>Default value.</summary>
@@ -69,9 +65,64 @@ namespace Ephemera.MidiLibLite
     }
     #endregion
 
+    /// <summary>Notify host of changes.</summary>
+    public class ChannelControlEventArgs() : EventArgs;
 
 
-    // from MidiLib
+
+    //////////////////////////////////// from Nebulua /////////////////////////////////////
+    //////////////////////////////////// from Nebulua /////////////////////////////////////
+    //////////////////////////////////// from Nebulua /////////////////////////////////////
+
+    /// <summary>Application level error. Above lua level.</summary>
+    public class AppException(string message) : Exception(message) { }
+
+    /// <summary>Channel playing.</summary>
+    public enum PlayState { Normal, Solo, Mute }
+
+    /// <summary>Channel direction.</summary>
+    public enum Direction { None, Input, Output }
+
+    /// <summary>References one channel. Supports translation to/from script unique int handle.</summary>
+    /// <param name="DeviceId">Index in internal list</param>
+    /// <param name="ChannelNumber">Midi channel 1-based</param>
+    /// <param name="Output">T or F</param>
+    public record struct ChannelHandle(int DeviceId, int ChannelNumber, Direction Direction)
+    {
+        const int OUTPUT_FLAG = 0x8000;
+
+        /// <summary>Create from int handle.</summary>
+        /// <param name="handle"></param>
+        public ChannelHandle(int handle) : this(-1, -1, Direction.None)
+        {
+            Direction = (handle & OUTPUT_FLAG) > 0 ? Direction.Output : Direction.Input;
+            DeviceId = ((handle & ~OUTPUT_FLAG) >> 8) & 0xFF;
+            ChannelNumber = (handle & ~OUTPUT_FLAG) & 0xFF;
+        }
+
+        /// <summary>Operator to convert to int handle.</summary>
+        /// <param name="ch"></param>
+        public static implicit operator int(ChannelHandle ch)
+        {
+            return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Direction == Direction.Output ? OUTPUT_FLAG : OUTPUT_FLAG);
+        }
+    }
+
+
+
+
+    //////////////////////////////////// from MidiLib /////////////////////////////////////
+    //////////////////////////////////// from MidiLib /////////////////////////////////////
+    //////////////////////////////////// from MidiLib /////////////////////////////////////
+    
+    /// <summary>Notify host of asynchronous changes from user.</summary>
+    public class ChannelChangeEventArgs : EventArgs
+    {
+        public bool PatchChange { get; set; } = false;
+        public bool StateChange { get; set; } = false;
+        public bool ChannelNumberChange { get; set; } = false;
+    }
+
     /// <summary>
     /// Midi (real or sim) has received something. It's up to the client to make sense of it.
     /// Property value of -1 indicates invalid or not pertinent e.g a controller event doesn't have velocity.

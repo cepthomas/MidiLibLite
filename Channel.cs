@@ -12,8 +12,30 @@ using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 
 
-namespace Ephemera.MidiLibLite // from MidiGenerator
+
+
+
+
+namespace Ephemera.MidiLibLite
 {
+
+//////////////////////////////////// from Nebulator /////////////////////////////////////
+    // /// <summary>One channel in a midi device - in or out.</summary>
+    // public class MidiChannel
+    // {
+    //     /// <summary>Channel name as defined by the script.</summary>
+    //     public string ChannelName { get; set; } = "ZZZ";
+
+    //     /// <summary>True if channel is active.</summary>
+    //     public bool Enable { get; set; } = true;
+
+    //     /// <summary>Current patch number. Only used for outputs.</summary>
+    //     public int Patch { get; set; } = -1;
+    // }
+
+
+    
+//////////////////////////////////// from MidiGenerator /////////////////////////////////////
     /// <summary>Describes one midi output channel. Some properties are optional.</summary>
     [Serializable]
     public class Channel
@@ -92,6 +114,20 @@ namespace Ephemera.MidiLibLite // from MidiGenerator
         [JsonIgnore]
         public Dictionary<int, string> Instruments { get { return _instruments; } }
         #endregion
+
+
+
+
+        //////////////////////////////////// from Nebulator /////////////////////////////////////
+        /// <summary>Channel name as defined by the script.</summary>
+        public string ChannelName { get; set; } = "ZZZ";
+
+        /// <summary>True if channel is active.</summary>
+        public bool Enable { get; set; } = true;
+
+
+
+
 
         #region Misc functions
         /// <summary>Use default or custom presets.</summary>

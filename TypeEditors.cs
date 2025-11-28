@@ -96,6 +96,8 @@ namespace Ephemera.MidiLibLite
         {
             if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service || context is null || context.Instance is null) { return null; }
 
+//            var isChan = context.PropertyDescriptor.Name == "ChannelNumber";
+
             // Fill the selector.
             var lb = new ListBox
             {

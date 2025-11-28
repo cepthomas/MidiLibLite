@@ -13,15 +13,27 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLibLite
 {
-    public class ChannelControl : UserControl // from MidiGenerator
+//////////////////////////////////// from MidiGenerator /////////////////////////////////////
+    public class ChannelControl : UserControl
     {
         #region Fields
         readonly Container components = new();
-        readonly Slider sldControllerValue = new();
         readonly TextBox txtChannelInfo = new();
         readonly Slider sldVolume = new();
+        readonly Slider sldControllerValue = new();
         readonly ToolTip toolTip;
+
+
+//////////////////////////////////// from Nebulua /////////////////////////////////////
+        PlayState _state = PlayState.Normal;
+        readonly Color _selColor = Color.Blue;
+        readonly Color _unselColor = Color.Red;
+        readonly Label lblSolo;// TODO1 option
+        readonly Label lblMute;// TODO1 option
+
         #endregion
+
+
 
         #region Properties
         /// <summary>Everything about me.</summary>
@@ -36,7 +48,33 @@ namespace Ephemera.MidiLibLite
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         protected Rectangle DrawRect { get { return new Rectangle(0, sldVolume.Bottom + 4, Width, Height - (sldVolume.Bottom + 4)); } }
+
+
+//////////////////////////////////// from Nebulua /////////////////////////////////////
+        /// <summary>Handle.</summary>
+        public ChannelHandle ChHandle { get; init; }
+
+        /// <summary>For display.</summary>
+        public List<string> Info { get; set; } = ["???"];
+
+        /// <summary>For muting/soloing.</summary>
+        public PlayState State
+        {
+            get { return _state; }
+            set { _state = value; UpdateUi(); }
+        }
+
+        /// <summary>Current volume.</summary>
+        public double Volume
+        {
+            get { return sldVolume.Value; }
+            set { sldVolume.Value = value; }
+        }
+
         #endregion
+
+
+
 
         #region Events
         /// <summary>Notify host of changes from user.</summary>
@@ -59,6 +97,12 @@ namespace Ephemera.MidiLibLite
         {
             ControllerSend?.Invoke(this, e);
         }
+
+
+//////////////////////////////////// from Nebulua /////////////////////////////////////
+        /// <summary>Notify host of user changes.</summary>
+        public event EventHandler<ChannelControlEventArgs>? ChannelControlEvent;
+
         #endregion
 
         #region Lifecycle
@@ -109,10 +153,80 @@ namespace Ephemera.MidiLibLite
             Name = "ChannelControl";
             Size = new(372, 42);
 
+
+//////////////////////////////////// from Nebulua /////////////////////////////////////
+            // Dummy to keep the designer happy.
+            ChHandle = new(-1, -1, Direction.None);
+
+            txtChannelInfo = new()
+            {
+                Location = new Point(2, 9),
+                Size = new Size(40, 20),
+                Text = "?"
+            };
+            Controls.Add(txtChannelInfo);
+
+            lblSolo = new()
+            {
+                Location = new Point(txtChannelInfo.Right + 4, 9),
+                Size = new Size(20, 20),
+                Text = "S"
+            };
+            Controls.Add(lblSolo);
+
+            lblMute = new()
+            {
+                Location = new Point(lblSolo.Right + 4, 9),
+                Size = new Size(20, 20),
+                Text = "M"
+            };
+            Controls.Add(lblMute);
+
+            sldVolume = new()
+            {
+                Location = new Point(lblMute.Right + 4, 4),
+                Size = new Size(40, 30),
+                Orientation = Orientation.Horizontal,
+                BorderStyle = BorderStyle.FixedSingle,
+                Maximum = Defs.MAX_VOLUME,
+                Minimum = 0.0,
+                Value = Defs.DEFAULT_VOLUME,
+                Resolution = 0.05
+            };
+            Controls.Add(sldVolume);
+
+            // AutoScaleDimensions = new SizeF(8F, 20F);
+            // AutoScaleMode = AutoScaleMode.Font;
+            // Size = new Size(sldVolume.Right + 5, 38);
+            // BorderStyle = BorderStyle.FixedSingle;
+
+
+
             ResumeLayout(false);
             PerformLayout();
 
             toolTip = new(components);
+        }
+
+//////////////////////////////////// from Nebulua /////////////////////////////////////
+        /// <summary>
+        /// Normal constructor.
+        /// </summary>
+        /// <param name="deviceNumber"></param>
+        /// <param name="channelNumber"></param>
+        public ChannelControl(ChannelHandle ch) : this()
+        {
+            ChHandle = ch;
+            // Colors.
+            _selColor = MidiSettings.Current.SelectedColor;
+            _unselColor = UserSettings_EX.Current.BackColor;
+            txtChannelInfo.BackColor = _unselColor;
+            lblSolo.BackColor = _unselColor;
+            lblMute.BackColor = _unselColor;
+            sldVolume.BackColor = _unselColor;
+            sldVolume.ForeColor = UserSettings_EX.Current.ActiveColor;
+
+            toolTip.SetToolTip(this, string.Join(Environment.NewLine, Info));
         }
 
         /// <summary>
@@ -130,61 +244,21 @@ namespace Ephemera.MidiLibLite
             sldControllerValue.BackColor = SystemColors.Control;
             txtChannelInfo.BackColor = ControlColor;
 
-
-            //sldVolume.Minimum = 0.0;
-            //sldVolume.Maximum = Defs.MAX_VOLUME;
-            //sldVolume.Resolution = 0.05;
-            //sldVolume.Value = BoundChannel.Volume;
-            //sldVolume.DrawColor = ControlColor;
-            //sldVolume.ValueChanged += (object? sender, EventArgs e) => BoundChannel.Volume = (sender as Slider)!.Value;
-            //sldVolume.BackColor = SystemColors.Control;
-            //sldVolume.BorderStyle = BorderStyle.FixedSingle;
-            //// sldVolume.Label = "";
-            //sldVolume.Location = new(5, 5);
-            //sldVolume.Name = "sldVolume";
-            //sldVolume.Orientation = Orientation.Horizontal;
-            //sldVolume.Size = new(80, 32);
-
-            //sldControllerValue.Minimum = 0;
-            //sldControllerValue.Maximum = MidiDefs.MAX_MIDI;
-            //sldControllerValue.Resolution = 1;
-            //sldControllerValue.Value = BoundChannel.ControllerValue;
-            //sldControllerValue.DrawColor = ControlColor;
-            //sldControllerValue.ValueChanged += Controller_ValueChanged;
-            //sldControllerValue.BackColor = SystemColors.Control;
-            //sldControllerValue.BorderStyle = BorderStyle.FixedSingle;
-            //// sldControllerValue.Label = "";
-            //sldControllerValue.Location = new(95, 5);
-            //sldControllerValue.Name = "sldControllerValue";
-            //sldControllerValue.Orientation = Orientation.Horizontal;
-            //sldControllerValue.Size = new(80, 32);
-
-            //txtChannelInfo.Click += ChannelInfo_Click;
-            //txtChannelInfo.BackColor = ControlColor;
-            //txtChannelInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            //txtChannelInfo.BorderStyle = BorderStyle.FixedSingle;
-            //txtChannelInfo.Location = new(185, 8);
-            //txtChannelInfo.Name = "txtChannelInfo";
-            //txtChannelInfo.ReadOnly = true;
-            //txtChannelInfo.Size = new(182, 26);
-
-
-            //// AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
-            //// AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            //BackColor = SystemColors.Control;
-            //Controls.Add(txtChannelInfo);
-            //Controls.Add(sldControllerValue);
-            //Controls.Add(sldVolume);
-            //Name = "ChannelControl";
-            //Size = new(372, 42);
-
-
             UpdateUi();
+
+//////////////////////////////////// from Nebulua /////////////////////////////////////
+            txtChannelInfo.Text = $"{ChHandle.DeviceId}:{ChHandle.ChannelNumber}";
+            txtChannelInfo.BackColor = _unselColor;
+
+            toolTip.SetToolTip(txtChannelInfo, string.Join(Environment.NewLine, Info));
+
+            sldVolume.DrawColor = UserSettings_EX.Current.ActiveColor;
+            lblSolo.Click += SoloMute_Click;
+            lblMute.Click += SoloMute_Click;
+
 
             base.OnLoad(e);
         }
-
-
 
         /// <summary> 
         /// Clean up any resources being used.
@@ -198,8 +272,6 @@ namespace Ephemera.MidiLibLite
             }
             base.Dispose(disposing);
         }
-
-
         #endregion
 
         #region Handlers for user selections
@@ -236,6 +308,27 @@ namespace Ephemera.MidiLibLite
 
             UpdateUi();
         }
+
+//////////////////////////////////// from Nebulua /////////////////////////////////////
+        /// <summary>Handles solo and mute.</summary>
+        void SoloMute_Click(object? sender, EventArgs e)
+        {
+            var lbl = sender as Label;
+
+            // Figure out state.
+            if (sender == lblSolo)
+            {
+                State = lblSolo.BackColor == _selColor ? PlayState.Normal : PlayState.Solo;
+            }
+            else if (sender == lblMute)
+            {
+                State = lblMute.BackColor == _selColor ? PlayState.Normal : PlayState.Mute;
+            }
+            //else ??
+
+            ChannelControlEvent?.Invoke(this, new ChannelControlEventArgs());
+        }
+        
         #endregion
 
         /// <summary>
@@ -249,6 +342,11 @@ namespace Ephemera.MidiLibLite
             sb.AppendLine($"Channel {BoundChannel.ChannelNumber}");
             sb.AppendLine($"{BoundChannel.GetPatchName(BoundChannel.Patch)} {BoundChannel.Patch}");
             toolTip.SetToolTip(txtChannelInfo, sb.ToString());
+
+//////////////////////////////////// from Nebulua /////////////////////////////////////
+            lblSolo.BackColor = _state == PlayState.Solo ? _selColor :  _unselColor;
+            lblMute.BackColor = _state == PlayState.Mute ? _selColor :  _unselColor;
+
         }
 
         /// <summary>
@@ -261,3 +359,163 @@ namespace Ephemera.MidiLibLite
         }
     }
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////
+/*  TODO1 from MidiLib - SimpleChannelControl has only editable channel_num, patch pick, volume, ControlColor !!! not used???
+    public class SimpleChannelControl : UserControl
+    {
+        #region Fields
+        readonly Container components = new();
+        readonly NBagOfUis.Slider sldVolume;
+        readonly Label lblPatch;
+        readonly ComboBox cmbChannel;
+        readonly ToolTip toolTip1;
+
+        int _channelNumber = 0;
+        int _patch = -1;
+        #endregion
+
+        #region Properties
+        /// <summary>Actual 1-based midi channel number.</summary>
+        public int ChannelNumber
+        {
+            get { return _channelNumber; }
+            set { _channelNumber = MathUtils.Constrain(value, 1, MidiDefs.NUM_CHANNELS); cmbChannel.SelectedIndex = _channelNumber - 1; }
+        }
+
+        /// <summary>Current patch.</summary>
+        public int Patch
+        {
+            get { return _patch; }
+            set { _patch = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI); lblPatch.Text = MidiDefs.GetInstrumentName(_patch); }
+        }
+
+        /// <summary>Current volume.</summary>
+        public double Volume
+        {
+            get { return sldVolume.Value; }
+            set { sldVolume.Value = value; }
+        }
+
+        /// <summary>The color used for active control surfaces.</summary>
+        public Color ControlColor { get; set; } = Color.Crimson;
+        #endregion
+
+        #region Events
+        /// <summary>Notify host of asynchronous changes from user.</summary>
+        public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
+        #endregion
+
+        #region Lifecycle
+        /// <summary>
+        /// Normal constructor.
+        /// </summary>
+        public SimpleChannelControl()
+        {
+            // InitializeComponent();
+
+            components = new System.ComponentModel.Container();
+            sldVolume = new NBagOfUis.Slider();
+            lblPatch = new Label();
+            cmbChannel = new ComboBox();
+            toolTip1 = new ToolTip(components);
+            SuspendLayout();
+
+            sldVolume.BorderStyle = BorderStyle.FixedSingle;
+            sldVolume.DrawColor = Color.White;
+            sldVolume.Label = "";
+            sldVolume.Location = new Point(217, 5);
+            sldVolume.Maximum = 10D;
+            sldVolume.Minimum = 0D;
+            sldVolume.Name = "sldVolume";
+            sldVolume.Orientation = Orientation.Horizontal;
+            sldVolume.Resolution = 0.1D;
+            sldVolume.Size = new Size(83, 30);
+            toolTip1.SetToolTip(sldVolume, "Channel Volume");
+            sldVolume.Value = 5D;
+
+            lblPatch.Location = new Point(67, 9);
+            lblPatch.Name = "lblPatch";
+            lblPatch.Size = new Size(144, 25);
+            lblPatch.Text = "?????";
+            toolTip1.SetToolTip(lblPatch, "Patch");
+
+            cmbChannel.BackColor = SystemColors.Control;
+            cmbChannel.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbChannel.FormattingEnabled = true;
+            cmbChannel.Location = new Point(5, 7);
+            cmbChannel.Name = "cmbChannel";
+            cmbChannel.Size = new Size(52, 28);
+            toolTip1.SetToolTip(cmbChannel, "Midi Channel Number");
+
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(cmbChannel);
+            Controls.Add(sldVolume);
+            Controls.Add(lblPatch);
+            Name = "SimpleChannelControl";
+            Size = new Size(309, 41);
+
+            ResumeLayout(false);
+        }
+
+        /// <summary>
+        /// App specific setup.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnLoad(EventArgs e)
+        {
+            sldVolume.DrawColor = ControlColor;
+            sldVolume.Minimum = 0.0;
+            sldVolume.Maximum = MidiLibDefs.MAX_VOLUME;
+            sldVolume.Value = MidiLibDefs.DEFAULT_VOLUME;
+
+            lblPatch.Click += Patch_Click;
+
+            for (int i = 0; i < MidiDefs.NUM_CHANNELS; i++)
+            {
+                cmbChannel.Items.Add($"{i + 1}");
+            }
+            cmbChannel.SelectedIndex = ChannelNumber - 1;
+            cmbChannel.SelectedIndexChanged += (_, __) => _channelNumber = cmbChannel.SelectedIndex + 1;
+            
+            base.OnLoad(e);
+        }
+
+        /// <summary> 
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+        #endregion
+
+        #region Handlers for user selections
+        /// <summary>
+        /// User wants to change the patch.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Patch_Click(object? sender, EventArgs e)
+        {
+            int currentPatch = Patch;
+
+            PatchPicker pp = new();
+            pp.ShowDialog();
+            if (pp.PatchNumber != -1)
+            {
+                Patch = pp.PatchNumber;
+                ChannelChange?.Invoke(this, new() { PatchChange = true } );
+            }
+        }
+        #endregion
+    }
+*/

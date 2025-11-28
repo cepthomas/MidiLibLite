@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Ephemera.MidiLib.Test
+namespace Ephemera.MidiLibLite.Test
 {
     static class Program
     {

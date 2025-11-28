@@ -17,7 +17,7 @@
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-        <StartupObject>Ephemera.MidiLib.Test.Program</StartupObject>
+        <StartupObject>Ephemera.MidiLibLite.Test.Program</StartupObject>
         <NoWin32Manifest>true</NoWin32Manifest>
         <IsPublishable>False</IsPublishable>
         <!-- en none -->
@@ -30,7 +30,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\MidiLibLiteX.csproj" />
+      <ProjectReference Include="..\MidiLibLite.csproj" />
     </ItemGroup>
 
     <ItemGroup>
