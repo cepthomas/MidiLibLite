@@ -1,0 +1,184 @@
+
+//////////////////////////////////// from Nebulua /////////////////////////////////////
+
+//////////////////////////////////// from MidiGenerator /////////////////////////////////////
+
+
+
+
+===================================================
+=============== note/music defs ===================
+===================================================
+
+MidiDefs.cs
+
+music_defs.lua
+
+C:\Dev\Libs\NBagOfTricks\MusicDefinitions.cs
+public static List<string> FormatDoc()
+public static string NoteNumberToName(int inote, bool octave = true)
+public static int NoteNameToNumber(string snote)
+public static List<int> GetNotesFromString(string noteString)
+public static bool IsNatural(int notenum)
+public static (int root, int octave) SplitNoteNumber(int notenum)
+public static int GetInterval(string sinterval)
+public static string GetInterval(int iint)
+public static List<string> FormatNotes(List<int> notes)
+public static void AddChordScale(string name, string notes)
+public static List<string> GetChordScale(string name)
+
+// migrate MidiSettings.cs???
+
+
+
+===================================================
+=============== new midilib =======================
+===================================================
+
+
+------ harmonize??????? rename?
+
+- all have volume, info
+
+C:\Dev\Libs\MidiLib\ChannelControl - (uses BoundChannel), show State, MaxSub, isdrums, solo/mute, select Patch,...
+> old style, keep as is
+
+
+Combine??:
+C:\Dev\Libs\MidiLib\SimpleChannelControl - patch picker, channel select (not used)
+C:\Dev\Apps\MidiGenerator\ChannelControl - (uses Channel object), select ChannelNumber, select Patch, select PresetFile
+C:\Dev\Apps\Nebulua\ChannelControl - (uses ChannelHandle notChannel) solo/mute
+
+
+---> Nebulua
+---> MidiGenerator *
+---> ClipPlayer +HL/MidiSettings
+---> Midifrier +HL/MidiSettings
+---> Nebulator +HL/MidiSettings
+
+*UI needs PatchSelector, ChannelSelector, DevicesEditor/Selector
+
+
+
+------ ??? deprecate/migrate
+DevicesEditor - new flavor? + ChannelSelectorTypeEditor
+PatchPicker - used by ChannelControl - new flavor?
+
+
+
+----------- LL - NAudio ----------------------
+- concerned with:
+  - playing midi notes
+  - listening
+  - basic ui control
+
+- applies
+---> Nebulua
+---> MidiGenerator
+---> MidiLibHL
+
+
+MidiDefs/MidiLibDefs/...
+IDevice/IOutputDevice/IInputDevice
+MidiOutput/MidiInput
+OscInput/OscOutput ???
+InputReceiveEventArgs MCOM
+
+
+Channel1 MHL  Midifrier/Nebulator
+ChannelControl1 UI === Channel, PatchPicker     Midifrier/Nebulator
+ChannelChangeEventArgs MCOM  Midifrier/Nebulator
+
+
+
+----------- HL ----------------------
+- concerned with:
+  - events and collections
+  - time, conversions
+  - styles
+  - formatting and writing output
+
+- applies
+---> ClipPlayer
+---> Midifrier
+---> Nebulator
+
+MidiTimeConverter MHL
+BarTime MHL
+BarBar UI - rename?    Midifrier/Nebulator
+
+Channel2 MHL  Midifrier/Nebulator
+ChannelControl2 UI === Channel, PatchPicker     Midifrier/Nebulator
+ChannelState MCOM  Midifrier/Nebulator
+Null/FunctionMidiEvent MCOM  === Channel    Nebulator
+
+MidiDataFile FIO
+MidiExport FIO  Midifrier/Nebulator
+PatternInfo FIO  Midifrier/Nebulator
+MidiEventDesc MHL/FIO
+
+
+
+
+----------- ALL VER1 ----------------------
+----------- ALL VER1 ----------------------
+----------- ALL VER1 ----------------------
+
+MidiLib:
+DLL - device low level - NAudio
+DHL - device high level - IOutputDevice/IInputDevice
+MCOM - defs etc
+FIO - read/write midi files
+MHL - midi manipulation high level
+
+
+
+--- All (not Nebulua/MidiGenerator):
+MidiDefs - like my above
+MidiSettings (some or mod or combine above) - ????
+
+MidiTimeConverter MHL
+IOutputDevice/MidiOutput DHL
+
+
+------ C:\Dev\Apps\ClipPlayer
+BarTime MHL
+
+
+------ C:\Dev\Apps\Midifrier
+
+ChannelChangeEventArgs MCOM
+ChannelState MCOM
+MidiLibDefs MCOM
+MidiDataFile FIO
+MidiExport FIO
+PatternInfo FIO
+
+BarTime MHL
+Channel MHL
+
+ChannelControl UI req Channel, PatchPicker
+BarBar UI - rename?
+
+
+------ C:\Dev\Apps\Nebulator
+IInputDevice/MidiInput DHL
+
+ChannelChangeEventArgs MCOM
+ChannelState MCOM
+Null/FunctionMidiEvent MCOM
+InputReceiveEventArgs MCOM
+MidiLibDefs MCOM
+
+MidiExport FIO
+PatternInfo FIO
+
+BarTime MHL
+Channel MHL
+MidiEventDesc MHL
+
+ChannelControl UI req Channel, PatchPicker
+BarBar UI - rename?
+
+OscInput/OscOutput ???
+
