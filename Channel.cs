@@ -12,14 +12,9 @@ using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 
 
-
-
-
-
 namespace Ephemera.MidiLibLite
 {
-
-//////////////////////////////////// from Nebulator /////////////////////////////////////
+//////////////////////////////////// from Nebulua /////////////////////////////////////
     // /// <summary>One channel in a midi device - in or out.</summary>
     // public class MidiChannel
     // {
@@ -46,6 +41,13 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Persisted Editable Properties
+        /// <summary>Channel name as defined by the script.</summary>
+        public string ChannelName { get; set; } = "TODO1";
+
+        /// <summary>True if channel is active.</summary>
+        public bool Enable { get; set; } = true;
+
+
         /// <summary>Actual 1-based midi channel number.</summary>
         [Browsable(true)]
         [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
@@ -115,20 +117,6 @@ namespace Ephemera.MidiLibLite
         public Dictionary<int, string> Instruments { get { return _instruments; } }
         #endregion
 
-
-
-
-        //////////////////////////////////// from Nebulator /////////////////////////////////////
-        /// <summary>Channel name as defined by the script.</summary>
-        public string ChannelName { get; set; } = "ZZZ";
-
-        /// <summary>True if channel is active.</summary>
-        public bool Enable { get; set; } = true;
-
-
-
-
-
         #region Misc functions
         /// <summary>Use default or custom presets.</summary>
         /// <exception cref="FileNotFoundException"></exception>
@@ -157,6 +145,43 @@ namespace Ephemera.MidiLibLite
         {
             return _instruments.TryGetValue(which, out string? value) ? value : $"PATCH_{which}";
         }
+        #endregion
+    }
+
+
+
+    /// <summary>Describes one midi input channel. Some properties are optional.</summary>
+    [Serializable]
+    public class InputChannel
+    {
+        #region Fields
+
+        #endregion
+
+        #region Persisted Editable Properties
+        /// <summary>Actual 1-based midi channel number.</summary>
+        [Browsable(true)]
+        [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
+        public int ChannelNumber
+        {
+            get { return _channelNumber; }
+            set { _channelNumber = MathUtils.Constrain(value, 1, MidiDefs.NUM_CHANNELS); }
+        }
+        int _channelNumber = 1;
+
+        /// <summary>Channel name as defined by the script.</summary>
+        public string ChannelName { get; set; } = "TODO1";
+
+        #endregion
+
+        #region Persisted Non-editable Properties
+
+        #endregion
+
+        #region Non-persisted Properties
+        /// <summary>True if channel is active.</summary>
+        public bool Enable { get; set; } = true;
+
         #endregion
     }
 }

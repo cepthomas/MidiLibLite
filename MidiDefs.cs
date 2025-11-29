@@ -65,36 +65,6 @@ namespace Ephemera.MidiLibLite
         }
 
         /// <summary>
-        /// Make content from the definitions.
-        /// </summary>
-        /// <returns>Content.</returns>
-        public List<string> FormatDoc()
-        {
-            List<string> docs = new();
-            docs.Add("# Midi GM Instruments");
-            docs.Add("Instrument          | Number");
-            docs.Add("----------          | ------");
-            Enumerable.Range(0, _instruments.Count).ForEach(i => docs.Add($"{_instruments[i]}|{i}"));
-            docs.Add("# Midi GM Drums");
-            docs.Add("Drum                | Number");
-            docs.Add("----                | ------");
-            _drums.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
-            docs.Add("# Midi GM Controllers");
-            docs.Add("- Undefined: 3, 9, 14-15, 20-31, 85-90, 102-119");
-            docs.Add("- For most controllers marked on/off, on=127 and off=0");
-            docs.Add("Controller          | Number");
-            docs.Add("----------          | ------");
-            _controllers.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
-            docs.Add("# Midi GM Drum Kits");
-            docs.Add("Note that these will vary depending on your Soundfont file.");
-            docs.Add("Kit        | Number");
-            docs.Add("-----------| ------");
-            _drumKits.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
-
-            return docs;
-        }
-
-        /// <summary>
         /// Get drum name.
         /// </summary>
         /// <param name="which"></param>
@@ -179,6 +149,36 @@ namespace Ephemera.MidiLibLite
             { 121, "ResetAllControllers" }, { 122, "LocalKeyboard" }, { 123, "AllNotesOff" }
         };
         #endregion
+
+        /// <summary>
+        /// Make content from the definitions.
+        /// </summary>
+        /// <returns>Content.</returns>
+        public List<string> FormatDoc()
+        {
+            List<string> docs = new();
+            docs.Add("# Midi GM Instruments");
+            docs.Add("Instrument          | Number");
+            docs.Add("----------          | ------");
+            Enumerable.Range(0, _instruments.Count).ForEach(i => docs.Add($"{_instruments[i]}|{i}"));
+            docs.Add("# Midi GM Drums");
+            docs.Add("Drum                | Number");
+            docs.Add("----                | ------");
+            _drums.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
+            docs.Add("# Midi GM Controllers");
+            docs.Add("- Undefined: 3, 9, 14-15, 20-31, 85-90, 102-119");
+            docs.Add("- For most controllers marked on/off, on=127 and off=0");
+            docs.Add("Controller          | Number");
+            docs.Add("----------          | ------");
+            _controllers.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
+            docs.Add("# Midi GM Drum Kits");
+            docs.Add("Note that these will vary depending on your Soundfont file.");
+            docs.Add("Kit        | Number");
+            docs.Add("-----------| ------");
+            _drumKits.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
+
+            return docs;
+        }
     }
 
 }

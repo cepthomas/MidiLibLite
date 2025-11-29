@@ -23,6 +23,7 @@ namespace Ephemera.MidiLibLite
         #region Properties
         /// <summary>Device name as defined by the system.</summary>
         public string DeviceName { get; }
+
         public bool CaptureEnable { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public bool Valid => throw new NotImplementedException();
@@ -30,13 +31,14 @@ namespace Ephemera.MidiLibLite
         public bool LogEnable { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         /// <summary>Info about device channels. Key is channel number, 1-based.</summary>
-        public Dictionary<int, Channel> Channels = []; //TODO1
+//        public Dictionary<int, Channel> Channels = []; //TODO1
         #endregion
 
         #region Events
         /// <summary>Client needs to deal with this.</summary>
-        public event EventHandler<MidiEvent>? ReceiveEvent;
-        public event EventHandler<InputReceiveEventArgs>? InputReceive;
+        //public event EventHandler<MidiEvent>? ReceiveEvent;
+        // public event EventHandler<MidiEventArgs>? InputReceive;
+        public event EventHandler<MidiEvent>? InputReceive;
         #endregion
 
         #region Lifecycle
@@ -65,14 +67,14 @@ namespace Ephemera.MidiLibLite
 
             if (_midiIn is null)
             {
-                if (deviceName == "ccMidiGen") // Assume internal type.
+                // if (deviceName == "ccMidiGen") // Assume internal type.
+                // {
+                //     _midiIn = null;
+                //     realInput = false;
+                // }
+                // else
                 {
-                    _midiIn = null;
-                    realInput = false;
-                }
-                else
-                {
-                    throw new AppException($"Invalid input midi device name [{deviceName}]");
+                    throw new MLLAppException($"Invalid input midi device name [{deviceName}]");
                 }
             }
         }
@@ -97,10 +99,10 @@ namespace Ephemera.MidiLibLite
             MidiEvent evt = MidiEvent.FromRawMessage(e.RawMessage);
 
             // Is it in our registered inputs and enabled?
-            if (Channels.TryGetValue(evt.Channel, out Channel? value) && value.Enable)
+            //if (Channels.TryGetValue(evt.Channel, out Channel? value) && value.Enable)
             {
                 // Invoke takes care of cross-thread issues.
-                ReceiveEvent?.Invoke(this, evt);
+                InputReceive?.Invoke(this, evt);
             }
         }
 
@@ -133,7 +135,7 @@ namespace Ephemera.MidiLibLite
         public bool LogEnable { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         /// <summary>Info about device channels. Key is channel number, 1-based.</summary>
-        public Dictionary<int, Channel> Channels = []; //TODO1
+//        public Dictionary<int, Channel> Channels = []; //TODO1
         #endregion
 
         #region Lifecycle
@@ -158,7 +160,7 @@ namespace Ephemera.MidiLibLite
 
             if (_midiOut is null)
             {
-                 throw new AppException($"Invalid output midi device name [{deviceName}]");
+                 throw new MLLAppException($"Invalid output midi device name [{deviceName}]");
             }
         }
 
@@ -178,16 +180,18 @@ namespace Ephemera.MidiLibLite
         /// </summary>
         public void Send(MidiEvent evt)
         {
-            // Is it in our registered outputs and enabled?
-            if (Channels.TryGetValue(evt.Channel, out Channel? value) && value.Enable)
-            {
-                _midiOut?.Send(evt.GetAsShortMessage());
-            }
+            _midiOut?.Send(evt.GetAsShortMessage());
+
+            // // Is it in our registered outputs and enabled?
+            // if (Channels.TryGetValue(evt.Channel, out Channel? value) && value.Enable)
+            // {
+            //     _midiOut?.Send(evt.GetAsShortMessage());
+            // }
         }
 
-        public void SendEvent(MidiEvent evt)
+        public void Send(MidiEventArgs evt)
         {
-            throw new NotImplementedException();
+            //TODO1 throw new NotImplementedException();
         }
         #endregion
     }

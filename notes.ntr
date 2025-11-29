@@ -1,4 +1,35 @@
 
+
+C:\Dev\Apps\ClipPlayer\Transport.cs:
+C:\Dev\Apps\Midifrier\MainForm.cs:
+C:\Dev\Apps\MidiGenerator\MainForm.cs:
+C:\Dev\Apps\Nebulator\App\MainForm.cs:
+C:\Dev\Apps\Nebulator\Script\ScriptCore.cs:
+C:\Dev\Apps\Nebulua\MainForm.cs:
+C:\Dev\Apps\NProcessing\App\MainForm.cs:
+C:\Dev\Apps\NProcessing\Script\ScriptCore.cs:
+C:\Dev\Apps\NTerm\App.cs:
+C:\Dev\Apps\Wavicler\MainForm.cs:
+
+TODO1 should libs have Logger??
+
+C:\Dev\Libs\LuaInterop\Test\Csh\App.cs:
+
+C:\Dev\Libs\MidiLib\MidiInput.cs:
+C:\Dev\Libs\MidiLib\MidiOsc.cs:
+C:\Dev\Libs\MidiLib\MidiOutput.cs:
+C:\Dev\Libs\MidiLib\Test\MainForm.cs:
+
+C:\Dev\Libs\MidiLibLite\MidiOsc.cs:
+C:\Dev\Libs\MidiLibLite\Test\MainForm.cs:
+
+
+C:\Dev\Libs\NStateMachine\Demo\DemoApp.cs:
+C:\Dev\Libs\NStateMachine\Demo\Lock.cs:
+C:\Dev\Libs\NStateMachine\SmEngine.cs:
+
+
+
 //////////////////////////////////// from Nebulua /////////////////////////////////////
 
 //////////////////////////////////// from MidiGenerator /////////////////////////////////////

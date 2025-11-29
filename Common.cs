@@ -19,63 +19,10 @@ namespace Ephemera.MidiLibLite
         public const double MAX_VOLUME = 2.0;
     }
 
-    #region Events
-    /// <summary>Notify host of user clicks.</summary>
-    public class NoteEventArgs : EventArgs
-    {
-        /// <summary>The note number to play.</summary>
-        [Required]
-        public int Note { get; set; }
 
-        /// <summary>0 to 127.</summary>
-        [Required]
-        public int Velocity { get; set; }
-
-        /// <summary>Read me.</summary>
-        public override string ToString()
-        {
-            return $"Note:{MusicDefinitions.NoteNumberToName(Note)}({Note}):{Velocity}";
-        }
-    }
-
-    /// <summary>Notify host of user clicks.</summary>
-    public class ControllerEventArgs : EventArgs
-    {
-        /// <summary>Specific controller id.</summary>
-        [Required]
-        public int ControllerId { get; set; }
-
-        /// <summary>Payload.</summary>
-        [Required]
-        public int Value { get; set; }
-
-        /// <summary>Read me.</summary>
-        public override string ToString()
-        {
-            return $"ControllerId:{MidiDefs.TheDefs.GetControllerName(ControllerId)}({ControllerId}):{Value}";
-        }
-    }
-
-    /// <summary>Notify host of user clicks.</summary>
-    public class ChannelEventArgs : EventArgs
-    {
-        public bool PatchChange { get; set; } = false;
-        public bool ChannelNumberChange { get; set; } = false;
-        public bool PresetFileChange { get; set; } = false;
-    }
-    #endregion
-
-    /// <summary>Notify host of changes.</summary>
-    public class ChannelControlEventArgs() : EventArgs;
-
-
-
-    //////////////////////////////////// from Nebulua /////////////////////////////////////
-    //////////////////////////////////// from Nebulua /////////////////////////////////////
-    //////////////////////////////////// from Nebulua /////////////////////////////////////
-
-    /// <summary>Application level error. Above lua level.</summary>
-    public class AppException(string message) : Exception(message) { }
+//////////////////////////////////// from Nebulua /////////////////////////////////////
+    /// <summary>Library error.</summary>
+    public class MLLAppException(string message) : Exception(message) { }
 
     /// <summary>Channel playing.</summary>
     public enum PlayState { Normal, Solo, Mute }
@@ -111,61 +58,124 @@ namespace Ephemera.MidiLibLite
 
 
 
-    //////////////////////////////////// from MidiLib /////////////////////////////////////
-    //////////////////////////////////// from MidiLib /////////////////////////////////////
-    //////////////////////////////////// from MidiLib /////////////////////////////////////
-    
-    /// <summary>Notify host of asynchronous changes from user.</summary>
-    public class ChannelChangeEventArgs : EventArgs
+    #region Events
+
+    public class MidiEventArgs : EventArgs
     {
-        public bool PatchChange { get; set; } = false;
-        public bool StateChange { get; set; } = false;
-        public bool ChannelNumberChange { get; set; } = false;
-    }
-
-    /// <summary>
-    /// Midi (real or sim) has received something. It's up to the client to make sense of it.
-    /// Property value of -1 indicates invalid or not pertinent e.g a controller event doesn't have velocity.
-    /// </summary>
-    public class InputReceiveEventArgs : EventArgs
-    {
-        /// <summary>Channel number 1-based. Required.</summary>
-        public int Channel { get; set; } = 0;
-
-        /// <summary>The note number to play. NoteOn/Off only.</summary>
-        public int Note { get; set; } = -1;
-
-        /// <summary>Specific controller id.</summary>
-        public int Controller { get; set; } = -1;
-
-        /// <summary>For Note = velocity. For controller = payload.</summary>
-        public int Value { get; set; } = -1;
+        [Required]
+        public int Channel { get; set; }
 
         /// <summary>Something to tell the client.</summary>
         public string ErrorInfo { get; set; } = "";
+    }
 
-        /// <summary>Special controller id to carry pitch info.</summary>
-        public const int PITCH_CONTROL = 1000;
+    /// <summary>??? Notify host of user clicks.</summary>
+    public class NoteEventArgs : MidiEventArgs
+    {
+        /// <summary>The note number to play.</summary>
+        [Required]
+        public int Note { get; set; }
+
+        /// <summary>0 to 127.</summary>
+        [Required]
+        public int Velocity { get; set; }
 
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            StringBuilder sb = new($"Channel:{Channel} ");
-
-            if (ErrorInfo != "")
-            {
-                sb.Append($"Error:{ErrorInfo} ");
-            }
-            else
-            {
-                sb.Append($"Channel:{Channel} Note:{Note} Controller:{Controller} Value:{Value}");
-            }
-
-            return sb.ToString();
+            return $"Note:{MusicDefinitions.NoteNumberToName(Note)}({Note}):{Velocity}";
         }
     }
 
+    /// <summary>??? Notify host of user clicks.</summary>
+    public class ControllerEventArgs : MidiEventArgs
+    {
+        /// <summary>Specific controller id.</summary>
+        [Required]
+        public int ControllerId { get; set; }
 
+        /// <summary>Payload.</summary>
+        [Required]
+        public int Value { get; set; }
+
+        /// <summary>Read me.</summary>
+        public override string ToString()
+        {
+            return $"ControllerId:{MidiDefs.TheDefs.GetControllerName(ControllerId)}({ControllerId}):{Value}";
+        }
+    }
+
+    /// <summary>Notify host of UI changes.</summary>
+    public class ChannelChangeEventArgs : EventArgs
+    {
+        public bool PatchChange { get; set; } = false;
+        public bool ChannelNumberChange { get; set; } = false;
+        public bool StateChange { get; set; } = false;
+        public bool PresetFileChange { get; set; } = false;
+    }
+    #endregion
+
+    // /// <summary>Notify host of changes.</summary>
+    // public class ChannelControlEventArgs() : EventArgs;
+//////////////////////////////////// from MidiLib /////////////////////////////////////
+    // /// <summary>Notify host of asynchronous changes from user.</summary>
+    // public class ChannelChangeEventArgs : EventArgs
+    // {
+    //     public bool PatchChange { get; set; } = false;
+    //     public bool StateChange { get; set; } = false;
+    //     public bool ChannelNumberChange { get; set; } = false;
+    // }
+
+
+
+    // /// <summary>
+    // /// Midi (real or sim) has received something. It's up to the client to make sense of it.
+    // /// Property value of -1 indicates invalid or not pertinent e.g a controller event doesn't have velocity.
+    // /// </summary>
+    // public class InputReceiveEventArgs : EventArgs
+    // {
+    //     /// <summary>Channel number 1-based. Required.</summary>
+    //     public int Channel { get; set; } = 0;
+
+    //     /// <summary>The note number to play. NoteOn/Off only.</summary>
+    //     public int Note { get; set; } = -1;
+
+    //     /// <summary>Specific controller id.</summary>
+    //     public int Controller { get; set; } = -1;
+
+    //     /// <summary>For Note = velocity. For controller = payload.</summary>
+    //     public int Value { get; set; } = -1;
+
+    //     /// <summary>Something to tell the client.</summary>
+    //     public string ErrorInfo { get; set; } = "";
+
+    //     /// <summary>Special controller id to carry pitch info.</summary>
+    //     public const int PITCH_CONTROL = 1000;
+
+    //     /// <summary>Read me.</summary>
+    //     public override string ToString()
+    //     {
+    //         StringBuilder sb = new($"Channel:{Channel} ");
+
+    //         if (ErrorInfo != "")
+    //         {
+    //             sb.Append($"Error:{ErrorInfo} ");
+    //         }
+    //         else
+    //         {
+    //             sb.Append($"Channel:{Channel} Note:{Note} Controller:{Controller} Value:{Value}");
+    //         }
+
+    //         return sb.ToString();
+    //     }
+    // }
+
+
+
+
+
+
+//////////////////////////////////// from MidiLib /////////////////////////////////////
     public class Utils
     {
         // Load a standard midi def file.

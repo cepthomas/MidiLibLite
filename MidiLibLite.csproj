@@ -24,23 +24,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Remove="fromMidiGenerator\**" />
-        <Compile Remove="fromNebulua\**" />
         <Compile Remove="lib\**" />
         <Compile Remove="Test\**" />
-        <EmbeddedResource Remove="fromMidiGenerator\**" />
-        <EmbeddedResource Remove="fromNebulua\**" />
         <EmbeddedResource Remove="lib\**" />
         <EmbeddedResource Remove="Test\**" />
-        <None Remove="fromMidiGenerator\**" />
-        <None Remove="fromNebulua\**" />
         <None Remove="lib\**" />
         <None Remove="Test\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="ChannelControl_NL.cs" />
-      <Compile Remove="SimpleChannelControl.cs" />
     </ItemGroup>
 
     <ItemGroup>

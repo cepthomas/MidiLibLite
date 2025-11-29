@@ -20,7 +20,7 @@ using Ephemera.MidiLibLite;
 
 namespace Ephemera.MidiLibLite.Test
 {
-    public class ToAdd
+    public class ToAdd // maybe?
     {
 
 
@@ -159,11 +159,5 @@ namespace Ephemera.MidiLibLite.Test
             }
             return (ecode, sret);
         }
-
-
-
-
-
-
     }
 }

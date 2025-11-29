@@ -13,27 +13,23 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLibLite
 {
-//////////////////////////////////// from MidiGenerator /////////////////////////////////////
+////////////////////////////////////  /////////////////////////////////////
     public class ChannelControl : UserControl
     {
-        #region Fields
+        #region Fields  from MidiGenerator
         readonly Container components = new();
         readonly TextBox txtChannelInfo = new();
         readonly Slider sldVolume = new();
         readonly Slider sldControllerValue = new();
         readonly ToolTip toolTip;
 
-
-//////////////////////////////////// from Nebulua /////////////////////////////////////
+        // from Nebulua
         PlayState _state = PlayState.Normal;
         readonly Color _selColor = Color.Blue;
         readonly Color _unselColor = Color.Red;
         readonly Label lblSolo;// TODO1 option
         readonly Label lblMute;// TODO1 option
-
         #endregion
-
-
 
         #region Properties
         /// <summary>Everything about me.</summary>
@@ -50,12 +46,15 @@ namespace Ephemera.MidiLibLite
         protected Rectangle DrawRect { get { return new Rectangle(0, sldVolume.Bottom + 4, Width, Height - (sldVolume.Bottom + 4)); } }
 
 
-//////////////////////////////////// from Nebulua /////////////////////////////////////
-        /// <summary>Handle.</summary>
-        public ChannelHandle ChHandle { get; init; }
+        // from Nebulua /////////////////////////////////////
 
-        /// <summary>For display.</summary>
-        public List<string> Info { get; set; } = ["???"];
+        // /// <summary>Handle for use by scripts.</summary>
+        // public ChannelHandle ChHandle { get; init; }
+
+
+        // /// <summary>For display.</summary>
+        // public List<string> Info { get; set; } = ["???"];
+
 
         /// <summary>For muting/soloing.</summary>
         public PlayState State
@@ -70,7 +69,6 @@ namespace Ephemera.MidiLibLite
             get { return sldVolume.Value; }
             set { sldVolume.Value = value; }
         }
-
         #endregion
 
 
@@ -78,13 +76,16 @@ namespace Ephemera.MidiLibLite
 
         #region Events
         /// <summary>Notify host of changes from user.</summary>
-        public event EventHandler<ChannelEventArgs>? ChannelChange;
+        public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
 
-        /// <summary>Click info.</summary>
+        /// <summary>Request to send note.</summary>
         public event EventHandler<NoteEventArgs>? NoteSend;
 
-        /// <summary>Notify host of changes from user.</summary>
+        /// <summary>Request to send controller.</summary>
         public event EventHandler<ControllerEventArgs>? ControllerSend;
+
+        // /// <summary>Notify host of user changes.</summary>
+        // public event EventHandler<ChannelChangeEventArgs>? ChannelControlEvent;
 
         /// <summary>Derived class helper.</summary>
         protected virtual void OnNoteSend(NoteEventArgs e)
@@ -97,12 +98,6 @@ namespace Ephemera.MidiLibLite
         {
             ControllerSend?.Invoke(this, e);
         }
-
-
-//////////////////////////////////// from Nebulua /////////////////////////////////////
-        /// <summary>Notify host of user changes.</summary>
-        public event EventHandler<ChannelControlEventArgs>? ChannelControlEvent;
-
         #endregion
 
         #region Lifecycle
@@ -156,7 +151,7 @@ namespace Ephemera.MidiLibLite
 
 //////////////////////////////////// from Nebulua /////////////////////////////////////
             // Dummy to keep the designer happy.
-            ChHandle = new(-1, -1, Direction.None);
+            // ChHandle = new(-1, -1, Direction.None);
 
             txtChannelInfo = new()
             {
@@ -199,8 +194,6 @@ namespace Ephemera.MidiLibLite
             // AutoScaleMode = AutoScaleMode.Font;
             // Size = new Size(sldVolume.Right + 5, 38);
             // BorderStyle = BorderStyle.FixedSingle;
-
-
 
             ResumeLayout(false);
             PerformLayout();

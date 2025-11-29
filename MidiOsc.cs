@@ -11,8 +11,8 @@ namespace Ephemera.MidiLibLite
     public sealed class OscInput : IInputDevice
     {
         #region Fields
-        /// <summary>My logger.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("OscInput");
+        // /// <summary>My logger.</summary>
+        // readonly Logger _logger = LogManager.CreateLogger("OscInput");
 
         /// <summary>OSC input device.</summary>
         NebOsc.Input? _oscInput = null;
@@ -20,7 +20,7 @@ namespace Ephemera.MidiLibLite
 
         #region Events
         /// <inheritdoc />
-        public event EventHandler<InputReceiveEventArgs>? InputReceive;
+        public event EventHandler<MidiEventArgs>? InputReceive;
         #endregion
 
         #region Properties
@@ -113,25 +113,27 @@ namespace Ephemera.MidiLibLite
 
             e.Messages.ForEach(m =>
             {
-                InputReceiveEventArgs args = new();
+                MidiEventArgs args = new();
 
                 switch (m.Address)
                 {
                     case "/note/":
                         if (m.Data.Count == 3)
                         {
+                            args = new NoteEventArgs();
                             args.Channel = (int)m.Data[0];
                             args.Note = (int)m.Data[1];
-                            args.Value = (int)m.Data[2]; // velocity
+                            args.Velocity = (int)m.Data[2];
                         }
                         break;
 
                     case "/controller/":
                         if (m.Data.Count == 3)
                         {
+                            args = new ControllerEventArgs();
                             args.Channel = (int)m.Data[0];
-                            args.Controller = (int)m.Data[1];
-                            args.Value = (int)m.Data[2]; // ctl value
+                            args.ControllerId = (int)m.Data[1];
+                            args.Value = (int)m.Data[2];
                         }
                         break;
 
@@ -155,8 +157,8 @@ namespace Ephemera.MidiLibLite
     public sealed class OscOutput : IOutputDevice
     {
         #region Fields
-        /// <summary>My logger.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("OscOutput");
+        // /// <summary>My logger.</summary>
+        // readonly Logger _logger = LogManager.CreateLogger("OscOutput");
 
         /// <summary>OSC output device.</summary>
         NebOsc.Output? _oscOutput;

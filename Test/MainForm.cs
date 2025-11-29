@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
@@ -13,35 +14,40 @@ using System.Diagnostics;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
-
 using Ephemera.MidiLibLite;
-
-
-// 1 - create all devices
-// 2 - create all channels (explicit or from script api calls)
-// 3 - create a channel control for each channel and bind object
-//
-// script api calls:
-// local midi_device_in  = "loopMIDI Port 1"
-// local hnd_ccin  = api.open_midi_input(midi_device_in, 1, midi_device_in)
-// local midi_device_out    = "Microsoft GS Wavetable Synth" 
-// local hnd_keys    = api.open_midi_output(midi_device_out, 1,  "keys",       inst.AcousticGrandPiano)
-// local hnd_drums   = api.open_midi_output(midi_device_out, 10, "drums",      kit.Jazz)
 
 
 namespace Ephemera.MidiLibLite.Test
 {
+    /// <summary>Application level error. Above lua level.</summary>
+    public class AppException(string message) : Exception(message) { }
+
+
     public partial class MainForm : Form
     {
+
+        // /// <summary>App logger.</summary>
+        // readonly Logger _loggerApp = LogManager.CreateLogger("APP");
+
+        // /// <summary>Script logger.</summary>
+        // readonly Logger _loggerScr = LogManager.CreateLogger("SCR");
+
+        // /// <summary>Midi traffic logger.</summary>
+        // readonly Logger _loggerMidi = LogManager.CreateLogger("MID");
+
+
+
         #region Persisted non-editable properties
 
 
 //////////////////////////////////// from Nebulua /////////////////////////////////////
         /// <summary>All midi devices to use for send.</summary>
-        readonly List<IOutputDevice> _outputs = [];
+        //readonly Dictionary<int, IOutputDevice> _outputDevices = [];
+        readonly List<IOutputDevice> _outputDevices = [];
 
         /// <summary>All midi devices to use for receive.</summary>
-        readonly List<IInputDevice> _inputs = [];
+        //readonly Dictionary<int, IInputDevice> _inputDevices = [];
+        readonly List<IInputDevice> _inputDevices = [];
 
 
 
@@ -57,18 +63,30 @@ namespace Ephemera.MidiLibLite.Test
 
 
         #region Fields - internal
-        /// <summary>All the channels - key is user assigned name.</summary>
-        readonly Dictionary<string, Channel> _channels = new();
+        /// <summary>All the output channels - key is handle.</summary>
+        readonly Dictionary<ChannelHandle, Channel> _outputChannels = new();
+        /// <summary>All the output channels - key is user assigned name.</summary>
+        // readonly Dictionary<string, Channel> _outputChannels = new();
 
-        /// <summary>All the channel play controls.</summary>
+        /// <summary>All the intput channels - key is handle.</summary>
+        readonly Dictionary<ChannelHandle, InputChannel> _inputChannels = new();
+        /// <summary>All the intput channels - key is user assigned name.</summary>
+        // readonly Dictionary<string, InputChannel> _inputChannels = new();
+
+
+
+        /// <summary>All the output channel play controls.</summary>
         readonly List<ChannelControl> _channelControls = new();
 
-        /// <summary>My logging.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("MainForm");
+        // /// <summary>My logging.</summary>
+        // readonly Logger _logger = LogManager.CreateLogger("MainForm");
 
         /// <summary>Test stuff.</summary>
-        readonly TestSettings _settings = new();
+        readonly UserSettings _settings = new();
         #endregion
+
+        /// <summary>Interop serializing access.</summary>
+        readonly object _lock = new();
 
         #region Fields - adjust to taste
         /// <summary>Cosmetics.</summary>
@@ -85,18 +103,19 @@ namespace Ephemera.MidiLibLite.Test
         public MainForm()
         {
             // Must do this first before initializing.
-            _settings = (TestSettings)SettingsCore.Load(".", typeof(TestSettings));
+            _settings = (UserSettings)SettingsCore.Load(".", typeof(UserSettings));
+
             InitializeComponent();
 
             // Make sure out path exists.
             DirectoryInfo di = new(_outPath);
             di.Create();
 
-            // Logger. Note: you can create this here but don't call any _logger functions until loaded.
-            LogManager.MinLevelFile = LogLevel.Trace;
-            LogManager.MinLevelNotif = LogLevel.Trace;
-            LogManager.LogMessage += LogManager_LogMessage;
-            LogManager.Run(Path.Join(_outPath, "log.txt"), 100000);
+            // // Logger. Note: you can create this here but don't call any _logger functions until loaded.
+            // LogManager.MinLevelFile = LogLevel.Trace;
+            // LogManager.MinLevelNotif = LogLevel.Trace;
+            // LogManager.LogMessage += LogManager_LogMessage;
+            // LogManager.Run(Path.Join(_outPath, "log.txt"), 100000);
 
             // The text output.
             txtViewer.Font = Font;
@@ -105,8 +124,8 @@ namespace Ephemera.MidiLibLite.Test
             txtViewer.MatchText.Add("WRN", Color.Plum);
 
             // Hook up some simple UI handlers.
-//            btnKillMidi.Click += (_, __) => { _channels.Values.ForEach(ch => ch.Kill()); };
-//            btnLogMidi.CheckedChanged += (_, __) => _outputDevice.LogEnable = btnLogMidi.Checked;
+            // btnKillMidi.Click += (_, __) => { _channels.Values.ForEach(ch => ch.Kill()); };
+            // btnLogMidi.CheckedChanged += (_, __) => _outputDevice.LogEnable = btnLogMidi.Checked;
         }
 
         /// <summary>
@@ -123,113 +142,37 @@ namespace Ephemera.MidiLibLite.Test
             sldVolume.Value = Defs.DEFAULT_VOLUME;
             sldVolume.Label = "volume";
 
+
+            // 1 - create all devices
+            //
+
             bool ok = CreateDevices();
 
 
+            // 2 - create all channels (explicit or from script api calls)
+            // script api calls:
+            // local hnd_ccin  = api.open_midi_input("loopMIDI Port 1", 1, "my input")
+            var chnd1 = CreateInput("loopMIDI Port 1", 1, "my input");
+            // local hnd_keys  = api.open_midi_output("Microsoft GS Wavetable Synth", 1,  "keys", inst.AcousticGrandPiano)
+            var chnd2 = CreateOutput("Microsoft GS Wavetable Synth", 1,  "keys", 0); //AcousticGrandPiano);
+            // local hnd_drums = api.open_midi_output("Microsoft GS Wavetable Synth", 10, "drums", kit.Jazz)
+            var chnd3 = CreateOutput("Microsoft GS Wavetable Synth", 10, "drums", 32); // kit.Jazz);
 
-//////////////////////// TODO1 from MidiGenerator ////////////////////////
-            // /// Init the channels and their corresponding controls. /////
-            // _settings.ClClChannel.UpdatePresets();
-            // ClClChannel1.BoundChannel = _settings.ClClChannel;
-            // ClClChannel1.ControlColor = _settings.ControlColor;
-            // ClClChannel1.Enabled = true;
-            // ClClChannel1.ChannelChange += User_ChannelChange;
-            // ClClChannel1.NoteSend += User_NoteSend;
-            // ClClChannel1.ControllerSend += User_ControllerSend;
-
-            // ///// Finish up. /////
-            // SendPatch(VkeyControl.BoundChannel.ChannelNumber, VkeyControl.BoundChannel.Patch);
-            // SendPatch(ClClControl.BoundChannel.ChannelNumber, ClClControl.BoundChannel.Patch);
-
-
-            base.OnLoad(e);
-        }
-
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            LogManager.Stop();
-
-            // Wait a bit in case there are some lingering events.
-            System.Threading.Thread.Sleep(100);
-
-            DestroyDevices();
-
-            if (disposing && (components is not null))
+            // 3 - create a channel control for each channel and bind object
+            foreach (var chout in _outputChannels)
             {
-                components.Dispose();
+                ChannelControl cc = new();
+                // ClClChannel1.BoundChannel = _settings.ClClChannel;
+                // ClClChannel1.ControlColor = _settings.ControlColor;
+                // ClClChannel1.Enabled = true;
+
+                // ClClChannel1.ChannelChange += User_ChannelChange;
+                // ClClChannel1.NoteSend += User_NoteSend;
+                // ClClChannel1.ControllerSend += User_ControllerSend;
+
+                // _settings.ClClChannel.UpdatePresets();
+
             }
-
-            base.Dispose(disposing);
-        }
-        #endregion
-
-        #region Devices
-        /// <summary>
-        /// Create all I/O devices from user settings.
-        /// </summary>
-        /// <returns>Success</returns>
-        bool CreateDevices() //TODO1
-        {
-            bool ok = true;
-
-            // First...
-            DestroyDevices();
-
-            // Set up input device.
-            foreach (var devname in _settings.MidiSettings.InputDevices)
-            {
-                var indev = new MidiInputDevice(devname);
-
-                if (!indev.Valid)
-                {
-                    _logger.Error($"Something wrong with your input device:{devname}");
-                    ok = false;
-                }
-                else
-                {
-                    indev.CaptureEnable = true;
-                    indev.InputReceive += Listener_InputReceive;
-                    _inputs.Add(indev);
-                }
-            }
-
-            // Set up output device.
-            foreach (var devname in _settings.MidiSettings.OutputDevices)
-            {
-                // Try midi.
-                var outdev = new MidiOutputDevice(devname);
-                if (!outdev.Valid)
-                {
-                    _logger.Error($"Something wrong with your output device:{devname}");
-                    ok = false;
-                }
-                else
-                {
-                    outdev.LogEnable = btnLogMidi.Checked;
-                    _outputs.Add(outdev);
-                }
-            }
-
-            return ok;
-        }
-
-        /// <summary>
-        /// Clean up.
-        /// </summary>
-        void DestroyDevices()
-        {
-            _inputs.ForEach(d => d.Dispose());
-            _inputs.Clear();
-            _outputs.ForEach(d => d.Dispose());
-            _outputs.Clear();
-        }
-        #endregion
-
-
 
         /// <summary>
         /// The user clicked something in one of the channel controls.
@@ -271,57 +214,378 @@ namespace Ephemera.MidiLibLite.Test
         //     }
         // }
 
-        /// <summary>
-        /// User edits the channel params.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void User_ChannelChange(object? sender, ChannelEventArgs e)
-        {
-            var cc = sender as ChannelControl;
-            if (e.PatchChange || e.ChannelNumberChange)
-            {
-                SendPatch(cc!.BoundChannel.ChannelNumber, cc.BoundChannel.Patch);
-            }
+        // /// <summary>
+        // /// User edits the channel params.
+        // /// </summary>
+        // /// <param name="sender"></param>
+        // /// <param name="e"></param>
+        // void User_ChannelChange(object? sender, ChannelEventArgs e)
+        // {
+        //     var cc = sender as ChannelControl;
+        //     if (e.PatchChange || e.ChannelNumberChange)
+        //     {
+        //         SendPatch(cc!.BoundChannel.ChannelNumber, cc.BoundChannel.Patch);
+        //     }
 
-            if (e.PresetFileChange)
-            {
-                // Update channel presets.
-                cc!.BoundChannel.UpdatePresets();
-            }
+        //     if (e.PresetFileChange)
+        //     {
+        //         // Update channel presets.
+        //         cc!.BoundChannel.UpdatePresets();
+        //     }
+        // }
+
+
+
+            // 4 - do work
+            // api.set_volume(hnd_keys, 0.7)
+            // api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
+            // api.send_midi_note(hnd_strings, note_num, volume)--, 0)
+            // -- Handler for input note events. Optional.
+            // function receive_midi_note(chan_hnd, note_num, volume)
+            // -- Handlers for input controller events. Optional.
+            // function receive_midi_controller(chan_hnd, controller, value)
+
+
+            base.OnLoad(e);
         }
 
-
-
-        #region Utilities
         /// <summary>
-        /// Show log events.
+        /// Clean up any resources being used.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
         {
-            // Usually come from a different thread.
-            if (IsHandleCreated)
-            {
-                this.InvokeIfRequired(_ => { Tell($"{e.Message}"); });
-            }
-        }
+            LogManager.Stop();
 
+            // Wait a bit in case there are some lingering events.
+            System.Threading.Thread.Sleep(100);
+
+            DestroyDevices();
+
+            if (disposing && (components is not null))
+            {
+                components.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
         #endregion
 
-        #region Debug stuff
+
+        // ddddddddddddddddddddddddd
+        ChannelHandle CreateInput(string deviceName, int channelNumber, string channelName)
+        {
+            ChannelHandle chnd;
+
+            // Check args.
+            if (string.IsNullOrEmpty(deviceName))
+            {
+                throw new ArgumentException($"Invalid input midi device {deviceName ?? "null"}");
+            }
+
+            if (channelNumber < 1 || channelNumber > MidiDefs.NUM_CHANNELS)
+            {
+                throw new ArgumentException($"Invalid input midi channel {channelNumber}");
+            }
+
+            try
+            {
+                // Locate the device.
+                var indev = _inputDevices.First(o => o.DeviceName == deviceName);
+                // var indev = _inputDevices.FirstOrDefault(o => o.DeviceName == deviceName);
+                if (indev is null)
+                {
+                    throw new AppException("throws if invalid");
+                }
+
+                // Add the channel.
+                InputChannel ch = new()
+                {
+                    ChannelNumber = channelNumber,
+                    ChannelName = channelName,
+                    Enable = true,
+                };
+
+                //indev.Channels.Add(channelNumber, ch);
+                chnd = new(_inputDevices.IndexOf(indev), channelNumber, Direction.Output);
+                _inputChannels.Add(chnd, ch);
+            }
+            catch (AppException ex)
+            {
+                // was ProcessException(ex);
+                throw new AppException("");
+            }
+
+            return chnd;
+        }
+
+
+        // ddddddddddddddddddddddddd
+        ChannelHandle CreateOutput(string deviceName, int channelNumber, string channelName, int patch)
+        {
+            ChannelHandle chnd;
+
+            // Check args.
+            if (string.IsNullOrEmpty(deviceName))
+            {
+                throw new ArgumentException($"Invalid output midi device {deviceName ?? "null"}");
+            }
+
+            if (channelNumber < 1 || channelNumber > MidiDefs.NUM_CHANNELS)
+            {
+                throw new ArgumentException($"Invalid output midi channel {channelNumber}");
+            }
+
+            try
+            {
+                // Locate the device.
+                var outdev = _outputDevices.First(o => o.DeviceName == deviceName);
+                // var outdev = _outputDevices.FirstOrDefault(o => o.DeviceName == deviceName);
+                if (outdev is null)
+                {
+                    throw new AppException("throws if invalid");
+                }
+
+                // Add the channel.
+                Channel ch = new()
+                {
+                    ChannelNumber = channelNumber,
+                    ChannelName = channelName,
+                    Enable = true,
+                    Patch = patch
+                };
+
+                //outdev.Channels.Add(channelNumber, ch);
+                chnd = new(_outputDevices.IndexOf(outdev), channelNumber, Direction.Output);
+                _outputChannels.Add(chnd, ch);
+
+                // Send the patch now.
+                if (patch >= 0)
+                {
+                    SendPatch(chnd, patch);
+                }
+            }
+            catch (AppException ex)
+            {
+                // was ProcessException(ex);
+                throw new AppException("");
+            }
+
+            return chnd;
+        }
+
+
+
+        #region Devices
+        /// <summary>
+        /// Create all I/O devices from user settings.
+        /// </summary>
+        /// <returns>Success</returns>
+        bool CreateDevices()
+        {
+            bool ok = true;
+
+            // First...
+            DestroyDevices();
+
+            // Set up input devices.
+            foreach (var devname in _settings.MidiSettings.InputDevices)
+            {
+                var indev = new MidiInputDevice(devname);
+
+                if (!indev.Valid)
+                {
+                    throw new AppException($"Something wrong with your input device:{devname}");
+                    ok = false;
+                }
+                else
+                {
+                    indev.CaptureEnable = true;
+                    indev.InputReceive += Midi_ReceiveEvent;
+                    _inputDevices.Add(indev);
+                }
+            }
+
+            // Set up output devices.
+            foreach (var devname in _settings.MidiSettings.OutputDevices)
+            {
+                // Try midi.
+                var outdev = new MidiOutputDevice(devname);
+                if (!outdev.Valid)
+                {
+                    // _logger.Error($"Something wrong with your output device:{devname}");
+                    ok = false;
+                }
+                else
+                {
+                    outdev.LogEnable = btnLogMidi.Checked;
+                    _outputDevices.Add(outdev);
+                }
+            }
+
+            return ok;
+        }
+
+        /// <summary>
+        /// Clean up.
+        /// </summary>
+        void DestroyDevices()
+        {
+            _inputDevices.ForEach(d => d.Dispose());
+            _inputDevices.Clear();
+            _outputDevices.ForEach(d => d.Dispose());
+            _outputDevices.Clear();
+        }
+        #endregion
+
+
+
+
+        #region Midi Send
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="chan"></param>
+        /// <param name="note"></param>
+        /// <param name="velocity"></param>
+        void SendNote(ChannelHandle chnd, int note, int velocity)
+        {
+           // _logger.Trace($"Note Ch:{chanNum} N:{note} V:{velocity}");
+            NoteEvent evt = velocity > 0 ?
+               new NoteOnEvent(0, chnd.ChannelNumber, note, velocity, 0) :
+               new NoteEvent(0, chnd.ChannelNumber, MidiCommandCode.NoteOff, note, 0);
+           SendEvent(chnd.DeviceId, evt);
+        }
+
+        /// <summary>
+        /// Patch sender.
+        /// </summary>
+        void SendPatch(ChannelHandle chnd, int patch)
+        {
+           // _logger.Trace($"Patch Ch:{chanNum} P:{patch}");
+            PatchChangeEvent evt = new(0, chnd.ChannelNumber, patch);
+           SendEvent(chnd.DeviceId, evt);
+        }
+
+        /// <summary>
+        /// Send a controller.
+        /// </summary>
+        /// <param name="controller"></param>
+        /// <param name="val"></param>
+        void SendController(ChannelHandle chnd, MidiController controller, int val)
+        {
+           // _logger.Trace($"Controller Ch:{chanNum} C:{controller} V:{val}");
+            ControlChangeEvent evt = new(0, chnd.ChannelNumber, controller, val);
+           SendEvent(chnd.DeviceId, evt);
+        }
+
+        /// <summary>
+        /// Send midi all notes off.
+        /// </summary>
+        void Kill(ChannelHandle chnd)
+        {
+            ControlChangeEvent evt = new(0, chnd.ChannelNumber, MidiController.AllNotesOff, 0);
+            SendEvent(chnd.DeviceId, evt);
+        }
+
+        /// <summary>
+        /// Send the event.
+        /// </summary>
+        /// <param name="evt"></param>
+        void SendEvent(int devid, MidiEvent evt)
+        {
+            var mout = _outputDevices[devid];
+            mout?.Send(evt);
+            // mout?.Send(evt.GetAsShortMessage());
+        }
+        #endregion
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////     LIB OK TO HERE    ///////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+//////////////////////// from MidiGenerator ////////////////////////
+        /// <summary>
+        /// User clicked something. Send some midi.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void User_NoteSend(object? sender, NoteEventArgs e)
+        {
+            var cc = sender as ChannelControl;
+            SendNote(cc!.BoundChannel.ChannelNumber, e.Note, e.Velocity);
+        }
+
+        /// <summary>
+        /// User clicked something. Send some midi.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void User_ControllerSend(object? sender, ControllerEventArgs e)
+        {
+            var cc = sender as ChannelControl;
+            SendController(cc!.BoundChannel.ChannelNumber, (MidiController)e.ControllerId, e.Value);
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Settings_Click(object sender, EventArgs e)
+        void LogMidi_Click(object? sender, EventArgs e)
         {
-            SettingsEditor.Edit(_settings, "howdy!!!", 400);
-            _settings.Save();
-            _logger.Warn("You better restart!");
+            _settings.LogMidi = btnLogMidi.Checked;
         }
+
+
+
+
+
+
+
+        #region Utilities
+        // /// <summary>
+        // /// Show log events.
+        // /// </summary>
+        // /// <param name="sender"></param>
+        // /// <param name="e"></param>
+        // void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
+        // {
+        //     // Usually come from a different thread.
+        //     if (IsHandleCreated)
+        //     {
+        //         this.InvokeIfRequired(_ => { Tell($"{e.Message}"); });
+        //     }
+        // }
+
+        #endregion
+
+        #region Debug stuff
+        // /// <summary>
+        // /// 
+        // /// </summary>
+        // /// <param name="sender"></param>
+        // /// <param name="e"></param>
+        // void Settings_Click(object sender, EventArgs e)
+        // {
+        //     SettingsEditor.Edit(_settings, "howdy!!!", 400);
+        //     _settings.Save();
+        //     _logger.Warn("You better restart!");
+        // }
         #endregion
 
 
@@ -332,20 +596,19 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Listener_InputReceive(object? sender, InputReceiveEventArgs e)
-        {
-           _logger.Trace($"Listener:{sender} Note:{e.Note} Controller:{e.Controller} Value:{e.Value}");
-
-           // Translate and pass to output.
-           var channel = _channels["chan16"];
-           NoteEvent nevt = e.Value > 0 ?
-              new NoteOnEvent(0, channel.ChannelNumber, e.Note % MidiDefs.MAX_MIDI, e.Value % MidiDefs.MAX_MIDI, 0) :
-              new NoteEvent(0, channel.ChannelNumber, MidiCommandCode.NoteOff, e.Note, 0);
-           channel.SendEvent(nevt);
-        }
         void Midi_ReceiveEvent(object? sender, MidiEvent e)
         {
-            lock (_interopLock)
+           // // _logger.Trace($"Listener:{sender} Note:{e.Note} Controller:{e.Controller} Value:{e.Value}");
+           // // Translate and pass to output.
+           // var channel = _channels["chan16"];
+           // NoteEvent nevt = e.Value > 0 ?
+           //    new NoteOnEvent(0, channel.ChannelNumber, e.Note % MidiDefs.MAX_MIDI, e.Value % MidiDefs.MAX_MIDI, 0) :
+           //    new NoteEvent(0, channel.ChannelNumber, MidiCommandCode.NoteOff, e.Note, 0);
+           // channel.SendEvent(nevt);
+
+
+
+            lock (_lock)
             {
                 try
                 {
@@ -355,7 +618,7 @@ namespace Ephemera.MidiLibLite.Test
                     }
 
                     var input = (MidiInputDevice)sender!;
-                    ChannelHandle ch = new(_inputs.IndexOf(input), e.Channel, Direction.Input);
+                    ChannelHandle ch = new(_inputDevices.IndexOf(input), e.Channel, Direction.Input);
                     int chanHnd = ch;
                     bool logit = true;
 
@@ -396,7 +659,7 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ChannelControlEvent(object? sender, ChannelControlEventArgs e)
+        void ChannelControlEvent(object? sender, ChannelEventArgs e)
         {
             ChannelControl control = (ChannelControl)sender!;
 
@@ -409,12 +672,12 @@ namespace Ephemera.MidiLibLite.Test
 
                 var ch = c.ChHandle;
 
-                if (ch.DeviceId >= _outputs.Count)
+                if (ch.DeviceId >= _outputDevices.Count)
                 {
                     throw new AppException($"Invalid device id [{ch.DeviceId}]");
                 }
 
-                var output = _outputs[ch.DeviceId];
+                var output = _outputDevices[ch.DeviceId];
                 if (!output.Channels.TryGetValue(ch.ChannelNumber, out Channel? value))
                 {
                     throw new AppException($"Invalid channel [{ch.ChannelNumber}]");
@@ -424,115 +687,14 @@ namespace Ephemera.MidiLibLite.Test
                 if (!enable)
                 {
                     // Kill just in case.
-                    _outputs[ch.DeviceId].Send(new ControlChangeEvent(0, ch.ChannelNumber, MidiController.AllNotesOff, 0));
+                    _outputDevices[ch.DeviceId].Send(new ControlChangeEvent(0, ch.ChannelNumber, MidiController.AllNotesOff, 0));
                 }
             };
         }
 
 
 
-//////////////////////////////////// from Nebulua /////////////////////////////////////
-        #region Script ==> Host Functions
-        /// <summary>
-        /// Script creates an input channel.
-        /// </summary>
-        /// <param name="_"></param>
-        /// <param name="e"></param>
-        /// <exception cref="AppException">From called functions</exception>
-        void Interop_OpenMidiInput(object? _, OpenMidiInputArgs e)
-        {
-            e.ret = -1; // default is invalid
-
-            // Check args.
-            if (string.IsNullOrEmpty(e.dev_name))
-            {
-                _loggerScr.Warn($"Invalid input midi device {e.dev_name}");
-                return;
-            }
-
-            if (e.chan_num < 1 || e.chan_num > MidiDefs.NUM_CHANNELS)
-            {
-                _loggerScr.Warn($"Invalid input midi channel {e.chan_num}");
-                return;
-            }
-
-            try
-            {
-                // Locate or create the device.
-                var input = _inputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
-                if (input is null)
-                {
-                    input = new(e.dev_name); // throws if invalid
-                    input.ReceiveEvent += Midi_ReceiveEvent;
-                    _inputs.Add(input);
-                }
-
-                Channel ch = new() { ChannelName = e.chan_name, Enable = true };
-                input.Channels.Add(e.chan_num, ch);
-
-                ChannelHandle chHnd = new(_inputs.Count - 1, e.chan_num, Direction.Input);
-                e.ret = chHnd;
-            }
-            catch (AppException ex)
-            {
-                ProcessException(ex);
-            }
-        }
-
-        /// <summary>
-        /// Script creates an output channel.
-        /// </summary>
-        /// <param name="_"></param>
-        /// <param name="e"></param>
-        /// <exception cref="AppException">From called functions</exception>
-        void Interop_OpenMidiOutput(object? _, OpenMidiOutputArgs e)
-        {
-            e.ret = -1; // default is invalid
-
-            // Check args.
-            if (string.IsNullOrEmpty(e.dev_name))
-            {
-                _loggerScr.Warn($"Invalid output midi device {e.dev_name ?? "null"}");
-                return;
-            }
-
-            if (e.chan_num < 1 || e.chan_num > MidiDefs.NUM_CHANNELS)
-            {
-                _loggerScr.Warn($"Invalid output midi channel {e.chan_num}");
-                return;
-            }
-
-            try
-            {
-                // Locate or create the device.
-                var output = _outputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
-                if (output is null)
-                {
-                    output = new(e.dev_name); // throws if invalid
-                    _outputs.Add(output);
-                }
-
-                // Add specific channel.
-                Channel ch = new() { ChannelName = e.chan_name, Enable = true, Patch = e.patch };
-                output.Channels.Add(e.chan_num, ch);
-
-                ChannelHandle chHnd = new(_outputs.Count - 1, e.chan_num, Direction.Output);
-                e.ret = chHnd;
-
-                if (e.patch >= 0)
-                {
-                    // Send the patch now.
-                    PatchChangeEvent pevt = new(0, e.chan_num, e.patch);
-                    output.Send(pevt);
-                    output.Channels[e.chan_num].Patch = e.patch;
-                }
-            }
-            catch (AppException ex)
-            {
-                ProcessException(ex);
-            }
-        }
-
+////////////////////////// interop functions from Nebulua /////////////////////////////////////
         /// <summary>
         /// Script wants to send a midi note. Doesn't throw.
         /// </summary>
@@ -545,18 +707,18 @@ namespace Ephemera.MidiLibLite.Test
             // Check args for valid device and channel.
             ChannelHandle ch = new(e.chan_hnd);
 
-            if (ch.DeviceId >= _outputs.Count ||
+            if (ch.DeviceId >= _outputDevices.Count ||
                 ch.ChannelNumber < 1 ||
                 ch.ChannelNumber > MidiDefs.NUM_CHANNELS)
             {
-                _loggerScr.Warn($"Invalid channel {e.chan_hnd}");
+                // _loggerScr.Warn($"Invalid channel {e.chan_hnd}");
                 return;
             }
 
 //            Trace($"+++ Interop_SendMidiNote() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
 
             // Sound or quiet?
-            var output = _outputs[ch.DeviceId];
+            var output = _outputDevices[ch.DeviceId];
             if (output.Channels[ch.ChannelNumber].Enable)
             {
                 int note_num = MathUtils.Constrain(e.note_num, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
@@ -572,7 +734,7 @@ namespace Ephemera.MidiLibLite.Test
 
                 if (UserSettings.Current.MonitorSnd)
                 {
-                    _loggerMidi.Trace($">>> {FormatMidiEvent(evt, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
+                    // _loggerMidi.Trace($">>> {FormatMidiEvent(evt, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
                 }
             }
         }
@@ -589,18 +751,18 @@ namespace Ephemera.MidiLibLite.Test
             // Check args.
             ChannelHandle ch = new(e.chan_hnd);
 
-            if (ch.DeviceId >= _outputs.Count ||
+            if (ch.DeviceId >= _outputDevices.Count ||
                 ch.ChannelNumber < 1 ||
                 ch.ChannelNumber > MidiDefs.NUM_CHANNELS)
             {
                 _loggerScr.Warn($"Invalid channel {e.chan_hnd}");
-                return;
+                // return;
             }
 
             int controller = MathUtils.Constrain(e.controller, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
             int value = MathUtils.Constrain(e.value, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
 
-            var output = _outputs[ch.DeviceId];
+            var output = _outputDevices[ch.DeviceId];
             MidiEvent evt;
 
             evt = new ControlChangeEvent(0, ch.ChannelNumber, (MidiController)controller, value);
@@ -609,34 +771,7 @@ namespace Ephemera.MidiLibLite.Test
 
             if (UserSettings.Current.MonitorSnd)
             {
-                _loggerMidi.Trace($">>> {FormatMidiEvent(evt, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
-            }
-        }
-
-        /// <summary>
-        /// Script wants to log something. Doesn't throw.
-        /// </summary>
-        /// <param name="_"></param>
-        /// <param name="e"></param>
-        void Interop_Log(object? _, LogArgs e)
-        {
-            e.ret = 0; // not used
-
-            if (e.level < (int)LogLevel.Trace || e.level > (int)LogLevel.Error)
-            {
-                e.ret = -1;
-                _loggerScr.Warn($"Invalid log level {e.level}");
-                e.level = (int)LogLevel.Warn;
-            }
-
-            string s = $"{e.msg ?? "null"}";
-            switch ((LogLevel)e.level)
-            {
-                case LogLevel.Trace: _loggerScr.Trace(s); break;
-                case LogLevel.Debug: _loggerScr.Debug(s); break;
-                case LogLevel.Info: _loggerScr.Info(s); break;
-                case LogLevel.Warn: _loggerScr.Warn(s); break;
-                case LogLevel.Error: _loggerScr.Error(s); break;
+                // _loggerMidi.Trace($">>> {FormatMidiEvent(evt, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
             }
         }
         #endregion
@@ -671,7 +806,6 @@ namespace Ephemera.MidiLibLite.Test
             _channelControls.Clear();
         }
 
-//////////////////////////////////// from Nebulua /////////////////////////////////////
         /// <summary>
         /// Create controls.
         /// </summary>
@@ -682,9 +816,9 @@ namespace Ephemera.MidiLibLite.Test
             // Create channels and controls.
 
             List<ChannelHandle> valchs = [];
-            for (int devNum = 0; devNum < _outputs.Count; devNum++)
+            for (int devNum = 0; devNum < _outputDevices.Count; devNum++)
             {
-                var output = _outputs[devNum];
+                var output = _outputDevices[devNum];
                 output.Channels.ForEach(ch => { valchs.Add(new(devNum, ch.Key, Direction.Output)); });
             }
 
@@ -714,9 +848,9 @@ namespace Ephemera.MidiLibLite.Test
 
                 if (ch.Direction == Direction.Output)
                 {
-                    if (ch.DeviceId < _outputs.Count)
+                    if (ch.DeviceId < _outputDevices.Count)
                     {
-                        var dev = _outputs[ch.DeviceId];
+                        var dev = _outputDevices[ch.DeviceId];
                         devName = dev.DeviceName;
                         chanName = dev.Channels[ch.ChannelNumber].ChannelName;
                         patchNum = dev.Channels[ch.ChannelNumber].Patch;
@@ -724,9 +858,9 @@ namespace Ephemera.MidiLibLite.Test
                 }
                 else
                 {
-                    if (ch.DeviceId < _inputs.Count)
+                    if (ch.DeviceId < _inputDevices.Count)
                     {
-                        var dev = _inputs[ch.DeviceId];
+                        var dev = _inputDevices[ch.DeviceId];
                         devName = dev.DeviceName;
                         chanName = dev.Channels[ch.ChannelNumber].ChannelName;
                     }
@@ -770,106 +904,6 @@ namespace Ephemera.MidiLibLite.Test
 
 
 
-
-//////////////////////// from MidiGenerator ////////////////////////
-        /// <summary>
-        /// User clicked something. Send some midi.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void User_NoteSend(object? sender, NoteEventArgs e)
-        {
-            var cc = sender as ChannelControl;
-            SendNote(cc!.BoundChannel.ChannelNumber, e.Note, e.Velocity);
-        }
-
-//////////////////////// from MidiGenerator ////////////////////////
-        /// <summary>
-        /// User clicked something. Send some midi.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void User_ControllerSend(object? sender, ControllerEventArgs e)
-        {
-            var cc = sender as ChannelControl;
-            SendController(cc!.BoundChannel.ChannelNumber, (MidiController)e.ControllerId, e.Value);
-        }
-
-
-//////////////////////// from MidiGenerator ////////////////////////
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void LogMidi_Click(object? sender, EventArgs e)
-        {
-            _settings.LogMidi = btnLogMidi.Checked;
-        }
-
-
-
-//////////////////////// from MidiGenerator ////////////////////////
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="chan"></param>
-        /// <param name="note"></param>
-        /// <param name="velocity"></param>
-        void SendNote(int chanNum, int note, int velocity)
-        {
-            _logger.Trace($"Note Ch:{chanNum} N:{note} V:{velocity}");
-            NoteEvent evt = velocity > 0 ?
-               new NoteOnEvent(0, chanNum, note, velocity, 0) :
-               new NoteEvent(0, chanNum, MidiCommandCode.NoteOff, note, 0);
-           SendEvent(evt);
-        }
-
-//////////////////////// from MidiGenerator ////////////////////////
-        /// <summary>
-        /// Patch sender.
-        /// </summary>
-        void SendPatch(int chanNum, int patch)
-        {
-            _logger.Trace($"Patch Ch:{chanNum} P:{patch}");
-            PatchChangeEvent evt = new(0, chanNum, patch);
-           SendEvent(evt);
-        }
-
-//////////////////////// from MidiGenerator ////////////////////////
-        /// <summary>
-        /// Send a controller.
-        /// </summary>
-        /// <param name="controller"></param>
-        /// <param name="val"></param>
-        void SendController(int chanNum, MidiController controller, int val)
-        {
-            _logger.Trace($"Controller Ch:{chanNum} C:{controller} V:{val}");
-            ControlChangeEvent evt = new(0, chanNum, controller, val);
-           SendEvent(evt);
-        }
-
-//////////////////////// from MidiGenerator ////////////////////////
-        /// <summary>
-        /// Send midi all notes off.
-        /// </summary>
-        void Kill(int chanNum)
-        {
-            ControlChangeEvent evt = new(0, chanNum, MidiController.AllNotesOff, 0);
-            SendEvent(evt);
-        }
-
-//////////////////////// from MidiGenerator ////////////////////////
-        /// <summary>
-        /// Send the event.
-        /// </summary>
-        /// <param name="evt"></param>
-        void SendEvent(MidiEvent evt)
-        {
-            _midiOut?.Send(evt.GetAsShortMessage());
-        }
-
-
 //////////////////////// from MidiGenerator ////////////////////////
         /// <summary>
         /// Figure out which midi output device.
@@ -898,10 +932,10 @@ namespace Ephemera.MidiLibLite.Test
 
 
 
-    public class TestSettings : SettingsCore
+    public class UserSettings : SettingsCore
     {
         ///// <summary>The current settings.</summary>
-        //public static TestSettings Current { get; set; } = new();
+        //public static UserSettings Current { get; set; } = new();
 
         [Browsable(false)]
         public Channel ClClChannel1 { get; set; } = new();
@@ -919,5 +953,4 @@ namespace Ephemera.MidiLibLite.Test
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public MidiSettings MidiSettings { get; set; } = new();
     }
-
 }
