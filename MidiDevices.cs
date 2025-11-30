@@ -8,12 +8,10 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLibLite
 {
-//////////////////////////////////// from Nebulua /////////////////////////////////////
-
     /// <summary>
     /// A midi input device.
     /// </summary>
-    public class MidiInputDevice : IInputDevice //IDisposable //TODO1 retry
+    public class MidiInputDevice : IInputDevice
     {
         #region Fields
         /// <summary>NAudio midi input device.</summary>
@@ -38,7 +36,8 @@ namespace Ephemera.MidiLibLite
         /// <summary>Client needs to deal with this.</summary>
         //public event EventHandler<MidiEvent>? ReceiveEvent;
         // public event EventHandler<MidiEventArgs>? InputReceive;
-        public event EventHandler<MidiEvent>? InputReceive;
+        //public event EventHandler<MidiEvent>? InputReceive;
+        public event EventHandler<BaseXXX>? InputReceive;
         #endregion
 
         #region Lifecycle
@@ -91,19 +90,47 @@ namespace Ephemera.MidiLibLite
 
         #region Traffic
         /// <summary>
-        /// Process real midi input event. Don't throw in this thread!
+        /// Process real midi input event. ???TODO2 Don't throw in this thread!
         /// </summary>
         void MidiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
         {
             // Decode the message. We only care about a few.
-            MidiEvent evt = MidiEvent.FromRawMessage(e.RawMessage);
+            var mevt = MidiEvent.FromRawMessage(e.RawMessage);
 
-            // Is it in our registered inputs and enabled?
-            //if (Channels.TryGetValue(evt.Channel, out Channel? value) && value.Enable)
+            BaseXXX evt = mevt switch
             {
-                // Invoke takes care of cross-thread issues.
-                InputReceive?.Invoke(this, evt);
-            }
+                NoteOnEvent onevt => new NoteOnXXX
+                {
+                    Channel = onevt.Channel,
+                    Note = onevt.NoteNumber,
+                    Velocity = onevt.Velocity
+                },
+                NoteEvent offevt => offevt.Velocity == 0 ?
+                    new NoteOffXXX
+                    {
+                        Channel = offevt.Channel,
+                        Note = offevt.NoteNumber,
+                    } :
+                    new NoteOnXXX
+                    {
+                        Channel = offevt.Channel,
+                        Note = offevt.NoteNumber,
+                        Velocity = offevt.Velocity
+                    },
+                ControlChangeEvent ctlevt => new ControllerXXX
+                {
+                    Channel = ctlevt.Channel,
+                    ControllerId = (int)ctlevt.Controller,
+                    Value = ctlevt.ControllerValue
+                },
+                _ => new BaseXXX()
+                {
+                    // TODO2 just ignore?
+                    //ErrorInfo = $"Invalid message: {m}"
+                }
+            };
+
+            InputReceive?.Invoke(this, evt);
         }
 
         /// <summary>
@@ -111,6 +138,7 @@ namespace Ephemera.MidiLibLite
         /// </summary>
         void MidiIn_ErrorReceived(object? sender, MidiInMessageEventArgs e)
         {
+            // TODO2 just ignore?
             // string ErrorInfo = $"Message:0x{e.RawMessage:X8}";
         }
         #endregion
@@ -119,7 +147,7 @@ namespace Ephemera.MidiLibLite
     /// <summary>
     /// A midi output device.
     /// </summary>
-    public class MidiOutputDevice : IOutputDevice //IDisposable //TODO1 retry
+    public class MidiOutputDevice : IOutputDevice
     {
         #region Fields
         /// <summary>NAudio midi output device.</summary>
@@ -176,22 +204,19 @@ namespace Ephemera.MidiLibLite
 
         #region Traffic
         /// <summary>
-        /// Send midi event. OK to throw in here.
+        /// Send midi event. TODO2 OK to throw in here.
         /// </summary>
-        public void Send(MidiEvent evt)
+        public void Send(BaseXXX evt)
         {
-            _midiOut?.Send(evt.GetAsShortMessage());
+            MidiEvent mevt = evt switch
+            {
+                NoteOnXXX onevt => new NoteOnEvent(0, onevt.Channel, onevt.Note, onevt.Velocity, 0),
+                NoteOffXXX onevt => new NoteEvent(0, onevt.Channel,  MidiCommandCode.NoteOff, onevt.Note, 0),
+                ControllerXXX ctlevt => new ControlChangeEvent(0, ctlevt.Channel, (MidiController)ctlevt.ControllerId, ctlevt.Value),
+                _ => throw new MLLAppException($"Invalid event: {evt}")
+            };
 
-            // // Is it in our registered outputs and enabled?
-            // if (Channels.TryGetValue(evt.Channel, out Channel? value) && value.Enable)
-            // {
-            //     _midiOut?.Send(evt.GetAsShortMessage());
-            // }
-        }
-
-        public void Send(MidiEventArgs evt)
-        {
-            //TODO1 throw new NotImplementedException();
+            _midiOut?.Send(mevt.GetAsShortMessage());
         }
         #endregion
     }

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using NAudio.Midi;
+//using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 
 
@@ -20,7 +20,7 @@ namespace Ephemera.MidiLibLite
 
         #region Events
         /// <inheritdoc />
-        public event EventHandler<MidiEventArgs>? InputReceive;
+        public event EventHandler<BaseXXX>? InputReceive;
         #endregion
 
         #region Properties
@@ -68,7 +68,7 @@ namespace Ephemera.MidiLibLite
             catch (Exception ex)
             {
                 Dispose();
-                _logger.Error($"Init OSC input failed: {ex.Message}");
+                //_logger.Error($"Init OSC input failed: {ex.Message}");
             }
         }
 
@@ -92,11 +92,11 @@ namespace Ephemera.MidiLibLite
         {
             if(e.IsError)
             {
-                _logger.Error(e.Message);
+                //_logger.Error(e.Message);
             }
             else
             {
-                _logger.Debug(e.Message);
+                //_logger.Debug(e.Message);
             }
         }
 
@@ -108,47 +108,43 @@ namespace Ephemera.MidiLibLite
         void OscInput_InputReceived(object? sender, NebOsc.InputReceiveEventArgs e)
         {
             // message could be:
-            // /note/ channel notenum vel
+            // /noteon/ channel notenum vel
+            // /noteoff/ channel notenum
             // /controller/ channel ctlnum val
 
             e.Messages.ForEach(m =>
             {
-                MidiEventArgs args = new();
-
-                switch (m.Address)
+                BaseXXX evt = (m.Address, m.Data.Count) switch
                 {
-                    case "/note/":
-                        if (m.Data.Count == 3)
-                        {
-                            args = new NoteEventArgs();
-                            args.Channel = (int)m.Data[0];
-                            args.Note = (int)m.Data[1];
-                            args.Velocity = (int)m.Data[2];
-                        }
-                        break;
+                    ("/noteon/", 3) => new NoteOnXXX
+                    {
+                        Channel = (int)m.Data[0],
+                        Note = (int)m.Data[1],
+                        Velocity = (int)m.Data[2]
+                    },
 
-                    case "/controller/":
-                        if (m.Data.Count == 3)
-                        {
-                            args = new ControllerEventArgs();
-                            args.Channel = (int)m.Data[0];
-                            args.ControllerId = (int)m.Data[1];
-                            args.Value = (int)m.Data[2];
-                        }
-                        break;
+                    ("/noteoff/", 2) => new NoteOffXXX
+                    {
+                        Channel = (int)m.Data[0],
+                        Note = (int)m.Data[1],
+                    },
 
-                    default:
-                        args.ErrorInfo = $"Invalid address: {m.Address}";
-                        break;
-                }
+                    ("/controller/", 3) => new ControllerXXX()
+                    {
+                        Channel = (int)m.Data[0],
+                        ControllerId = (int)m.Data[1],
+                        Value = (int)m.Data[2]
+                    },
 
-                InputReceive?.Invoke(this, args);
+                    _ => new BaseXXX()
+                    {
+                        // TODO2 just ignore?
+                        ErrorInfo = $"Invalid message: {m}"
+                    }
+                };
 
-                if (LogEnable)
-                {
-                    _logger.Trace($"Input:{args}");
-                }
-            });
+                InputReceive?.Invoke(this, evt);
+             });
         }
         #endregion
     }
@@ -204,7 +200,7 @@ namespace Ephemera.MidiLibLite
             }
             catch
             {
-                _logger.Error($"Init OSC out failed");
+                //_logger.Error($"Init OSC out failed");
                 Dispose();
             }
         }
@@ -221,41 +217,41 @@ namespace Ephemera.MidiLibLite
 
         #region Public functions
         /// <inheritdoc />
-        public void SendEvent(MidiEvent mevt)
+        public void Send(BaseXXX mevt)
         {
             // Critical code section.
             if (_oscOutput is not null)
             {
                 lock (_lock)
                 {
-                    NebOsc.Message? msg = null;
+                    NebOsc.Message msg = null;
 
                     switch (mevt)
                     {
-                        case NoteOnEvent evt:
+                        case NoteOnXXX evt:
                             // /noteon/ channel notenum
                             msg = new NebOsc.Message() { Address = "/noteon" };
                             msg.Data.Add(evt.Channel);
-                            msg.Data.Add(evt.NoteNumber);
+                            msg.Data.Add(evt.Note);
                             msg.Data.Add(evt.Velocity);
                             break;
 
-                        case NoteEvent evt when evt.Velocity == 0: // aka NoteOff
+                        case NoteOffXXX evt:// when evt.Velocity == 0: // aka NoteOff
                             // /noteoff/ channel notenum
                             msg = new NebOsc.Message() { Address = "/noteoff" };
                             msg.Data.Add(evt.Channel);
-                            msg.Data.Add(evt.NoteNumber);
+                            msg.Data.Add(evt.Note);
                             break;
 
-                        case ControlChangeEvent evt:
+                        case ControllerXXX evt:
                             // /controller/ channel ctlnum val
                             msg = new NebOsc.Message() { Address = "/controller" };
                             msg.Data.Add(evt.Channel);
-                            msg.Data.Add(evt.Controller);
-                            msg.Data.Add(evt.ControllerValue);
+                            msg.Data.Add(evt.ControllerId);
+                            msg.Data.Add(evt.Value);
                             break;
 
-                        case PatchChangeEvent evt:
+                        case PatchXXX evt:
                             // /patch/ channel patchnum
                             msg = new NebOsc.Message() { Address = "/patch" };
                             msg.Data.Add(evt.Channel);
@@ -264,23 +260,19 @@ namespace Ephemera.MidiLibLite
 
                         default:
                             // Unknown!
-                            _logger.Error($"Unknown event: {mevt}");
-                            break;
+                            throw new MLLAppException($"Unknown event: {mevt}");
                     }
 
-                    if (msg is not null)
+                    if (_oscOutput.Send(msg))
                     {
-                        if (_oscOutput.Send(msg))
+                        if (LogEnable)
                         {
-                            if (LogEnable)
-                            {
-                                _logger.Trace($"Output:{msg}");
-                            }
+                            //_logger.Trace($"Output:{msg}");
                         }
-                        else
-                        {
-                            _logger.Error($"Send failed");
-                        }
+                    }
+                    else
+                    {
+                        //_logger.Error($"Send failed");
                     }
                 }
             }
@@ -297,13 +289,23 @@ namespace Ephemera.MidiLibLite
         {
             if (e.IsError)
             {
-                _logger.Error(e.Message);
+//                _logger.Error(e.Message);
             }
             else
             {
-                _logger.Debug(e.Message);
+//                _logger.Debug(e.Message);
             }
         }
+
+        //public void Send(MidiEventArgs evt)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Send(MidiEvent evt)
+        //{
+        //    throw new NotImplementedException();
+        //}
         #endregion
     }
 }

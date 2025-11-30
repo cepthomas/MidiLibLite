@@ -8,7 +8,7 @@ using System.IO;
 using System.ComponentModel;
 using System.Drawing.Design;
 using System.Text.Json.Serialization;
-using NAudio.Midi;
+//using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 
 
@@ -111,6 +111,12 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Non-persisted Properties
+
+        /// <summary>Handle for use by scripts.</summary>
+        [Browsable(false)]
+        [JsonIgnore]
+        public ChannelHandle ChHandle { get; init; } // from Nebulua
+
         /// <summary>Convenience property.</summary>
         [Browsable(false)]
         [JsonIgnore]

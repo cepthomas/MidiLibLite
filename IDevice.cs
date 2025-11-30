@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NAudio.Midi;
+//using NAudio.Midi;
 
 
 namespace Ephemera.MidiLibLite
@@ -32,7 +32,8 @@ namespace Ephemera.MidiLibLite
 
         #region Events
         /// <summary>Handler for message arrived.</summary>
-        event EventHandler<MidiEventArgs>? InputReceive;
+        event EventHandler<BaseXXX>? InputReceive;
+        //event EventHandler<MidiEventArgs>? InputReceive;
         #endregion
     }
 
@@ -44,13 +45,13 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Functions
-        /// <summary>Send midi event.</summary>
-        /// <param name="evt"></param>
-        void Send(MidiEventArgs evt);
+        ///// <summary>Send midi event.</summary>
+        ///// <param name="evt"></param>
+        //void Send(MidiEventArgs evt);
 
         /// <summary>Send midi event.</summary>
         /// <param name="evt"></param>
-        void Send(MidiEvent evt);
+        void Send(BaseXXX evt);
         #endregion
     }
 }

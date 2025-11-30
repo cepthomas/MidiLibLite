@@ -9,7 +9,7 @@ using System.Drawing.Design;
 using System.ComponentModel;
 using System.Windows.Forms.Design;
 using System.Reflection;
-using NAudio.Midi;
+//using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
@@ -96,7 +96,7 @@ namespace Ephemera.MidiLibLite
         {
             if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service || context is null || context.Instance is null) { return null; }
 
-//            var isChan = context.PropertyDescriptor.Name == "ChannelNumber";
+            var isOut = context.PropertyDescriptor.Name.Contains("Output");
 
             // Fill the selector.
             var lb = new ListBox

@@ -19,6 +19,9 @@ namespace Ephemera.MidiLibLite
         public const double MAX_VOLUME = 2.0;
     }
 
+    /// <summary>Application level error. Above lua level.</summary>
+    public class AppException(string message) : Exception(message) { }
+
 
 //////////////////////////////////// from Nebulua /////////////////////////////////////
     /// <summary>Library error.</summary>
@@ -53,50 +56,79 @@ namespace Ephemera.MidiLibLite
         {
             return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Direction == Direction.Output ? OUTPUT_FLAG : OUTPUT_FLAG);
         }
+
+        /// <summary>See me.</summary>
+        public override readonly string ToString()
+        {
+            return $"{DeviceId}:{ChannelNumber}";
+        }
     }
 
-
-
-
-    #region Events
-
-    public class MidiEventArgs : EventArgs
+    #region Internal event defs
+    public class BaseXXX //TODO1 better names
     {
-        [Required]
-        public int Channel { get; set; }
+        public int Channel { get; init; }
 
         /// <summary>Something to tell the client.</summary>
         public string ErrorInfo { get; set; } = "";
     }
 
     /// <summary>??? Notify host of user clicks.</summary>
-    public class NoteEventArgs : MidiEventArgs
+    public class NoteOnXXX : BaseXXX
     {
         /// <summary>The note number to play.</summary>
-        [Required]
-        public int Note { get; set; }
+        public int Note { get; init; }
 
         /// <summary>0 to 127.</summary>
-        [Required]
-        public int Velocity { get; set; }
+        public int Velocity { get; init; }
+
+        public NoteOnXXX(int channel, int note, int velocity)
+        {
+            Channel = channel;
+            Note  = note;
+            Velocity = velocity;
+        }
 
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"Note:{MusicDefinitions.NoteNumberToName(Note)}({Note}):{Velocity}";
+            return $"NoteOn:{MusicDefinitions.NoteNumberToName(Note)}({Note}):{Velocity}";
         }
     }
 
     /// <summary>??? Notify host of user clicks.</summary>
-    public class ControllerEventArgs : MidiEventArgs
+    public class NoteOffXXX : BaseXXX
+    {
+        /// <summary>The note number to play.</summary>
+        public int Note { get; init; }
+
+        public NoteOffXXX(int channel, int note)
+        {
+            Channel = channel;
+            Note  = note;
+        }
+
+        /// <summary>Read me.</summary>
+        public override string ToString()
+        {
+            return $"NoteOff:{MusicDefinitions.NoteNumberToName(Note)}({Note})";
+        }
+    }
+
+    /// <summary>??? Notify host of user clicks.</summary>
+    public class ControllerXXX : BaseXXX
     {
         /// <summary>Specific controller id.</summary>
-        [Required]
-        public int ControllerId { get; set; }
+        public int ControllerId { get; init; }
 
         /// <summary>Payload.</summary>
-        [Required]
-        public int Value { get; set; }
+        public int Value { get; init; }
+
+        public ControllerXXX(int channel, int controllerId)
+        {
+            Channel = channel;
+            ControllerId = controllerId;
+        }
 
         /// <summary>Read me.</summary>
         public override string ToString()
@@ -104,6 +136,76 @@ namespace Ephemera.MidiLibLite
             return $"ControllerId:{MidiDefs.TheDefs.GetControllerName(ControllerId)}({ControllerId}):{Value}";
         }
     }
+
+    /// <summary>??? Notify host of user clicks.</summary>
+    public class PatchXXX : BaseXXX
+    {
+        /// <summary>Specific patch.</summary>
+        [Required]
+        public int Patch { get; init; }
+
+        public PatchXXX(int channel, int patch)
+        {
+            Channel = channel;
+            Patch  = patch;
+        }
+
+        /// <summary>Read me.</summary>
+        public override string ToString()
+        {
+            return $"Patch:{Patch} TODO1 text get from channel";
+        }
+    }
+    #endregion
+
+
+
+
+    #region Events
+    //public class MidiEventArgs : EventArgs
+    //{
+    //    [Required]
+    //    public int Channel { get; set; }
+
+    //    /// <summary>Something to tell the client.</summary>
+    //    public string ErrorInfo { get; set; } = "";
+    //}
+
+    ///// <summary>??? Notify host of user clicks.</summary>
+    //public class NoteEventArgs : MidiEventArgs
+    //{
+    //    /// <summary>The note number to play.</summary>
+    //    [Required]
+    //    public int Note { get; set; }
+
+    //    /// <summary>0 to 127.</summary>
+    //    [Required]
+    //    public int Velocity { get; set; }
+
+    //    /// <summary>Read me.</summary>
+    //    public override string ToString()
+    //    {
+    //        return $"Note:{MusicDefinitions.NoteNumberToName(Note)}({Note}):{Velocity}";
+    //    }
+    //}
+
+    ///// <summary>??? Notify host of user clicks.</summary>
+    //public class ControllerEventArgs : MidiEventArgs
+    //{
+    //    /// <summary>Specific controller id.</summary>
+    //    [Required]
+    //    public int ControllerId { get; set; }
+
+    //    /// <summary>Payload.</summary>
+    //    [Required]
+    //    public int Value { get; set; }
+
+    //    /// <summary>Read me.</summary>
+    //    public override string ToString()
+    //    {
+    //        return $"ControllerId:{MidiDefs.TheDefs.GetControllerName(ControllerId)}({ControllerId}):{Value}";
+    //    }
+    //}
 
     /// <summary>Notify host of UI changes.</summary>
     public class ChannelChangeEventArgs : EventArgs
@@ -115,6 +217,7 @@ namespace Ephemera.MidiLibLite
     }
     #endregion
 
+
     // /// <summary>Notify host of changes.</summary>
     // public class ChannelControlEventArgs() : EventArgs;
 //////////////////////////////////// from MidiLib /////////////////////////////////////
@@ -125,8 +228,6 @@ namespace Ephemera.MidiLibLite
     //     public bool StateChange { get; set; } = false;
     //     public bool ChannelNumberChange { get; set; } = false;
     // }
-
-
 
     // /// <summary>
     // /// Midi (real or sim) has received something. It's up to the client to make sense of it.

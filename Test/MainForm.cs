@@ -19,28 +19,9 @@ using Ephemera.MidiLibLite;
 
 namespace Ephemera.MidiLibLite.Test
 {
-    /// <summary>Application level error. Above lua level.</summary>
-    public class AppException(string message) : Exception(message) { }
-
-
     public partial class MainForm : Form
     {
-
-        // /// <summary>App logger.</summary>
-        // readonly Logger _loggerApp = LogManager.CreateLogger("APP");
-
-        // /// <summary>Script logger.</summary>
-        // readonly Logger _loggerScr = LogManager.CreateLogger("SCR");
-
-        // /// <summary>Midi traffic logger.</summary>
-        // readonly Logger _loggerMidi = LogManager.CreateLogger("MID");
-
-
-
-        #region Persisted non-editable properties
-
-
-//////////////////////////////////// from Nebulua /////////////////////////////////////
+        #region Fields
         /// <summary>All midi devices to use for send.</summary>
         //readonly Dictionary<int, IOutputDevice> _outputDevices = [];
         readonly List<IOutputDevice> _outputDevices = [];
@@ -48,8 +29,6 @@ namespace Ephemera.MidiLibLite.Test
         /// <summary>All midi devices to use for receive.</summary>
         //readonly Dictionary<int, IInputDevice> _inputDevices = [];
         readonly List<IInputDevice> _inputDevices = [];
-
-
 
         // /// <summary>All the channel play controls.</summary>
         // readonly List<ChannelControl> _channelControls = [];
@@ -60,35 +39,25 @@ namespace Ephemera.MidiLibLite.Test
         // /// <summary>Midi input.</summary>
         // IInputDevice? _inputDevice;
 
-
-
-        #region Fields - internal
         /// <summary>All the output channels - key is handle.</summary>
         readonly Dictionary<ChannelHandle, Channel> _outputChannels = new();
         /// <summary>All the output channels - key is user assigned name.</summary>
         // readonly Dictionary<string, Channel> _outputChannels = new();
 
-        /// <summary>All the intput channels - key is handle.</summary>
+        /// <summary>All the input channels - key is handle.</summary>
         readonly Dictionary<ChannelHandle, InputChannel> _inputChannels = new();
         /// <summary>All the intput channels - key is user assigned name.</summary>
         // readonly Dictionary<string, InputChannel> _inputChannels = new();
 
-
-
-        /// <summary>All the output channel play controls.</summary>
+        /// <summary>All the output channel controls.</summary>
         readonly List<ChannelControl> _channelControls = new();
 
-        // /// <summary>My logging.</summary>
-        // readonly Logger _logger = LogManager.CreateLogger("MainForm");
-
-        /// <summary>Test stuff.</summary>
+        /// <summary>Test settings.</summary>
         readonly UserSettings _settings = new();
-        #endregion
 
         /// <summary>Interop serializing access.</summary>
         readonly object _lock = new();
 
-        #region Fields - adjust to taste
         /// <summary>Cosmetics.</summary>
         readonly Color _controlColor = Color.Aquamarine;
 
@@ -98,30 +67,32 @@ namespace Ephemera.MidiLibLite.Test
 
         #region Lifecycle
         /// <summary>
-        /// Constructor. No logging allowed yet!
+        /// Constructor.
         /// </summary>
         public MainForm()
         {
-            // Must do this first before initializing.
-            _settings = (UserSettings)SettingsCore.Load(".", typeof(UserSettings));
-
             InitializeComponent();
+
+            // TODO1 init by code.
+            _settings = (UserSettings)SettingsCore.Load(".", typeof(UserSettings));
 
             // Make sure out path exists.
             DirectoryInfo di = new(_outPath);
             di.Create();
-
-            // // Logger. Note: you can create this here but don't call any _logger functions until loaded.
-            // LogManager.MinLevelFile = LogLevel.Trace;
-            // LogManager.MinLevelNotif = LogLevel.Trace;
-            // LogManager.LogMessage += LogManager_LogMessage;
-            // LogManager.Run(Path.Join(_outPath, "log.txt"), 100000);
 
             // The text output.
             txtViewer.Font = Font;
             txtViewer.WordWrap = true;
             txtViewer.MatchText.Add("ERR", Color.LightPink);
             txtViewer.MatchText.Add("WRN", Color.Plum);
+
+            // UI configs.
+            sldVolume.DrawColor = _controlColor;
+            sldVolume.Minimum = 0.0;
+            sldVolume.Maximum = Defs.MAX_VOLUME;
+            sldVolume.Resolution = Defs.MAX_VOLUME / 50;
+            sldVolume.Value = Defs.DEFAULT_VOLUME;
+            sldVolume.Label = "volume";
 
             // Hook up some simple UI handlers.
             // btnKillMidi.Click += (_, __) => { _channels.Values.ForEach(ch => ch.Kill()); };
@@ -134,22 +105,10 @@ namespace Ephemera.MidiLibLite.Test
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            // UI configs.
-            sldVolume.DrawColor = _controlColor;
-            sldVolume.Minimum = 0.0;
-            sldVolume.Maximum = Defs.MAX_VOLUME;
-            sldVolume.Resolution = Defs.MAX_VOLUME / 50;
-            sldVolume.Value = Defs.DEFAULT_VOLUME;
-            sldVolume.Label = "volume";
-
-
-            // 1 - create all devices
-            //
-
+            ///// 1 - create all devices
             bool ok = CreateDevices();
 
-
-            // 2 - create all channels (explicit or from script api calls)
+            ///// 2 - create all channels (explicit or from script api calls)
             // script api calls:
             // local hnd_ccin  = api.open_midi_input("loopMIDI Port 1", 1, "my input")
             var chnd1 = CreateInput("loopMIDI Port 1", 1, "my input");
@@ -158,7 +117,7 @@ namespace Ephemera.MidiLibLite.Test
             // local hnd_drums = api.open_midi_output("Microsoft GS Wavetable Synth", 10, "drums", kit.Jazz)
             var chnd3 = CreateOutput("Microsoft GS Wavetable Synth", 10, "drums", 32); // kit.Jazz);
 
-            // 3 - create a channel control for each channel and bind object
+            ///// 3 - create a channel control for each channel and bind object
             foreach (var chout in _outputChannels)
             {
                 ChannelControl cc = new();
@@ -391,7 +350,7 @@ namespace Ephemera.MidiLibLite.Test
             // Set up input devices.
             foreach (var devname in _settings.MidiSettings.InputDevices)
             {
-                var indev = new MidiInputDevice(devname);
+                var indev = new MidiInputDevice(devname);//TODO1 retry
 
                 if (!indev.Valid)
                 {
@@ -410,7 +369,7 @@ namespace Ephemera.MidiLibLite.Test
             foreach (var devname in _settings.MidiSettings.OutputDevices)
             {
                 // Try midi.
-                var outdev = new MidiOutputDevice(devname);
+                var outdev = new MidiOutputDevice(devname);//TODO1 retry
                 if (!outdev.Valid)
                 {
                     // _logger.Error($"Something wrong with your output device:{devname}");
