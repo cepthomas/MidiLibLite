@@ -15,51 +15,38 @@ namespace Ephemera.MidiLibLite
 {
     public class ChannelControl : UserControl
     {
-        #region Fields  from MidiGenerator
+        #region Fields
         readonly Container components = new();
         readonly TextBox txtChannelInfo;
         readonly Slider sldVolume;
-        readonly Slider sldControllerValue;
         readonly ToolTip toolTip;
-        // TODO1 option::::::
+
+        // TODO1 option ===>
+        readonly Slider sldControllerValue;
+
+        // TODO1 option ===>
         PlayState _state = PlayState.Normal;
         readonly Label lblSolo;
         readonly Label lblMute;
         #endregion
 
         #region Properties
-        /// <summary>Everything about me.</summary>
-        //[Browsable(false)]
+        /// <summary>My channel.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public Channel BoundChannel { get; set; } = new();
-
-        //Settings opts:
-
+        public OutputChannel BoundChannel { get; set; } = new();
 
         /// <summary>Cosmetics.</summary>
         public Color DrawColor { get; set; } = Color.Red;
 
         /// <summary>Cosmetics.</summary>
-       // public Color ActiveColor { get; set; } = Color.DodgerBlue;
-
-        /// <summary>Cosmetics.</summary>
         public Color SelectedColor { get; set; } = Color.Moccasin;
 
-        /// <summary>Cosmetics.</summary>
-        //public Color BackColor { get; set; } = Color.AliceBlue;
-
         /// <summary>The graphics draw area.</summary>
-        //[Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        protected Rectangle DrawRect { get { return new Rectangle(0, sldVolume.Bottom + 4, Width, Height - (sldVolume.Bottom + 4)); } }
-
-
-        // /// <summary>Handle for use by scripts.</summary>
-        // public ChannelHandle ChHandle { get; init; } // from Nebulua
-
-        // /// <summary>For display.</summary>
-        // public List<string> Info { get; set; } = ["???"]; // from Nebulua
-
+        protected Rectangle DrawRect
+        {
+            get { return new Rectangle(0, sldVolume.Bottom + 4, Width, Height - (sldVolume.Bottom + 4)); }
+        }
 
         /// <summary>For muting/soloing.</summary>
         public PlayState State
@@ -84,27 +71,7 @@ namespace Ephemera.MidiLibLite
         public event EventHandler<BaseXXX>? MidiSend;
 
         /// <summary>Derived class helper.</summary>
-        protected virtual void OnMidiSend(BaseXXX e)
-        {
-            MidiSend?.Invoke(this, e);
-        }
-
-        ///// <summary>Request to send note.</summary>
-        //public event EventHandler<NoteEventArgs>? NoteSend;
-        ///// <summary>Request to send controller.</summary>
-        //public event EventHandler<ControllerEventArgs>? ControllerSend;
-        // /// <summary>Notify host of user changes.</summary>
-        // public event EventHandler<ChannelChangeEventArgs>? ChannelControlEvent;
-        ///// <summary>Derived class helper.</summary>
-        //protected virtual void OnNoteSend(NoteEventArgs e)
-        //{
-        //    NoteSend?.Invoke(this, e);
-        //}
-        ///// <summary>Derived class helper.</summary>
-        //protected virtual void OnControllerSend(ControllerEventArgs e)
-        //{
-        //    ControllerSend?.Invoke(this, e);
-        //}
+        protected virtual void OnMidiSend(BaseXXX e) { MidiSend?.Invoke(this, e); }
         #endregion
 
         #region Lifecycle
@@ -115,9 +82,6 @@ namespace Ephemera.MidiLibLite
         {
             // InitializeComponent();
             SuspendLayout();
-
-            // Dummy to keep the designer happy.
-            // ChHandle = new(-1, -1, Direction.None);
 
             sldVolume = new()
             {
@@ -192,55 +156,28 @@ namespace Ephemera.MidiLibLite
         }
 
         /// <summary>
-        /// Nebulua constructor.
-        /// </summary>
-        /// <param name="chnd"></param>
-        public ChannelControl(ChannelHandle chnd) : this()
-        {
-            //ChHandle = chnd;
-            //// Colors.
-            //_selColor = MidiSettings.Current.SelectedColor;
-            //_unselColor = UserSettings_EX.Current.BackColor;
-            //txtChannelInfo.BackColor = _unselColor;
-            //lblSolo.BackColor = _unselColor;
-            //lblMute.BackColor = _unselColor;
-            //sldVolume.BackColor = _unselColor;
-            //sldVolume.ForeColor = UserSettings_EX.Current.ActiveColor;
-
-            //toolTip.SetToolTip(this, string.Join(Environment.NewLine, Info));
-        }
-
-        /// <summary>
         /// Apply customization from system. BoundChannel should be valid now.
         /// </summary>
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-
             sldVolume.Value = BoundChannel.Volume;
             sldVolume.DrawColor = DrawColor;
-            sldVolume.BackColor = SystemColors.Control;
+            sldVolume.BackColor = BackColor;
+
             sldControllerValue.Value = BoundChannel.ControllerValue;
             sldControllerValue.DrawColor = DrawColor;
-            sldControllerValue.BackColor = SystemColors.Control;
-            txtChannelInfo.BackColor = DrawColor;
+            sldControllerValue.BackColor = BackColor;
 
             txtChannelInfo.Text = $"{BoundChannel.ChHandle}";
-            txtChannelInfo.BackColor = BackColor;
+            txtChannelInfo.BackColor = DrawColor;
             toolTip.SetToolTip(txtChannelInfo, txtChannelInfo.Text);
 
-            sldVolume.DrawColor = DrawColor;
-            lblSolo.Click += SoloMute_Click;
-            lblMute.Click += SoloMute_Click;
-
-            // Colors.
-            txtChannelInfo.BackColor = SelectedColor;
             lblSolo.BackColor = BackColor;
-            lblMute.BackColor = BackColor;
-            sldVolume.BackColor = BackColor;
-            sldVolume.ForeColor = DrawColor;
+            lblSolo.Click += SoloMute_Click;
 
-            toolTip.SetToolTip(this, string.Join(Environment.NewLine, txtChannelInfo.Text));
+            lblMute.BackColor = BackColor;
+            lblMute.Click += SoloMute_Click;
 
             UpdateUi();
 
@@ -262,20 +199,6 @@ namespace Ephemera.MidiLibLite
         #endregion
 
 
-
-        ///// <summary>UI channel config change.</summary>
-        //public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
-
-        ///// <summary>UI midi send.</summary>
-        //public event EventHandler<BaseXXX>? MidiSend;
-
-        ///// <summary>Derived class helper.</summary>
-        //protected virtual void OnMidiSend(BaseXXX e)
-        //{
-        //    MidiSend?.Invoke(this, e);
-        //}
-
-        //////////////////////////////////// TODO1 from Nebulua /////////////////////////////////////
 
         #region Handlers for user selections
         /// <summary>
@@ -314,7 +237,7 @@ namespace Ephemera.MidiLibLite
         }
 
         /// <summary>Handles solo and mute.</summary>
-        void SoloMute_Click(object? sender, EventArgs e) // from Nebulua
+        void SoloMute_Click(object? sender, EventArgs e)
         {
             var lbl = sender as Label;
 

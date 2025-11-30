@@ -22,6 +22,10 @@ namespace Ephemera.MidiLibLite.Test
         int _lastNote = 0;
         #endregion
 
+
+// protected virtual void OnMidiSend(BaseXXX e) { MidiSend?.Invoke(this, e); }
+
+
         #region Lifecycle
         /// <summary>
         /// Normal constructor.

@@ -26,7 +26,7 @@ namespace Ephemera.MidiLibLite
         {
             if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service || context is null || context.Instance is null) { return null; }
 
-            var instList = (context.Instance as Channel).Instruments;
+            var instList = (context.Instance as OutputChannel).Instruments;
             var lb = new ListBox
             {
                 Width = 150,
@@ -48,14 +48,14 @@ namespace Ephemera.MidiLibLite
         public override object? ConvertTo(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, Type destinationType)
         {
             if (context is null || context.Instance is null || value is not int) { return base.ConvertTo(context, culture, value, destinationType); }
-            var instList = (context.Instance as Channel).Instruments;
+            var instList = (context.Instance as OutputChannel).Instruments;
             return instList[(int)value];
         }
 
         public override object? ConvertFrom(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
         {
             if (context is null || context.Instance is null || value is not int) { return base.ConvertFrom(context, culture, value); }
-            var instList = (context.Instance as Channel).Instruments;
+            var instList = (context.Instance as OutputChannel).Instruments;
             var res = instList.FirstOrDefault(ch => ch.Value == (string)value);
             return res.Value;
         }

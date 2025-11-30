@@ -13,18 +13,13 @@ using System.Diagnostics;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
-
 using Ephemera.MidiLibLite;
-
 
 
 namespace Ephemera.MidiLibLite.Test
 {
-    public class ToAdd // maybe?
+    public class ToAdd // maybe? from Nebulua
     {
-
-
-//////////////////////////////////// from Nebulua /////////////////////////////////////
         /// <summary>
         /// Input from internal non-midi device. Doesn't throw.
         /// </summary>
@@ -120,7 +115,6 @@ namespace Ephemera.MidiLibLite.Test
             }
         }
 
-
         /// <summary>
         /// Clean up devices. Doesn't throw.
         /// </summary>
@@ -131,8 +125,6 @@ namespace Ephemera.MidiLibLite.Test
             _outputs.ForEach(d => d.Dispose());
             _outputs.Clear();
         }
-
-
 
         /// <summary>
         /// Execute a chunk of lua code. Fixes up lua path and handles errors.

@@ -124,10 +124,11 @@ namespace Ephemera.MidiLibLite
         /// <summary>Payload.</summary>
         public int Value { get; init; }
 
-        public ControllerXXX(int channel, int controllerId)
+        public ControllerXXX(int channel, int controllerId, int value)
         {
             Channel = channel;
             ControllerId = controllerId;
+            Value = value;
         }
 
         /// <summary>Read me.</summary>

@@ -33,7 +33,7 @@ namespace Ephemera.MidiLibLite
 //////////////////////////////////// from MidiGenerator /////////////////////////////////////
     /// <summary>Describes one midi output channel. Some properties are optional.</summary>
     [Serializable]
-    public class Channel
+    public class OutputChannel
     {
         #region Fields
         /// <summary>All possible instrument/patch.</summary>
@@ -46,7 +46,6 @@ namespace Ephemera.MidiLibLite
 
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
-
 
         /// <summary>Actual 1-based midi channel number.</summary>
         [Browsable(true)]
@@ -111,7 +110,6 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Non-persisted Properties
-
         /// <summary>Handle for use by scripts.</summary>
         [Browsable(false)]
         [JsonIgnore]
@@ -154,14 +152,11 @@ namespace Ephemera.MidiLibLite
         #endregion
     }
 
-
-
     /// <summary>Describes one midi input channel. Some properties are optional.</summary>
     [Serializable]
     public class InputChannel
     {
         #region Fields
-
         #endregion
 
         #region Persisted Editable Properties
@@ -177,17 +172,14 @@ namespace Ephemera.MidiLibLite
 
         /// <summary>Channel name as defined by the script.</summary>
         public string ChannelName { get; set; } = "TODO1";
-
         #endregion
 
         #region Persisted Non-editable Properties
-
         #endregion
 
         #region Non-persisted Properties
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
-
         #endregion
     }
 }

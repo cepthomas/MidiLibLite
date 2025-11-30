@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
-using NAudio.Midi;
+//using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 using Ephemera.MidiLibLite;
@@ -40,7 +40,7 @@ namespace Ephemera.MidiLibLite.Test
         // IInputDevice? _inputDevice;
 
         /// <summary>All the output channels - key is handle.</summary>
-        readonly Dictionary<ChannelHandle, Channel> _outputChannels = new();
+        readonly Dictionary<ChannelHandle, OutputChannel> _outputChannels = new();
         /// <summary>All the output channels - key is user assigned name.</summary>
         // readonly Dictionary<string, Channel> _outputChannels = new();
 
@@ -113,87 +113,12 @@ namespace Ephemera.MidiLibLite.Test
             // local hnd_ccin  = api.open_midi_input("loopMIDI Port 1", 1, "my input")
             var chnd1 = CreateInput("loopMIDI Port 1", 1, "my input");
             // local hnd_keys  = api.open_midi_output("Microsoft GS Wavetable Synth", 1,  "keys", inst.AcousticGrandPiano)
-            var chnd2 = CreateOutput("Microsoft GS Wavetable Synth", 1,  "keys", 0); //AcousticGrandPiano);
+            var chnd2 = CreateOutput("Microsoft GS Wavetable Synth", 1, "keys", 0); //AcousticGrandPiano);
             // local hnd_drums = api.open_midi_output("Microsoft GS Wavetable Synth", 10, "drums", kit.Jazz)
             var chnd3 = CreateOutput("Microsoft GS Wavetable Synth", 10, "drums", 32); // kit.Jazz);
 
-            ///// 3 - create a channel control for each channel and bind object
-            foreach (var chout in _outputChannels)
-            {
-                ChannelControl cc = new();
-                // ClClChannel1.BoundChannel = _settings.ClClChannel;
-                // ClClChannel1.ControlColor = _settings.ControlColor;
-                // ClClChannel1.Enabled = true;
-
-                // ClClChannel1.ChannelChange += User_ChannelChange;
-                // ClClChannel1.NoteSend += User_NoteSend;
-                // ClClChannel1.ControllerSend += User_ControllerSend;
-
-                // _settings.ClClChannel.UpdatePresets();
-
-            }
-
-        /// <summary>
-        /// The user clicked something in one of the channel controls.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        // void Control_ChannelChange(object? sender, ChannelChangeEventArgs e)
-        // {
-        //     ChannelControl cc = (ChannelControl)sender!;
-        //     Channel channel = cc.BoundChannel;
-
-        //     if (e.StateChange)
-        //     {
-        //         switch (cc.State)
-        //         {
-        //             case ChannelState.Normal:
-        //                 break;
-
-        //             case ChannelState.Solo:
-        //                 // Mute any other non-solo channels.
-        //                 _channels.Values.ForEach(ch =>
-        //                 {
-        //                     if (channel.ChannelNumber != ch.ChannelNumber && channel.State != ChannelState.Solo)
-        //                     {
-        //                         channel.Kill();
-        //                     }
-        //                 });
-        //                 break;
-
-        //             case ChannelState.Mute:
-        //                 channel.Kill();
-        //                 break;
-        //         }
-        //     }
-
-        //     if (e.PatchChange && channel.Patch >= 0)
-        //     {
-        //         channel.SendPatch();
-        //     }
-        // }
-
-        // /// <summary>
-        // /// User edits the channel params.
-        // /// </summary>
-        // /// <param name="sender"></param>
-        // /// <param name="e"></param>
-        // void User_ChannelChange(object? sender, ChannelEventArgs e)
-        // {
-        //     var cc = sender as ChannelControl;
-        //     if (e.PatchChange || e.ChannelNumberChange)
-        //     {
-        //         SendPatch(cc!.BoundChannel.ChannelNumber, cc.BoundChannel.Patch);
-        //     }
-
-        //     if (e.PresetFileChange)
-        //     {
-        //         // Update channel presets.
-        //         cc!.BoundChannel.UpdatePresets();
-        //     }
-        // }
-
-
+            ///// 3 - create a channel control for each output channel and bind object
+            CreateControls();
 
             // 4 - do work
             // api.set_volume(hnd_keys, 0.7)
@@ -209,16 +134,109 @@ namespace Ephemera.MidiLibLite.Test
         }
 
         /// <summary>
+        /// Create controls.
+        /// </summary>
+        void CreateControls()
+        {
+            DestroyControls();
+
+            foreach (var chout in _outputChannels)
+            {
+                ChannelControl cc = new();
+                cc.DrawColor = Color.Red;
+                cc.SelectedColor = Color.Moccasin;
+                cc.Volume = 0.56;
+                //cc.BoundChannel = chout;
+                // cc.UpdatePresets();
+
+                cc.ChannelChange += Cc_ChannelChange;
+                cc.MidiSend += Cc_MidiSend;
+            }
+
+            //////////////// from Nebulua ////////////////
+
+            // Create channels and controls. TODO1 pick over
+            //List<ChannelHandle> valchs = [];
+            //for (int devNum = 0; devNum < _outputDevices.Count; devNum++)
+            //{
+            //    var output = _outputDevices[devNum];
+            //    output.Channels.ForEach(ch => { valchs.Add(new(devNum, ch.Key, Direction.Output)); });
+            //}
+            //valchs.ForEach(ch =>
+            //{
+            //    ChannelControl control = new(ch)
+            //    {
+            //        Location = new(x, y),
+            //        Info = GetInfo(ch)
+            //    };
+            //    control.ChannelControlEvent += ChannelControlEvent;
+            //    Controls.Add(control);
+            //    _channelControls.Add(control);
+            //    // Adjust positioning for next iteration.
+            //    x += control.Width + 5;
+            //});
+
+            //// local func
+            //List<string> GetInfo(ChannelHandle ch)
+            //{
+            //    string devName = "unknown";
+            //    string chanName = "unknown";
+            //    int patchNum = -1;
+            //    if (ch.Direction == Direction.Output)
+            //    {
+            //        if (ch.DeviceId < _outputDevices.Count)
+            //        {
+            //            var dev = _outputDevices[ch.DeviceId];
+            //            devName = dev.DeviceName;
+            //            chanName = dev.Channels[ch.ChannelNumber].ChannelName;
+            //            patchNum = dev.Channels[ch.ChannelNumber].Patch;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        if (ch.DeviceId < _inputDevices.Count)
+            //        {
+            //            var dev = _inputDevices[ch.DeviceId];
+            //            devName = dev.DeviceName;
+            //            chanName = dev.Channels[ch.ChannelNumber].ChannelName;
+            //        }
+            //    }
+            //    List<string> ret = [];
+            //    ret.Add($"{(ch.Direction == Direction.Output ? "output: " : "input: ")}:{chanName}");
+            //    ret.Add($"device: {devName}");
+            //    if (patchNum != -1)
+            //    {
+            //        // Determine patch name.
+            //        string sname;
+            //        if (ch.ChannelNumber == MidiDefs.DEFAULT_DRUM_CHANNEL)
+            //        {
+            //            sname = $"kit: {patchNum}";
+            //            if (MidiDefs.DrumKits.TryGetValue(patchNum, out string? kitName))
+            //            {
+            //                sname += ($" {kitName}");
+            //            }
+            //        }
+            //        else
+            //        {
+            //            sname = $"patch: {patchNum}";
+            //            if (MidiDefs.Instruments.TryGetValue(patchNum, out string? patchName))
+            //            {
+            //                sname += ($" {patchName}");
+            //            }
+            //        }
+            //        ret.Add(sname);
+            //    }
+            //    return ret;
+            //}
+        }
+
+
+        /// <summary>
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            LogManager.Stop();
-
-            // Wait a bit in case there are some lingering events.
-            System.Threading.Thread.Sleep(100);
-
             DestroyDevices();
 
             if (disposing && (components is not null))
@@ -230,9 +248,142 @@ namespace Ephemera.MidiLibLite.Test
         }
         #endregion
 
+        ///// <summary>
+        ///// User clicked something. Send some midi.
+        ///// </summary>
+        ///// <param name="sender"></param>
+        ///// <param name="e"></param>
+        void Cc_MidiSend(object? sender, BaseXXX e)
+        {
+            var cc = sender as ChannelControl;
+            var chan = cc!.BoundChannel!;
 
-        // ddddddddddddddddddddddddd
-        ChannelHandle CreateInput(string deviceName, int channelNumber, string channelName)
+            if (chan.Enable)
+            {
+                //SendNote(cc!.BoundChannel.ChannelNumber, e.Note, e.Velocity);
+                //SendController(cc!.BoundChannel.ChannelNumber, (MidiController)e.ControllerId, e.Value);
+                //SendEvent(chnd.DeviceId, evt);
+            }
+        }
+
+        /// <summary>
+        /// The user clicked something in one of the channel controls.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Cc_ChannelChange(object? sender, ChannelChangeEventArgs e)
+        {
+            ChannelControl cc = (ChannelControl)sender!;
+            OutputChannel channel = cc.BoundChannel;
+
+            if (e.StateChange)
+            {
+                //// Update all channel enables.
+                //bool anySolo = _channelControls.Where(c => c.State == PlayState.Solo).Any();
+
+                //foreach (var c in _channelControls)
+                //{
+                //    bool enable = anySolo ? c.State == PlayState.Solo : c.State != PlayState.Mute;
+
+                //    var ch = c.ChHandle;
+
+                //    if (ch.DeviceId >= _outputDevices.Count)
+                //    {
+                //        throw new AppException($"Invalid device id [{ch.DeviceId}]");
+                //    }
+
+                //    var output = _outputDevices[ch.DeviceId];
+                //    if (!output.Channels.TryGetValue(ch.ChannelNumber, out OutputChannel? value))
+                //    {
+                //        throw new AppException($"Invalid channel [{ch.ChannelNumber}]");
+                //    }
+
+                //    value.Enable = enable;
+                //    if (!enable)
+                //    {
+                //        // Kill just in case.
+                //        _outputDevices[ch.DeviceId].Send(new ControlChangeEvent(0, ch.ChannelNumber, MidiController.AllNotesOff, 0));
+                //    }
+                //}
+
+                switch (cc.State)
+                {
+                    //case ChannelState.Normal:
+                    //    break;
+
+                    //case ChannelState.Solo:
+                    //    // Mute any other non-solo channels.
+                    //    _channels.Values.ForEach(ch =>
+                    //    {
+                    //        if (channel.ChannelNumber != ch.ChannelNumber && channel.State != ChannelState.Solo)
+                    //        {
+                    //            channel.Kill();
+                    //        }
+                    //    });
+                    //    break;
+
+                    //case ChannelState.Mute:
+                    //    channel.Kill();
+                    //    break;
+                }
+            }
+
+            if (e.PatchChange && channel.Patch >= 0)
+            {
+                //SendPatch();
+            }
+
+
+            if (e.PresetFileChange)
+            {
+                // Update channel presets.
+                cc!.BoundChannel.UpdatePresets();
+            }
+        }
+
+
+
+
+
+        /// <summary>
+        /// Send the event.
+        /// </summary>
+        /// <param name="evt"></param>
+        void SendEvent(int devid, BaseXXX evt)
+        {
+            var mout = _outputDevices[devid];
+            mout?.Send(evt);
+            // mout?.Send(evt.GetAsShortMessage());
+        }
+
+
+
+
+
+        #region Script API requirements TODO1
+        // Midi input arrived. This is on a system thread. Host => script API.
+        void Midi_ReceiveEvent(object? sender, BaseXXX e)
+        {
+            var indev = (MidiInputDevice)sender!;
+
+            //var chan = cc!.BoundChannel!;
+            //if (chan.Enable)
+            //{
+            //    //SendNote(cc!.BoundChannel.ChannelNumber, e.Note, e.Velocity);
+            //    //SendController(cc!.BoundChannel.ChannelNumber, (MidiController)e.ControllerId, e.Value);
+            //    //SendEvent(chnd.DeviceId, evt);
+            //}
+
+            // Determine channel.
+            ChannelHandle chnd = new(_inputDevices.IndexOf(indev), e.Channel, Direction.Input);
+
+            // Do the work.
+            //_interop.ReceiveMidiNote(chnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MAX_MIDI);
+            //_interop.ReceiveMidiNote(chnd, evt.NoteNumber, 0);
+            //_interop.ReceiveMidiController(chnd, (int)evt.Controller, evt.ControllerValue);
+        }
+        
+        ChannelHandle CreateInput(string deviceName, int channelNumber, string channelName) // Script => Host API
         {
             ChannelHandle chnd;
 
@@ -278,9 +429,7 @@ namespace Ephemera.MidiLibLite.Test
             return chnd;
         }
 
-
-        // ddddddddddddddddddddddddd
-        ChannelHandle CreateOutput(string deviceName, int channelNumber, string channelName, int patch)
+        ChannelHandle CreateOutput(string deviceName, int channelNumber, string channelName, int patch) // Script => Host API
         {
             ChannelHandle chnd;
 
@@ -306,7 +455,7 @@ namespace Ephemera.MidiLibLite.Test
                 }
 
                 // Add the channel.
-                Channel ch = new()
+                OutputChannel ch = new()
                 {
                     ChannelNumber = channelNumber,
                     ChannelName = channelName,
@@ -321,7 +470,7 @@ namespace Ephemera.MidiLibLite.Test
                 // Send the patch now.
                 if (patch >= 0)
                 {
-                    SendPatch(chnd, patch);
+////                    SendPatch(chnd, patch);
                 }
             }
             catch (AppException ex)
@@ -332,8 +481,7 @@ namespace Ephemera.MidiLibLite.Test
 
             return chnd;
         }
-
-
+        #endregion
 
         #region Devices
         /// <summary>
@@ -397,364 +545,12 @@ namespace Ephemera.MidiLibLite.Test
         }
         #endregion
 
-
-
-
-        #region Midi Send
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="chan"></param>
-        /// <param name="note"></param>
-        /// <param name="velocity"></param>
-        void SendNote(ChannelHandle chnd, int note, int velocity)
-        {
-           // _logger.Trace($"Note Ch:{chanNum} N:{note} V:{velocity}");
-            NoteEvent evt = velocity > 0 ?
-               new NoteOnEvent(0, chnd.ChannelNumber, note, velocity, 0) :
-               new NoteEvent(0, chnd.ChannelNumber, MidiCommandCode.NoteOff, note, 0);
-           SendEvent(chnd.DeviceId, evt);
-        }
-
-        /// <summary>
-        /// Patch sender.
-        /// </summary>
-        void SendPatch(ChannelHandle chnd, int patch)
-        {
-           // _logger.Trace($"Patch Ch:{chanNum} P:{patch}");
-            PatchChangeEvent evt = new(0, chnd.ChannelNumber, patch);
-           SendEvent(chnd.DeviceId, evt);
-        }
-
-        /// <summary>
-        /// Send a controller.
-        /// </summary>
-        /// <param name="controller"></param>
-        /// <param name="val"></param>
-        void SendController(ChannelHandle chnd, MidiController controller, int val)
-        {
-           // _logger.Trace($"Controller Ch:{chanNum} C:{controller} V:{val}");
-            ControlChangeEvent evt = new(0, chnd.ChannelNumber, controller, val);
-           SendEvent(chnd.DeviceId, evt);
-        }
-
-        /// <summary>
-        /// Send midi all notes off.
-        /// </summary>
-        void Kill(ChannelHandle chnd)
-        {
-            ControlChangeEvent evt = new(0, chnd.ChannelNumber, MidiController.AllNotesOff, 0);
-            SendEvent(chnd.DeviceId, evt);
-        }
-
-        /// <summary>
-        /// Send the event.
-        /// </summary>
-        /// <param name="evt"></param>
-        void SendEvent(int devid, MidiEvent evt)
-        {
-            var mout = _outputDevices[devid];
-            mout?.Send(evt);
-            // mout?.Send(evt.GetAsShortMessage());
-        }
-        #endregion
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////     LIB OK TO HERE    ///////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-//////////////////////// from MidiGenerator ////////////////////////
-        /// <summary>
-        /// User clicked something. Send some midi.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void User_NoteSend(object? sender, NoteEventArgs e)
-        {
-            var cc = sender as ChannelControl;
-            SendNote(cc!.BoundChannel.ChannelNumber, e.Note, e.Velocity);
-        }
-
-        /// <summary>
-        /// User clicked something. Send some midi.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void User_ControllerSend(object? sender, ControllerEventArgs e)
-        {
-            var cc = sender as ChannelControl;
-            SendController(cc!.BoundChannel.ChannelNumber, (MidiController)e.ControllerId, e.Value);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void LogMidi_Click(object? sender, EventArgs e)
-        {
-            _settings.LogMidi = btnLogMidi.Checked;
-        }
-
-
-
-
-
-
-
-        #region Utilities
-        // /// <summary>
-        // /// Show log events.
-        // /// </summary>
-        // /// <param name="sender"></param>
-        // /// <param name="e"></param>
-        // void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
-        // {
-        //     // Usually come from a different thread.
-        //     if (IsHandleCreated)
-        //     {
-        //         this.InvokeIfRequired(_ => { Tell($"{e.Message}"); });
-        //     }
-        // }
-
-        #endregion
-
-        #region Debug stuff
-        // /// <summary>
-        // /// 
-        // /// </summary>
-        // /// <param name="sender"></param>
-        // /// <param name="e"></param>
-        // void Settings_Click(object sender, EventArgs e)
-        // {
-        //     SettingsEditor.Edit(_settings, "howdy!!!", 400);
-        //     _settings.Save();
-        //     _logger.Warn("You better restart!");
-        // }
-        #endregion
-
-
-
-//////////////////////////////////// from Nebulua /////////////////////////////////////
-        /// <summary>
-        /// Midi input arrived. This is on a system thread.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Midi_ReceiveEvent(object? sender, MidiEvent e)
-        {
-           // // _logger.Trace($"Listener:{sender} Note:{e.Note} Controller:{e.Controller} Value:{e.Value}");
-           // // Translate and pass to output.
-           // var channel = _channels["chan16"];
-           // NoteEvent nevt = e.Value > 0 ?
-           //    new NoteOnEvent(0, channel.ChannelNumber, e.Note % MidiDefs.MAX_MIDI, e.Value % MidiDefs.MAX_MIDI, 0) :
-           //    new NoteEvent(0, channel.ChannelNumber, MidiCommandCode.NoteOff, e.Note, 0);
-           // channel.SendEvent(nevt);
-
-
-
-            lock (_lock)
-            {
-                try
-                {
-                    if (string.IsNullOrEmpty(Thread.CurrentThread.Name))
-                    {
-                        Thread.CurrentThread.Name = "MIDI_RCV";
-                    }
-
-                    var input = (MidiInputDevice)sender!;
-                    ChannelHandle ch = new(_inputDevices.IndexOf(input), e.Channel, Direction.Input);
-                    int chanHnd = ch;
-                    bool logit = true;
-
-                    // Do the work.
-                    switch (e)
-                    {
-                        case NoteOnEvent evt:
-                            _interop.ReceiveMidiNote(chanHnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MAX_MIDI);
-                            break;
-
-                        case NoteEvent evt:
-                            _interop.ReceiveMidiNote(chanHnd, evt.NoteNumber, 0);
-                            break;
-
-                        case ControlChangeEvent evt:
-                            _interop.ReceiveMidiController(chanHnd, (int)evt.Controller, evt.ControllerValue);
-                            break;
-
-                        default: // Ignore others for now.
-                            logit = false;
-                            break;
-                    }
-
-                    if (logit && UserSettings.Current.MonitorRcv)
-                    {
-                        // _loggerMidi.Trace($"<<< {FormatMidiEvent(e, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, chanHnd)}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // ProcessException(ex);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Process UI change.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void ChannelControlEvent(object? sender, ChannelEventArgs e)
-        {
-            ChannelControl control = (ChannelControl)sender!;
-
-            // Update all channel enables.
-            bool anySolo = _channelControls.Where(c => c.State == PlayState.Solo).Any();
-
-            foreach (var c in _channelControls)
-            {
-                bool enable = anySolo ? c.State == PlayState.Solo : c.State != PlayState.Mute;
-
-                var ch = c.ChHandle;
-
-                if (ch.DeviceId >= _outputDevices.Count)
-                {
-                    throw new AppException($"Invalid device id [{ch.DeviceId}]");
-                }
-
-                var output = _outputDevices[ch.DeviceId];
-                if (!output.Channels.TryGetValue(ch.ChannelNumber, out Channel? value))
-                {
-                    throw new AppException($"Invalid channel [{ch.ChannelNumber}]");
-                }
-
-                value.Enable = enable;
-                if (!enable)
-                {
-                    // Kill just in case.
-                    _outputDevices[ch.DeviceId].Send(new ControlChangeEvent(0, ch.ChannelNumber, MidiController.AllNotesOff, 0));
-                }
-            };
-        }
-
-
-
-////////////////////////// interop functions from Nebulua /////////////////////////////////////
-        /// <summary>
-        /// Script wants to send a midi note. Doesn't throw.
-        /// </summary>
-        /// <param name="_"></param>
-        /// <param name="e"></param>
-        void Interop_SendMidiNote(object? _, SendMidiNoteArgs e)
-        {
-            e.ret = 0; // not used
-
-            // Check args for valid device and channel.
-            ChannelHandle ch = new(e.chan_hnd);
-
-            if (ch.DeviceId >= _outputDevices.Count ||
-                ch.ChannelNumber < 1 ||
-                ch.ChannelNumber > MidiDefs.NUM_CHANNELS)
-            {
-                // _loggerScr.Warn($"Invalid channel {e.chan_hnd}");
-                return;
-            }
-
-//            Trace($"+++ Interop_SendMidiNote() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
-
-            // Sound or quiet?
-            var output = _outputDevices[ch.DeviceId];
-            if (output.Channels[ch.ChannelNumber].Enable)
-            {
-                int note_num = MathUtils.Constrain(e.note_num, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
-
-                // Check for note off.
-                var vol = e.volume * State.Instance.Volume;
-                int vel = vol == 0.0 ? 0 : MathUtils.Constrain((int)(vol * MidiDefs.MAX_MIDI), MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
-                MidiEvent evt = vel == 0?
-                    new NoteEvent(0, ch.ChannelNumber, MidiCommandCode.NoteOff, note_num, 0) :
-                    new NoteEvent(0, ch.ChannelNumber, MidiCommandCode.NoteOn, note_num, vel);
-
-                output.Send(evt);
-
-                if (UserSettings.Current.MonitorSnd)
-                {
-                    // _loggerMidi.Trace($">>> {FormatMidiEvent(evt, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Script wants to send a midi controller. Doesn't throw.
-        /// </summary>
-        /// <param name="_"></param>
-        /// <param name="e"></param>
-        void Interop_SendMidiController(object? _, SendMidiControllerArgs e)
-        {
-            e.ret = 0; // not used
-
-            // Check args.
-            ChannelHandle ch = new(e.chan_hnd);
-
-            if (ch.DeviceId >= _outputDevices.Count ||
-                ch.ChannelNumber < 1 ||
-                ch.ChannelNumber > MidiDefs.NUM_CHANNELS)
-            {
-                _loggerScr.Warn($"Invalid channel {e.chan_hnd}");
-                // return;
-            }
-
-            int controller = MathUtils.Constrain(e.controller, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
-            int value = MathUtils.Constrain(e.value, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
-
-            var output = _outputDevices[ch.DeviceId];
-            MidiEvent evt;
-
-            evt = new ControlChangeEvent(0, ch.ChannelNumber, (MidiController)controller, value);
-
-            output.Send(evt);
-
-            if (UserSettings.Current.MonitorSnd)
-            {
-                // _loggerMidi.Trace($">>> {FormatMidiEvent(evt, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
-            }
-        }
-        #endregion
-
-
-
-        /// <summary>
-        /// Tell me something good.
-        /// </summary>
-        /// <param name="s"></param>
-        void Tell(string s)
-        {
-            txtViewer.AppendLine($"{s}");
-        }
-
-
-
-//////////////////////////////////// from Nebulua /////////////////////////////////////
         /// <summary>
         /// Destroy controls.
         /// </summary>
         void DestroyControls()
         {
-            KillAll();
+            //KillAll();
 
             // Clean out our current elements.
             _channelControls.ForEach(c =>
@@ -765,131 +561,16 @@ namespace Ephemera.MidiLibLite.Test
             _channelControls.Clear();
         }
 
+
         /// <summary>
-        /// Create controls.
+        /// Tell me something good.
         /// </summary>
-        void CreateControls()
+        /// <param name="s"></param>
+        void Tell(string s)
         {
-            DestroyControls();
-
-            // Create channels and controls.
-
-            List<ChannelHandle> valchs = [];
-            for (int devNum = 0; devNum < _outputDevices.Count; devNum++)
-            {
-                var output = _outputDevices[devNum];
-                output.Channels.ForEach(ch => { valchs.Add(new(devNum, ch.Key, Direction.Output)); });
-            }
-
-            valchs.ForEach(ch =>
-            {
-                ChannelControl control = new(ch)
-                {
-                    Location = new(x, y),
-                    Info = GetInfo(ch)
-                };
-
-                control.ChannelControlEvent += ChannelControlEvent;
-                Controls.Add(control);
-                _channelControls.Add(control);
-
-                // Adjust positioning for next iteration.
-                x += control.Width + 5;
-            });
-
-
-            // local func
-            List<string> GetInfo(ChannelHandle ch)
-            {
-                string devName = "unknown";
-                string chanName = "unknown";
-                int patchNum = -1;
-
-                if (ch.Direction == Direction.Output)
-                {
-                    if (ch.DeviceId < _outputDevices.Count)
-                    {
-                        var dev = _outputDevices[ch.DeviceId];
-                        devName = dev.DeviceName;
-                        chanName = dev.Channels[ch.ChannelNumber].ChannelName;
-                        patchNum = dev.Channels[ch.ChannelNumber].Patch;
-                    }
-                }
-                else
-                {
-                    if (ch.DeviceId < _inputDevices.Count)
-                    {
-                        var dev = _inputDevices[ch.DeviceId];
-                        devName = dev.DeviceName;
-                        chanName = dev.Channels[ch.ChannelNumber].ChannelName;
-                    }
-                }
-
-                List<string> ret = [];
-                ret.Add($"{(ch.Direction == Direction.Output ? "output: " : "input: ")}:{chanName}");
-                ret.Add($"device: {devName}");
-
-                if (patchNum != -1)
-                {
-                    // Determine patch name.
-                    string sname;
-                    if (ch.ChannelNumber == MidiDefs.DEFAULT_DRUM_CHANNEL)
-                    {
-                        sname = $"kit: {patchNum}";
-                        if (MidiDefs.DrumKits.TryGetValue(patchNum, out string? kitName))
-                        {
-                            sname += ($" {kitName}");
-                        }
-                    }
-                    else
-                    {
-                        sname = $"patch: {patchNum}";
-                        if (MidiDefs.Instruments.TryGetValue(patchNum, out string? patchName))
-                        {
-                            sname += ($" {patchName}");
-                        }
-                    }
-
-                    ret.Add(sname);
-                }
-
-                return ret;
-            }
+            txtViewer.AppendLine($"{s}");
         }
-
-
-
-
-
-
-
-//////////////////////// from MidiGenerator ////////////////////////
-        /// <summary>
-        /// Figure out which midi output device.
-        /// </summary>
-        void ConnectDevice()
-        {
-            if (_midiOut == null)
-            {
-                // Retry.
-                string deviceName = _settings.OutputDevice;
-                for (int i = 0; i < MidiOut.NumberOfDevices; i++)
-                {
-                    if (deviceName == MidiOut.DeviceInfo(i).ProductName)
-                    {
-                        _midiOut = new MidiOut(i);
-                        Text = $"Midi Generator - {deviceName}";
-                        Tell($"Connect to {deviceName}");
-                        timer1.Stop();
-                        break;
-                    }
-                }
-            }
-        }
-        #endregion
     }
-
-
 
     public class UserSettings : SettingsCore
     {
@@ -897,9 +578,9 @@ namespace Ephemera.MidiLibLite.Test
         //public static UserSettings Current { get; set; } = new();
 
         [Browsable(false)]
-        public Channel ClClChannel1 { get; set; } = new();
+        public OutputChannel ClClChannel1 { get; set; } = new();
         [Browsable(false)]
-        public Channel ClClChannel2 { get; set; } = new();
+        public OutputChannel ClClChannel2 { get; set; } = new();
 
         [DisplayName("Ignore Me")]
         [Description("I do nothing.")]
@@ -911,5 +592,27 @@ namespace Ephemera.MidiLibLite.Test
         [Browsable(true)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public MidiSettings MidiSettings { get; set; } = new();
+    }
+
+    /// <summary>Sink that doesn't do anything.</summary>
+    public class NullOutputDevice : IOutputDevice
+    {
+        public string DeviceName => nameof(NullOutputDevice);
+        public bool Valid { get { return false; } }
+        public bool LogEnable { get; set; }
+        public void Dispose() { }
+        public void Send(BaseXXX evt) { }
+    }
+
+    public class NullInputDevice : IInputDevice
+    {
+        public string DeviceName => nameof(NullOutputDevice);
+        public bool Valid { get { return false; } }
+        public bool LogEnable { get; set; }
+        public void Dispose() { }
+
+        //public void Send(BaseXXX evt) { }
+        public bool CaptureEnable { get; set; }
+        public event EventHandler<BaseXXX>? InputReceive;
     }
 }
