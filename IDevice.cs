@@ -16,9 +16,6 @@ namespace Ephemera.MidiLibLite
 
         /// <summary>Are we ok?</summary>
         bool Valid { get; }
-
-        /// <summary>Log traffic at Trace level.</summary>
-        bool LogEnable { get; set; }
         #endregion
     }
 
@@ -32,26 +29,17 @@ namespace Ephemera.MidiLibLite
 
         #region Events
         /// <summary>Handler for message arrived.</summary>
-        event EventHandler<BaseXXX>? InputReceive;
-        //event EventHandler<MidiEventArgs>? InputReceive;
+        event EventHandler<BaseEvent>? InputReceive;
         #endregion
     }
 
     /// <summary>Abstraction layer to support output devices.</summary>
     public interface IOutputDevice : IDevice
     {
-        #region Properties
-
-        #endregion
-
         #region Functions
-        ///// <summary>Send midi event.</summary>
-        ///// <param name="evt"></param>
-        //void Send(MidiEventArgs evt);
-
         /// <summary>Send midi event.</summary>
         /// <param name="evt"></param>
-        void Send(BaseXXX evt);
+        void Send(BaseEvent evt);
         #endregion
     }
 }

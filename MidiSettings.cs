@@ -12,7 +12,7 @@ using Ephemera.NBagOfTricks;
 namespace Ephemera.MidiLibLite
 {
     [Serializable]
-    public class MidiSettings
+    public class MidiSettings // TODO1 or host take care of these?
     {
         /// <summary>The current settings.</summary>
         //public static MidiSettings Current { get; set; } = new();

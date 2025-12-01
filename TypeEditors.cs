@@ -1,17 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using System.Diagnostics;
 using System.Drawing.Design;
 using System.ComponentModel;
 using System.Windows.Forms.Design;
-using System.Reflection;
-//using NAudio.Midi;
 using Ephemera.NBagOfTricks;
-using Ephemera.NBagOfUis;
 
 
 // Shut up warnings in this file. Using manual checking where needed.
@@ -72,15 +66,9 @@ namespace Ephemera.MidiLibLite
             int start = isChan ? 1 : 0;
             int end = isChan ? MidiDefs.NUM_CHANNELS : MidiDefs.MAX_MIDI;
 
-            var lb = new ListBox
-            {
-                Width = 50,
-                SelectionMode = SelectionMode.One
-            };
-            lb.Click += (_, __) => _service.CloseDropDown();
-
+            var lb = new ListBox(); // {Width = 50,SelectionMode = SelectionMode.One};
             Enumerable.Range(start, end).ForEach(v => lb.Items.Add(v.ToString()));
-
+            lb.Click += (_, __) => _service.CloseDropDown();
             _service.DropDownControl(lb);
 
             return lb.SelectedItem is null ? value : int.Parse((string)lb.SelectedItem);
@@ -97,20 +85,12 @@ namespace Ephemera.MidiLibLite
             if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service || context is null || context.Instance is null) { return null; }
 
             var isOut = context.PropertyDescriptor.Name.Contains("Output");
+            var devs = isOut ? MidiOutputDevice.AvailableDevices() : MidiInputDevice.AvailableDevices();
 
             // Fill the selector.
-            var lb = new ListBox
-            {
-                Width = 100,
-                SelectionMode = SelectionMode.One
-            };
+            var lb = new ListBox(); // {Width = 100,SelectionMode = SelectionMode.One};
+            devs.ForEach(d => lb.Items.Add(d));
             lb.Click += (_, __) => _service.CloseDropDown();
-
-            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
-            {
-                lb.Items.Add(MidiOut.DeviceInfo(i).ProductName);
-            }
-
             _service.DropDownControl(lb);
 
             return lb.SelectedItem is null ? value : lb.SelectedItem.ToString();

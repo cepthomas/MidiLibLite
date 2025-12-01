@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
+using NAudio.CoreAudioApi;
 
 
 namespace Ephemera.MidiLibLite
@@ -19,25 +20,22 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Properties
-        /// <summary>Device name as defined by the system.</summary>
+        /// <inheritdoc />
         public string DeviceName { get; }
 
-        public bool CaptureEnable { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        /// <inheritdoc />
+        public bool CaptureEnable { get; set; }
 
-        public bool Valid => throw new NotImplementedException();
+        /// <inheritdoc />
+        public bool Valid => _midiIn is not null;
 
-        public bool LogEnable { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        /// <summary>Info about device channels. Key is channel number, 1-based.</summary>
-//        public Dictionary<int, Channel> Channels = []; //TODO1
+/// <summary>Info about device channels. Key is channel number, 1-based.</summary>
+// public Dictionary<int, Channel> Channels = []; //TODO1
         #endregion
 
         #region Events
         /// <summary>Client needs to deal with this.</summary>
-        //public event EventHandler<MidiEvent>? ReceiveEvent;
-        // public event EventHandler<MidiEventArgs>? InputReceive;
-        //public event EventHandler<MidiEvent>? InputReceive;
-        public event EventHandler<BaseXXX>? InputReceive;
+        public event EventHandler<BaseEvent>? InputReceive;
         #endregion
 
         #region Lifecycle
@@ -47,34 +45,21 @@ namespace Ephemera.MidiLibLite
         /// <param name="deviceName">Client must supply name of device.</param>
         public MidiInputDevice(string deviceName)
         {
-            bool realInput = false;
-            DeviceName = deviceName;
-
-            // Figure out which midi input device.
-            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
+            // Figure out which midi output device.
+            var devs = AvailableDevices();
+            var ind = devs.IndexOf(deviceName);
+            if (ind >= 0)
             {
-                if (deviceName == MidiIn.DeviceInfo(i).ProductName)
-                {
-                    _midiIn = new MidiIn(i);
-                    _midiIn.MessageReceived += MidiIn_MessageReceived;
-                    _midiIn.ErrorReceived += MidiIn_ErrorReceived;
-                    _midiIn.Start();
-                    realInput = true;
-                    break;
-                }
+                DeviceName = deviceName;
+                _midiIn = new MidiIn(ind);
+                _midiIn.MessageReceived += MidiIn_MessageReceived;
+                _midiIn.ErrorReceived += MidiIn_ErrorReceived;
+                _midiIn.Start();
             }
-
-            if (_midiIn is null)
+            else
             {
-                // if (deviceName == "ccMidiGen") // Assume internal type.
-                // {
-                //     _midiIn = null;
-                //     realInput = false;
-                // }
-                // else
-                {
-                    throw new MLLAppException($"Invalid input midi device name [{deviceName}]");
-                }
+                DeviceName = "";
+                throw new MidiLibException($"Invalid input midi device name [{deviceName}]");
             }
         }
 
@@ -94,40 +79,19 @@ namespace Ephemera.MidiLibLite
         /// </summary>
         void MidiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
         {
+            if (!CaptureEnable) return;
+
             // Decode the message. We only care about a few.
             var mevt = MidiEvent.FromRawMessage(e.RawMessage);
 
-            BaseXXX evt = mevt switch
+            BaseEvent evt = mevt switch
             {
-                NoteOnEvent onevt => new NoteOnXXX
-                {
-                    Channel = onevt.Channel,
-                    Note = onevt.NoteNumber,
-                    Velocity = onevt.Velocity
-                },
+                NoteOnEvent onevt => new NoteOn(onevt.Channel, onevt.NoteNumber, onevt.Velocity),
                 NoteEvent offevt => offevt.Velocity == 0 ?
-                    new NoteOffXXX
-                    {
-                        Channel = offevt.Channel,
-                        Note = offevt.NoteNumber,
-                    } :
-                    new NoteOnXXX
-                    {
-                        Channel = offevt.Channel,
-                        Note = offevt.NoteNumber,
-                        Velocity = offevt.Velocity
-                    },
-                ControlChangeEvent ctlevt => new ControllerXXX
-                {
-                    Channel = ctlevt.Channel,
-                    ControllerId = (int)ctlevt.Controller,
-                    Value = ctlevt.ControllerValue
-                },
-                _ => new BaseXXX()
-                {
-                    // TODO2 just ignore?
-                    //ErrorInfo = $"Invalid message: {m}"
-                }
+                    new NoteOff(offevt.Channel, offevt.NoteNumber) :
+                    new NoteOn(offevt.Channel, offevt.NoteNumber, offevt.Velocity),
+                ControlChangeEvent ctlevt => new Controller(ctlevt.Channel, (int)ctlevt.Controller, ctlevt.ControllerValue),
+                _ => new BaseEvent() // TODO2 just ignore? or ErrorInfo = $"Invalid message: {m}"
             };
 
             InputReceive?.Invoke(this, evt);
@@ -140,6 +104,24 @@ namespace Ephemera.MidiLibLite
         {
             // TODO2 just ignore?
             // string ErrorInfo = $"Message:0x{e.RawMessage:X8}";
+        }
+        #endregion
+
+        #region Misc
+        /// <summary>
+        /// Get a list of available device names.
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> AvailableDevices()
+        {
+            List<string> devs = [];
+
+            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
+            {
+                devs.Add(MidiIn.DeviceInfo(i).ProductName);
+            }
+
+            return devs;
         }
         #endregion
     }
@@ -155,14 +137,16 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Properties
-        /// <summary>Device name as defined by the system.</summary>
+        /// <inheritdoc />
         public string DeviceName { get; }
 
-        public bool Valid => throw new NotImplementedException();
+        /// <inheritdoc />
+        public bool Valid => _midiOut is not null;
 
-        public bool LogEnable { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        /// <inheritdoc />
+        public bool LogEnable { get; set; }
 
-        /// <summary>Info about device channels. Key is channel number, 1-based.</summary>
+/// <summary>Info about device channels. Key is channel number, 1-based.</summary>
 //        public Dictionary<int, Channel> Channels = []; //TODO1
         #endregion
 
@@ -171,24 +155,20 @@ namespace Ephemera.MidiLibLite
         /// Normal constructor. OK to throw in here.
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
-        /// <exception cref="LuaException"></exception>
         public MidiOutputDevice(string deviceName)
         {
-            DeviceName = deviceName;
-
             // Figure out which midi output device.
-            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+            var devs = AvailableDevices();
+            var ind = devs.IndexOf(deviceName);
+            if (ind >= 0)
             {
-                if (deviceName == MidiOut.DeviceInfo(i).ProductName)
-                {
-                    _midiOut = new MidiOut(i);
-                    break;
-                }
+                DeviceName = deviceName;
+                _midiOut = new MidiOut(ind);
             }
-
-            if (_midiOut is null)
+            else
             {
-                 throw new MLLAppException($"Invalid output midi device name [{deviceName}]");
+                DeviceName = "";
+                throw new MidiLibException($"Invalid output midi device name [{deviceName}]");
             }
         }
 
@@ -206,19 +186,37 @@ namespace Ephemera.MidiLibLite
         /// <summary>
         /// Send midi event. TODO2 OK to throw in here.
         /// </summary>
-        public void Send(BaseXXX evt)
+        public void Send(BaseEvent evt)
         {
             MidiEvent mevt = evt switch
             {
-                NoteOnXXX onevt => new NoteOnEvent(0, onevt.Channel, onevt.Note, onevt.Velocity, 0),
-                NoteOffXXX onevt => new NoteEvent(0, onevt.Channel,  MidiCommandCode.NoteOff, onevt.Note, 0),
-                ControllerXXX ctlevt => new ControlChangeEvent(0, ctlevt.Channel, (MidiController)ctlevt.ControllerId, ctlevt.Value),
-                _ => throw new MLLAppException($"Invalid event: {evt}")
+                NoteOn onevt => new NoteOnEvent(0, onevt.Channel, onevt.Note, onevt.Velocity, 0),
+                NoteOff onevt => new NoteEvent(0, onevt.Channel, MidiCommandCode.NoteOff, onevt.Note, 0),
+                Controller ctlevt => new ControlChangeEvent(0, ctlevt.Channel, (MidiController)ctlevt.ControllerId, ctlevt.Value),
+                _ => throw new MidiLibException($"Invalid event: {evt}")
             };
 
             _midiOut?.Send(mevt.GetAsShortMessage());
         }
         #endregion
+
+        #region Misc
+        /// <summary>
+        /// Get a list of available device names.
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> AvailableDevices()
+        {
+            List<string> devs = [];
+
+            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+            {
+                devs.Add(MidiOut.DeviceInfo(i).ProductName);
+            }
+
+            return devs;
+        }
+        #endregion
+
     }
-    
 }

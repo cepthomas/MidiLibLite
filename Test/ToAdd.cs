@@ -18,6 +18,8 @@ using Ephemera.MidiLibLite;
 
 namespace Ephemera.MidiLibLite.Test
 {
+
+#if _TODO1_MAYBE
     public class ToAdd // maybe? from Nebulua
     {
         /// <summary>
@@ -31,7 +33,7 @@ namespace Ephemera.MidiLibLite.Test
             {
                 velocity = MathUtils.Constrain(velocity, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
                 NoteEvent nevt = velocity > 0 ?
-                    new NoteOnEvent(0, channel, noteNum, velocity, 0) :
+                    new NAudio.Midi.NoteOnEvent(0, channel, noteNum, velocity, 0) :
                     new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
                 Midi_ReceiveEvent(input, nevt);
             }
@@ -152,4 +154,6 @@ namespace Ephemera.MidiLibLite.Test
             return (ecode, sret);
         }
     }
+
+#endif
 }

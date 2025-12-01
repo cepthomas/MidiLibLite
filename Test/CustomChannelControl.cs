@@ -93,7 +93,7 @@ namespace Ephemera.MidiLibLite.Test
         protected override void OnMouseMove(MouseEventArgs e)
         {
             var (ux, uy) = MouseToUser();
-            NoteEventArgs args = new() { Note = ux, Velocity = uy };
+            //NoteEventArgs args = new() { Note = ux, Velocity = uy };
 
             // Also gen click?
             if (e.Button == MouseButtons.Left)
@@ -104,12 +104,12 @@ namespace Ephemera.MidiLibLite.Test
                     if (_lastNote != -1)
                     {
                         // Turn off last note.
-                        OnNoteSend(new() { Note = _lastNote, Velocity = 0 });
+                        OnSendMidi(new NoteOff(BoundChannel.ChannelNumber, _lastNote));
                     }
 
                     // Start the new note.
                     _lastNote = ux;
-                    OnNoteSend(new() { Note = ux, Velocity = uy });
+                    OnSendMidi(new NoteOn(BoundChannel.ChannelNumber, ux, uy));
                 }
             }
 
@@ -124,7 +124,7 @@ namespace Ephemera.MidiLibLite.Test
         {
             var (ux, uy) = MouseToUser();
             _lastNote = ux;
-            OnNoteSend(new() { Note = ux, Velocity = uy });
+            OnSendMidi(new NoteOn(BoundChannel.ChannelNumber, ux, uy));
 
             base.OnMouseDown(e);
         }
@@ -137,7 +137,7 @@ namespace Ephemera.MidiLibLite.Test
         {
             if (_lastNote != -1)
             {
-                OnNoteSend(new() { Note = _lastNote, Velocity = 0 });
+                OnSendMidi(new NoteOff(BoundChannel.ChannelNumber, _lastNote));
                 _lastNote = -1;
             }
 
@@ -153,7 +153,7 @@ namespace Ephemera.MidiLibLite.Test
             // Turn off last click.
             if (_lastNote != -1)
             {
-                OnNoteSend(new() { Note = _lastNote, Velocity = 0 });
+                OnSendMidi(new NoteOff(BoundChannel.ChannelNumber, _lastNote));
             }
 
             // Reset and tell client.

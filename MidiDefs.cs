@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-//using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 
 
@@ -10,8 +9,7 @@ namespace Ephemera.MidiLibLite
 {
     public class MidiDefs // from all Midi*
     {
-//////////////////////////////////// from MidiGenerator /////////////////////////////////////
-        public static MidiDefs TheDefs { get; set; } = new();
+        public static MidiDefs TheDefs { get; set; } = new(); //TODO1 ??
 
         /// <summary>Midi constant.</summary>
         public const int MIN_MIDI = 0;
@@ -27,13 +25,10 @@ namespace Ephemera.MidiLibLite
 
         ///// <summary>Definitions from midi_defs.lua.</summary>
         //public static Dictionary<int, string> Instruments { get; set; } = [];
-
         ///// <summary>Definitions from midi_defs.lua.</summary>
         //public static Dictionary<int, string> Drums { get; set; } = [];
-
         ///// <summary>Definitions from midi_defs.lua.</summary>
         //public static Dictionary<int, string> Controllers { get; set; } = [];
-
         ///// <summary>Definitions from midi_defs.lua.</summary>
         //public static Dictionary<int, string> DrumKits { get; set; } = [];
 

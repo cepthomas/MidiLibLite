@@ -13,6 +13,20 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLibLite
 {
+    #region Types
+    /// <summary>Channel playing.</summary>
+    public enum PlayState { Normal, Solo, Mute }
+
+    /// <summary>Notify host of UI changes.</summary>
+    public class ChannelChangeEventArgs : EventArgs
+    {
+        public bool PatchChange { get; set; } = false;
+        public bool ChannelNumberChange { get; set; } = false;
+        public bool StateChange { get; set; } = false;
+        public bool PresetFileChange { get; set; } = false;
+    }
+    #endregion
+
     public class ChannelControl : UserControl
     {
         #region Fields
@@ -68,10 +82,10 @@ namespace Ephemera.MidiLibLite
         public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
 
         /// <summary>UI midi send.</summary>
-        public event EventHandler<BaseXXX>? MidiSend;
+        public event EventHandler<BaseEvent>? SendMidi;
 
         /// <summary>Derived class helper.</summary>
-        protected virtual void OnMidiSend(BaseXXX e) { MidiSend?.Invoke(this, e); }
+        protected virtual void OnSendMidi(BaseEvent e) { SendMidi?.Invoke(this, e); }
         #endregion
 
         #region Lifecycle
@@ -210,7 +224,7 @@ namespace Ephemera.MidiLibLite
         {
             // No need to check limits.
             BoundChannel.ControllerValue = (int)(sender as Slider)!.Value;
-            OnMidiSend(new ControllerXXX(BoundChannel.ChannelNumber, BoundChannel.ControllerId, BoundChannel.ControllerValue));
+            OnSendMidi(new Controller(BoundChannel.ChannelNumber, BoundChannel.ControllerId, BoundChannel.ControllerValue));
         }
 
         /// <summary>
@@ -262,9 +276,7 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Misc
-        /// <summary>
-        /// Draw mode checkboxes etc.
-        /// </summary>
+        /// <summary>Draw mode checkboxes etc.</summary>
         void UpdateUi()
         {
             txtChannelInfo.Text = ToString();
@@ -278,10 +290,7 @@ namespace Ephemera.MidiLibLite
             lblMute.BackColor = _state == PlayState.Mute ? SelectedColor : BackColor;
         }
 
-        /// <summary>
-        /// Read me.
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>Read me.</summary>
         public override string ToString()
         {
             return $"{BoundChannel.ChHandle} P{BoundChannel.Patch}";
@@ -293,7 +302,7 @@ namespace Ephemera.MidiLibLite
 
 
 /////////////////////////////////////////////////////////////////////////
-/*  TODO1 from MidiLib - SimpleChannelControl has only editable channel_num, patch pick, volume, ControlColor !!! not used???
+/*  TODO1  SimpleChannelControl from MidiLib - has only editable channel_num, patch pick, volume, ControlColor !!! not used???
     public class SimpleChannelControl : UserControl
     {
         #region Fields

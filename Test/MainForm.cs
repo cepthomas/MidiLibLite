@@ -150,7 +150,7 @@ namespace Ephemera.MidiLibLite.Test
                 // cc.UpdatePresets();
 
                 cc.ChannelChange += Cc_ChannelChange;
-                cc.MidiSend += Cc_MidiSend;
+ //               cc.MidiSend += Cc_MidiSend;
             }
 
             //////////////// from Nebulua ////////////////
@@ -253,7 +253,7 @@ namespace Ephemera.MidiLibLite.Test
         ///// </summary>
         ///// <param name="sender"></param>
         ///// <param name="e"></param>
-        void Cc_MidiSend(object? sender, BaseXXX e)
+        void Cc_MidiSend(object? sender, BaseEvent e)
         {
             var cc = sender as ChannelControl;
             var chan = cc!.BoundChannel!;
@@ -349,7 +349,7 @@ namespace Ephemera.MidiLibLite.Test
         /// Send the event.
         /// </summary>
         /// <param name="evt"></param>
-        void SendEvent(int devid, BaseXXX evt)
+        void SendEvent(int devid, BaseEvent evt)
         {
             var mout = _outputDevices[devid];
             mout?.Send(evt);
@@ -362,7 +362,7 @@ namespace Ephemera.MidiLibLite.Test
 
         #region Script API requirements TODO1
         // Midi input arrived. This is on a system thread. Host => script API.
-        void Midi_ReceiveEvent(object? sender, BaseXXX e)
+        void Midi_ReceiveEvent(object? sender, BaseEvent e)
         {
             var indev = (MidiInputDevice)sender!;
 
@@ -375,7 +375,7 @@ namespace Ephemera.MidiLibLite.Test
             //}
 
             // Determine channel.
-            ChannelHandle chnd = new(_inputDevices.IndexOf(indev), e.Channel, Direction.Input);
+            ChannelHandle chnd = new(_inputDevices.IndexOf(indev), e.Channel, false);
 
             // Do the work.
             //_interop.ReceiveMidiNote(chnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MAX_MIDI);
@@ -417,7 +417,7 @@ namespace Ephemera.MidiLibLite.Test
                 };
 
                 //indev.Channels.Add(channelNumber, ch);
-                chnd = new(_inputDevices.IndexOf(indev), channelNumber, Direction.Output);
+                chnd = new(_inputDevices.IndexOf(indev), channelNumber, false);
                 _inputChannels.Add(chnd, ch);
             }
             catch (AppException ex)
@@ -464,7 +464,7 @@ namespace Ephemera.MidiLibLite.Test
                 };
 
                 //outdev.Channels.Add(channelNumber, ch);
-                chnd = new(_outputDevices.IndexOf(outdev), channelNumber, Direction.Output);
+                chnd = new(_outputDevices.IndexOf(outdev), channelNumber, true);
                 _outputChannels.Add(chnd, ch);
 
                 // Send the patch now.
@@ -507,6 +507,7 @@ namespace Ephemera.MidiLibLite.Test
                 }
                 else
                 {
+//                    indev.LogEnable = btnLogMidi.Checked;
                     indev.CaptureEnable = true;
                     indev.InputReceive += Midi_ReceiveEvent;
                     _inputDevices.Add(indev);
@@ -572,6 +573,15 @@ namespace Ephemera.MidiLibLite.Test
         }
     }
 
+
+
+    ////////////////////////// TODO1 rehome these ////////////////////////////
+
+
+    /// <summary>Application level error.</summary>
+    public class AppException(string message) : Exception(message) { }
+
+
     public class UserSettings : SettingsCore
     {
         ///// <summary>The current settings.</summary>
@@ -601,7 +611,7 @@ namespace Ephemera.MidiLibLite.Test
         public bool Valid { get { return false; } }
         public bool LogEnable { get; set; }
         public void Dispose() { }
-        public void Send(BaseXXX evt) { }
+        public void Send(BaseEvent evt) { }
     }
 
     public class NullInputDevice : IInputDevice
@@ -613,6 +623,6 @@ namespace Ephemera.MidiLibLite.Test
 
         //public void Send(BaseXXX evt) { }
         public bool CaptureEnable { get; set; }
-        public event EventHandler<BaseXXX>? InputReceive;
+        public event EventHandler<BaseEvent>? InputReceive;
     }
 }

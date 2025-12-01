@@ -8,31 +8,45 @@ using System.IO;
 using System.ComponentModel;
 using System.Drawing.Design;
 using System.Text.Json.Serialization;
-//using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 
 
 namespace Ephemera.MidiLibLite
 {
-//////////////////////////////////// from Nebulua /////////////////////////////////////
-    // /// <summary>One channel in a midi device - in or out.</summary>
-    // public class MidiChannel
-    // {
-    //     /// <summary>Channel name as defined by the script.</summary>
-    //     public string ChannelName { get; set; } = "ZZZ";
+    /// <summary>References one channel. Supports translation to/from script unique int handle.</summary>
+    /// <param name="DeviceId">Index in internal list</param>
+    /// <param name="ChannelNumber">Midi channel 1-based</param>
+    /// <param name="Output">T or F</param>
+    public record struct ChannelHandle(int DeviceId, int ChannelNumber, bool Output)
+    {
+        const int OUTPUT_FLAG = 0x8000;
 
-    //     /// <summary>True if channel is active.</summary>
-    //     public bool Enable { get; set; } = true;
+        /// <summary>Create from int handle.</summary>
+        /// <param name="handle"></param>
+        public ChannelHandle(int handle) : this(-1, -1, false)
+        {
+            Output = (handle & OUTPUT_FLAG) > 0;// ? Direction.Output : Direction.Input;
+            DeviceId = ((handle & ~OUTPUT_FLAG) >> 8) & 0xFF;
+            ChannelNumber = (handle & ~OUTPUT_FLAG) & 0xFF;
+        }
 
-    //     /// <summary>Current patch number. Only used for outputs.</summary>
-    //     public int Patch { get; set; } = -1;
-    // }
+        /// <summary>Operator to convert to int handle.</summary>
+        /// <param name="ch"></param>
+        public static implicit operator int(ChannelHandle ch)
+        {
+            return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Output ? OUTPUT_FLAG : OUTPUT_FLAG);
+        }
+
+        /// <summary>See me.</summary>
+        public override readonly string ToString()
+        {
+            return $"{DeviceId}:{ChannelNumber}";
+        }
+    }
 
 
-    
-//////////////////////////////////// from MidiGenerator /////////////////////////////////////
     /// <summary>Describes one midi output channel. Some properties are optional.</summary>
-    [Serializable]
+    [Serializable] // TODO1 host should handle persistence?!
     public class OutputChannel
     {
         #region Fields
