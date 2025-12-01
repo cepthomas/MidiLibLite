@@ -30,7 +30,7 @@ namespace Ephemera.MidiLibLite
         public bool Valid => _midiIn is not null;
 
 /// <summary>Info about device channels. Key is channel number, 1-based.</summary>
-// public Dictionary<int, Channel> Channels = []; //TODO1
+// public Dictionary<int, Channel> Channels = []; //TODOX
         #endregion
 
         #region Events
@@ -147,7 +147,7 @@ namespace Ephemera.MidiLibLite
         public bool LogEnable { get; set; }
 
 /// <summary>Info about device channels. Key is channel number, 1-based.</summary>
-//        public Dictionary<int, Channel> Channels = []; //TODO1
+//        public Dictionary<int, Channel> Channels = []; //TODOX
         #endregion
 
         #region Lifecycle

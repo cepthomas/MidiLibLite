@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace Ephemera.MidiLibLite
 {
     #region Types
     /// <summary>Channel playing.</summary>
-    public enum PlayState { Normal, Solo, Mute }
+    public enum ChannelState { Normal, Solo, Mute }
 
     /// <summary>Notify host of UI changes.</summary>
     public class ChannelChangeEventArgs : EventArgs
@@ -39,15 +40,16 @@ namespace Ephemera.MidiLibLite
         readonly Slider sldControllerValue;
 
         // TODO1 option ===>
-        PlayState _state = PlayState.Normal;
+        ChannelState _state = ChannelState.Normal;
         readonly Label lblSolo;
         readonly Label lblMute;
         #endregion
 
         #region Properties
         /// <summary>My channel.</summary>
+        [Required]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public OutputChannel BoundChannel { get; set; } = new();
+        public OutputChannel BoundChannel { get; set; }// = new();
 
         /// <summary>Cosmetics.</summary>
         public Color DrawColor { get; set; } = Color.Red;
@@ -63,7 +65,7 @@ namespace Ephemera.MidiLibLite
         }
 
         /// <summary>For muting/soloing.</summary>
-        public PlayState State
+        public ChannelState State
         {
             get { return _state; }
             set { _state = value; UpdateUi(); }
@@ -258,11 +260,11 @@ namespace Ephemera.MidiLibLite
             // Figure out state.
             if (sender == lblSolo)
             {
-                State = lblSolo.BackColor == SelectedColor ? PlayState.Normal : PlayState.Solo;
+                State = lblSolo.BackColor == SelectedColor ? ChannelState.Normal : ChannelState.Solo;
             }
             else if (sender == lblMute)
             {
-                State = lblMute.BackColor == SelectedColor ? PlayState.Normal : PlayState.Mute;
+                State = lblMute.BackColor == SelectedColor ? ChannelState.Normal : ChannelState.Mute;
             }
 
             // Notify client.
@@ -286,8 +288,8 @@ namespace Ephemera.MidiLibLite
             sb.AppendLine($"{BoundChannel.GetPatchName(BoundChannel.Patch)} {BoundChannel.Patch}");
             toolTip.SetToolTip(txtChannelInfo, sb.ToString());
 
-            lblSolo.BackColor = _state == PlayState.Solo ? SelectedColor :  BackColor;
-            lblMute.BackColor = _state == PlayState.Mute ? SelectedColor : BackColor;
+            lblSolo.BackColor = _state == ChannelState.Solo ? SelectedColor :  BackColor;
+            lblMute.BackColor = _state == ChannelState.Mute ? SelectedColor : BackColor;
         }
 
         /// <summary>Read me.</summary>

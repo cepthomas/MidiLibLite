@@ -46,17 +46,12 @@ namespace Ephemera.MidiLibLite
 
 
     /// <summary>Describes one midi output channel. Some properties are optional.</summary>
-    [Serializable] // TODO1 host should handle persistence?!
+    [Serializable] // TODOX host should handle persistence?!
     public class OutputChannel
     {
-        #region Fields
-        /// <summary>All possible instrument/patch.</summary>
-        Dictionary<int, string> _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
-        #endregion
-
         #region Persisted Editable Properties
         /// <summary>Channel name as defined by the script.</summary>
-        public string ChannelName { get; set; } = "TODO1";
+        public string ChannelName { get; set; } = "TODOX";
 
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
@@ -133,7 +128,21 @@ namespace Ephemera.MidiLibLite
         [Browsable(false)]
         [JsonIgnore]
         public Dictionary<int, string> Instruments { get { return _instruments; } }
+        Dictionary<int, string> _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
         #endregion
+
+        /// <summary>
+        /// Constructor with required args.
+        /// </summary>
+        /// <param name="channelNumber"></param>
+        /// <param name="channelName"></param>
+        /// <param name="chnd"></param>
+        public OutputChannel(int deviceId, int channelNumber, string channelName)
+        {
+            ChannelNumber = channelNumber;
+            ChannelName = channelName;
+            ChHandle = new(deviceId, channelNumber, true);            
+        }
 
         #region Misc functions
         /// <summary>Use default or custom presets.</summary>
@@ -185,7 +194,7 @@ namespace Ephemera.MidiLibLite
         int _channelNumber = 1;
 
         /// <summary>Channel name as defined by the script.</summary>
-        public string ChannelName { get; set; } = "TODO1";
+        public string ChannelName { get; set; } = "TODOX";
         #endregion
 
         #region Persisted Non-editable Properties
@@ -194,6 +203,24 @@ namespace Ephemera.MidiLibLite
         #region Non-persisted Properties
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
+
+        /// <summary>Handle for use by scripts.</summary>
+        [Browsable(false)]
+        [JsonIgnore]
+        public ChannelHandle ChHandle { get; init; } // from Nebulua
         #endregion
+
+        /// <summary>
+        /// Constructor with required args.
+        /// </summary>
+        /// <param name="channelNumber"></param>
+        /// <param name="channelName"></param>
+        /// <param name="chnd"></param>
+        public InputChannel(int deviceId, int channelNumber, string channelName)
+        {
+            ChannelNumber = channelNumber;
+            ChannelName = channelName;
+            ChHandle = new(deviceId, channelNumber, false);
+        }
     }
 }
