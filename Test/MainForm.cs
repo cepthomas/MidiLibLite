@@ -63,7 +63,11 @@ namespace Ephemera.MidiLibLite.Test
         #endregion
 
         /// <summary>Cosmetics.</summary>
-        readonly Color _controlColor = Color.Aquamarine;
+        readonly Color _drawColor = Color.Aquamarine;
+
+        /// <summary>Cosmetics.</summary>
+        readonly Color _selectedColor = Color.Yellow;
+
         //public class MidiSettings
         //{
         //    public Color ControlColor { get; set; } = Color.Red; // from MidiGen
@@ -97,7 +101,7 @@ namespace Ephemera.MidiLibLite.Test
             txtViewer.MatchText.Add("WRN", Color.Plum);
 
             // Master volume.
-            sldVolume.DrawColor = _controlColor;
+            sldVolume.DrawColor = _drawColor;
             sldVolume.Minimum = 0.0;
             sldVolume.Maximum = Defs.MAX_VOLUME;
             sldVolume.Resolution = Defs.MAX_VOLUME / 50;
@@ -160,33 +164,40 @@ namespace Ephemera.MidiLibLite.Test
         #endregion
 
         #region Controls
-        /// <summary>
-        /// Create controls.
-        /// </summary>
+
+
         void CreateControls()
         {
             DestroyControls();
 
             foreach (var chout in _outputChannels)
             {
-                ChannelControl cc = new();
-                cc.DrawColor = Color.Red;
-                cc.SelectedColor = Color.Moccasin;
-                cc.Volume = 0.56;
-                cc.BoundChannel = chout;
-                
-                //cc.UpdatePresets();
-
-                cc.ChannelChange += Cc_ChannelChange;
-                cc.SendMidi += Cc_MidiSend;
-
-                Controls.Add(cc);
-
-
+                var cc = CreateControl(chout);
             }
+        }
 
-            //////////////// from Nebulua ////////////////
-            // Create channels and controls. TODO1 pick over
+
+        /// <summary>
+        /// Create control.
+        /// </summary>
+        ChannelControl CreateControl(OutputChannel channel)
+        {
+            ChannelControl cc = new(channel);
+            cc.DrawColor = _drawColor;
+            cc.SelectedColor = _selectedColor;
+            cc.Volume = 0.56;
+
+            //cc.UpdatePresets();
+
+            cc.ChannelChange += Cc_ChannelChange;
+            cc.SendMidi += Cc_MidiSend;
+
+            Controls.Add(cc);
+
+            return cc;
+
+            //////////////// from Nebulua TODO1 pick over ////////////////
+            // Create channels and controls.
             //List<ChannelHandle> valchs = [];
             //for (int devNum = 0; devNum < _outputDevices.Count; devNum++)
             //{
@@ -365,7 +376,6 @@ namespace Ephemera.MidiLibLite.Test
                 //SendPatch();
             }
 
-
             if (e.PresetFileChange)
             {
                 // Update channel presets.
@@ -381,10 +391,9 @@ namespace Ephemera.MidiLibLite.Test
         {
             var mout = _outputDevices[devid];
             mout?.Send(evt);
-            // mout?.Send(evt.GetAsShortMessage());
         }
 
-        // Midi input arrived. This is on a system thread. Host => script API.
+        // Midi input arrived from device. This is on a system thread.
         void Midi_ReceiveEvent(object? sender, BaseEvent e)
         {
             var indev = (MidiInputDevice)sender!;
@@ -407,12 +416,11 @@ namespace Ephemera.MidiLibLite.Test
         }
 
 
-        #region Channels
+        #region Script => Host API
 
-        InputChannel CreateInputChannel(string deviceName, int channelNumber, string channelName) // Script => Host API
+        // Script => Host API
+        InputChannel CreateInputChannel(string deviceName, int channelNumber, string channelName)
         {
-     //       ChannelHandle chnd;
-
             // Check args.
             if (string.IsNullOrEmpty(deviceName))
             {
@@ -427,8 +435,7 @@ namespace Ephemera.MidiLibLite.Test
             try
             {
                 // Locate the device.
-                var indev = _inputDevices.First(o => o.DeviceName == deviceName);
-                // var indev = _inputDevices.FirstOrDefault(o => o.DeviceName == deviceName);
+                var indev = _inputDevices.Where(o => o.DeviceName == deviceName);
                 if (indev is null)
                 {
                     throw new AppException("throws if invalid");
@@ -437,28 +444,21 @@ namespace Ephemera.MidiLibLite.Test
                 // Add the channel.
                 InputChannel ch = new(_inputDevices.IndexOf(indev), channelNumber, channelName)
                 {
-                    //ChannelNumber = channelNumber,
-                    //ChannelName = channelName,
                     Enable = true,
                 };
 
-                //indev.Channels.Add(channelNumber, ch);
-                //chnd = new(_inputDevices.IndexOf(indev), channelNumber, false);
-                //_inputChannels.Add(chnd, ch);
                 _inputChannels.Add(ch);
                 return ch;
             }
             catch (AppException ex)
             {
-                // was ProcessException(ex);
-                throw new AppException("");
+                throw new AppException(ex.Message);
             }
         }
 
-        OutputChannel CreateOutputChannel(string deviceName, int channelNumber, string channelName, int patch) // Script => Host API
+        // Script => Host API
+        OutputChannel CreateOutputChannel(string deviceName, int channelNumber, string channelName, int patch)
         {
-          //  ChannelHandle chnd;
-
             // Check args.
             if (string.IsNullOrEmpty(deviceName))
             {
@@ -473,7 +473,7 @@ namespace Ephemera.MidiLibLite.Test
             try
             {
                 // Locate the device.
-                var outdev = _outputDevices.First(o => o.DeviceName == deviceName);
+                var outdev = _outputDevices.Where(o => o.DeviceName == deviceName);
                 // var outdev = _outputDevices.FirstOrDefault(o => o.DeviceName == deviceName);
                 if (outdev is null)
                 {
@@ -483,15 +483,10 @@ namespace Ephemera.MidiLibLite.Test
                 // Add the channel.
                 OutputChannel ch = new(_outputDevices.IndexOf(outdev), channelNumber, channelName)
                 {
-                    //ChannelNumber = channelNumber,
-                    //ChannelName = channelName,
                     Enable = true,
                     Patch = patch
                 };
 
-                //outdev.Channels.Add(channelNumber, ch);
-                //chnd = new(_outputDevices.IndexOf(outdev), channelNumber, true);
-                //_outputChannels.Add(chnd, ch);
                 _outputChannels.Add( ch);
 
                 // Send the patch now.
@@ -503,15 +498,14 @@ namespace Ephemera.MidiLibLite.Test
             }
             catch (AppException ex)
             {
-                // was ProcessException(ex);
-                throw new AppException("");
+                throw new AppException(ex.Message);
             }
 
             //return chnd;
         }
         #endregion
 
-        #region Devices
+        #region Devices => MLL?
         /// <summary>
         /// Create all I/O devices from user settings.
         /// </summary>

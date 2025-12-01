@@ -70,7 +70,7 @@ namespace Ephemera.MidiLibLite.Test
             // sldVolume
             // 
             sldVolume.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            sldVolume.DrawColor = System.Drawing.Color.White;
+            sldVolume.DrawColor = System.Drawing.Color.Red;
             sldVolume.Label = "";
             sldVolume.Location = new System.Drawing.Point(8, 38);
             sldVolume.Maximum = 10D;

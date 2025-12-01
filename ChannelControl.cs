@@ -49,13 +49,13 @@ namespace Ephemera.MidiLibLite
         /// <summary>My channel.</summary>
         [Required]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public OutputChannel BoundChannel { get; set; }// = new();
+        public OutputChannel BoundChannel { get; init; }
 
-        /// <summary>Cosmetics.</summary>
+        /// <summary>Drawing the active elements of a control.</summary>
         public Color DrawColor { get; set; } = Color.Red;
 
-        /// <summary>Cosmetics.</summary>
-        public Color SelectedColor { get; set; } = Color.Moccasin;
+        /// <summary>Drawing the control when selected.</summary>
+        public Color SelectedColor { get; set; } = Color.Green;
 
         /// <summary>The graphics draw area.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -94,10 +94,14 @@ namespace Ephemera.MidiLibLite
         /// <summary>
         /// Constructor. Create controls.
         /// </summary>
-        public ChannelControl()
+        public ChannelControl(OutputChannel channel)
         {
+            SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
+
             // InitializeComponent();
             SuspendLayout();
+
+            BoundChannel = channel;
 
             sldVolume = new()
             {

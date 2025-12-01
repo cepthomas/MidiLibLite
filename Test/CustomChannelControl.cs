@@ -13,12 +13,6 @@ namespace Ephemera.MidiLibLite.Test
     public class CustomChannelControl : ChannelControl
     {
         #region Fields
-        /// <summary>Background image data.</summary>
-        PixelBitmap? _bmp;
-
-        /// <summary>The pen.</summary>
-        readonly Pen _pen = new(Color.Red, 2);
-
         int _lastNote = 0;
         #endregion
 
@@ -26,33 +20,10 @@ namespace Ephemera.MidiLibLite.Test
         /// <summary>
         /// Normal constructor.
         /// </summary>
-        public CustomChannelControl()
+        public CustomChannelControl(OutputChannel channel) : base(channel)
         {
-            SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
-            Name = nameof(CustomChannelControl);
-        }
-
-        /// <summary>
-        /// Init after properties set.
-        /// </summary>
-        /// <param name="e"></param>
-        protected override void OnLoad(EventArgs e)
-        {
-            //DrawBitmap();
-
-            base.OnLoad(e);
-        }
-
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            _bmp?.Dispose();
-            _pen?.Dispose();
-
-            base.Dispose(disposing);
+            //SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
+            //Name = nameof(CustomChannelControl);
         }
         #endregion
 
@@ -66,25 +37,18 @@ namespace Ephemera.MidiLibLite.Test
             Graphics g = pe.Graphics;
             var r = DrawRect;
 
-            // Draw background.
-            for (var y = r.Top; y < r.Bottom; y++)
-            {
-                for (var x = r.Left; x < r.Right; x++)
-                {
-                    _bmp!.SetPixel(x, y, Color.FromArgb(255, x * 256 / r.Width, y * 256 / r.Height, 150));
-                }
-            }
+            g.Clear(Color.LightGreen);
 
             // Border.
-            g.DrawLine(_pen, r.Left, r.Top, r.Right, r.Top);
-            g.DrawLine(_pen, r.Left, r.Bottom, r.Right, r.Bottom);
-            g.DrawLine(_pen, r.Left, r.Top, r.Left, r.Bottom);
-            g.DrawLine(_pen, r.Right, r.Top, r.Right, r.Bottom);
+            g.DrawLine(Pens.Red, r.Left, r.Top, r.Right, r.Top);
+            g.DrawLine(Pens.Red, r.Left, r.Bottom, r.Right, r.Bottom);
+            g.DrawLine(Pens.Red, r.Left, r.Top, r.Left, r.Bottom);
+            g.DrawLine(Pens.Red, r.Right, r.Top, r.Right, r.Bottom);
 
             // Grid.
             for (int x = r.Left; x < r.Right; x += 10)
             {
-                g.DrawLine(_pen, x, r.Top, x, r.Bottom);
+                g.DrawLine(Pens.Red, x, r.Top, x, r.Bottom);
             }
 
             base.OnPaint(pe);
