@@ -25,7 +25,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="handle"></param>
         public ChannelHandle(int handle) : this(-1, -1, false)
         {
-            Output = (handle & OUTPUT_FLAG) > 0;// ? Direction.Output : Direction.Input;
+            Output = (handle & OUTPUT_FLAG) > 0;
             DeviceId = ((handle & ~OUTPUT_FLAG) >> 8) & 0xFF;
             ChannelNumber = (handle & ~OUTPUT_FLAG) & 0xFF;
         }
@@ -40,7 +40,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>See me.</summary>
         public override readonly string ToString()
         {
-            return $"{DeviceId}:{ChannelNumber}";
+            return $"{(Output ? "OUT" : "IN")}  {DeviceId}:{ChannelNumber}";
         }
     }
 
@@ -52,9 +52,6 @@ namespace Ephemera.MidiLibLite
         #region Persisted Editable Properties
         /// <summary>Channel name - optional.</summary>
         public string ChannelName { get; set; } = "";
-
-        /// <summary>True if channel is active.</summary>
-        public bool Enable { get; set; } = true;
 
         /// <summary>Actual 1-based midi channel number.</summary>
         [Browsable(true)]
@@ -128,6 +125,11 @@ namespace Ephemera.MidiLibLite
         [Browsable(false)]
         [JsonIgnore]
         public ChannelHandle Handle { get; init; } // from Nebulua
+
+        [Browsable(false)]
+        [JsonIgnore]
+        /// <summary>True if channel is active.</summary>
+        public bool Enable { get; set; } = true;
 
         /// <summary>Convenience property.</summary>
         [Browsable(false)]
@@ -213,6 +215,8 @@ namespace Ephemera.MidiLibLite
         [JsonIgnore]
         public IInputDevice Device { get; init; }
 
+        [Browsable(false)]
+        [JsonIgnore]
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
 

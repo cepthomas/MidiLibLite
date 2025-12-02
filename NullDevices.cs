@@ -14,7 +14,7 @@ namespace Ephemera.MidiLibLite
         public bool Valid { get { return false; } }
         public bool CaptureEnable { get; set; }
 
-        public int Id => throw new NotImplementedException();
+        public int Id { get; }
 
         public event EventHandler<BaseEvent>? InputReceive;
         public void Dispose() { }
@@ -25,7 +25,7 @@ namespace Ephemera.MidiLibLite
         public string DeviceName => nameof(NullOutputDevice);
         public bool Valid { get { return false; } }
 
-        public int Id => throw new NotImplementedException();
+        public int Id { get; }
 
         public void Dispose() { }
         public void Send(BaseEvent evt) { }

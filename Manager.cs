@@ -111,7 +111,7 @@ namespace Ephemera.MidiLibLite
         /// Create all I/O devices from user settings.
         /// </summary>
         /// <returns>Success</returns>
-        public bool CreateDevices() // TODOX also OSC, null, etc => IInputDevice...
+        public bool CreateDevices() // TODO1 also OSC, null, etc => IInputDevice...
         {
             bool ok = true;
 
@@ -139,7 +139,7 @@ namespace Ephemera.MidiLibLite
             foreach (var devname in MidiOutputDevice.AvailableDevices())
             {
                 // Try midi.
-                var outdev = new MidiOutputDevice(devname);//TODOX support retry
+                var outdev = new MidiOutputDevice(devname);//TODO1 support retry
                 if (!outdev.Valid)
                 {
                     throw new MidiLibException($"Something wrong with your output device:{devname}");

@@ -47,10 +47,9 @@ namespace Ephemera.MidiLibLite
 
         #region Properties
         /// <summary>My channel.</summary>
-        [Required]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public OutputChannel BoundChannel { get; init; }
-
+        public OutputChannel BoundChannel { get; init; } = new(new NullOutputDevice(), 1, "Fake");
+        
         /// <summary>Drawing the active elements of a control.</summary>
         public Color DrawColor { get; set; } = Color.Red;
 
@@ -91,17 +90,19 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Lifecycle
+
+
         /// <summary>
         /// Constructor. Create controls.
         /// </summary>
         public ChannelControl(OutputChannel channel)
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
+            BoundChannel = channel;
 
             // InitializeComponent();
             SuspendLayout();
 
-            BoundChannel = channel;
 
             sldVolume = new()
             {

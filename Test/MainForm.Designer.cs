@@ -32,7 +32,7 @@ namespace Ephemera.MidiLibLite.Test
             toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, btnKillMidi });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new System.Drawing.Size(1062, 27);
+            toolStrip1.Size = new System.Drawing.Size(1062, 26);
             toolStrip1.TabIndex = 0;
             toolStrip1.Text = "toolStrip1";
             // 
@@ -42,7 +42,7 @@ namespace Ephemera.MidiLibLite.Test
             btnLogMidi.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             btnLogMidi.ImageTransparentColor = System.Drawing.Color.Magenta;
             btnLogMidi.Name = "btnLogMidi";
-            btnLogMidi.Size = new System.Drawing.Size(62, 24);
+            btnLogMidi.Size = new System.Drawing.Size(62, 23);
             btnLogMidi.Text = "log midi";
             btnLogMidi.ToolTipText = "Enable logging midi events";
             // 
@@ -51,7 +51,7 @@ namespace Ephemera.MidiLibLite.Test
             btnKillMidi.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             btnKillMidi.ImageTransparentColor = System.Drawing.Color.Magenta;
             btnKillMidi.Name = "btnKillMidi";
-            btnKillMidi.Size = new System.Drawing.Size(29, 24);
+            btnKillMidi.Size = new System.Drawing.Size(29, 23);
             btnKillMidi.Text = "kill";
             btnKillMidi.ToolTipText = "Kill all midi channels";
             // 

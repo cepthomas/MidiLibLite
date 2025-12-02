@@ -192,6 +192,7 @@ namespace Ephemera.MidiLibLite
                 NoteOn onevt => new NoteOnEvent(0, onevt.Channel, onevt.Note, onevt.Velocity, 0),
                 NoteOff onevt => new NoteEvent(0, onevt.Channel, MidiCommandCode.NoteOff, onevt.Note, 0),
                 Controller ctlevt => new ControlChangeEvent(0, ctlevt.Channel, (MidiController)ctlevt.ControllerId, ctlevt.Value),
+                Patch pevt => new PatchChangeEvent(0, pevt.Channel, pevt.Value),
                 _ => throw new MidiLibException($"Invalid event: {evt}")
             };
 

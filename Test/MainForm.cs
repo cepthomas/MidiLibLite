@@ -18,9 +18,6 @@ using Ephemera.MidiLibLite;
 
 namespace Ephemera.MidiLibLite.Test
 {
-    /// <summary>Application level error.</summary>
-    public class AppException(string message) : Exception(message) { }
-
     public partial class MainForm : Form
     {
         #region Fields - app
@@ -81,7 +78,8 @@ namespace Ephemera.MidiLibLite.Test
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e) // -> or from script
         {
-            PretendScriptApi();
+            new ChannelControl(new OutputChannel(new NullOutputDevice(), 1, "nada"));
+            DemoScriptApp();
 
             base.OnLoad(e);
         }
@@ -389,17 +387,27 @@ namespace Ephemera.MidiLibLite.Test
         #endregion
 
 
-        #region Misc
-
+        #region Misc internals
         /// <summary>
         /// Tell me something good.
         /// </summary>
         /// <param name="s"></param>
-        void Tell(string s)
+        void Info(string s)
         {
             txtViewer.AppendLine($"{s}");
         }
+
+        void Warn(string s)
+        {
+            txtViewer.AppendLine($"WWRN {s}");
+        }
+
+        void Error(string s)
+        {
+            txtViewer.AppendLine($"ERR {s}");
+        }
         #endregion
+
 
         void KillAll() //TODO1
         {
