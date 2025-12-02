@@ -11,7 +11,7 @@ using Ephemera.NBagOfTricks;
 namespace Ephemera.MidiLib
 {
     /// <summary>Readable versions of midi numbers.</summary>
-    public class MidiDefs
+    public class MidiDefsXXX
     {
         #region Constants - midi spec
         /// <summary>Midi caps.</summary>
@@ -44,7 +44,7 @@ namespace Ephemera.MidiLib
         /// <summary>
         /// Initialize some collections.
         /// </summary>
-        static MidiDefs()
+        static MidiDefsXXX()
         {
             _instrumentNumbers = _instruments.ToDictionary(x => x, x => _instruments.IndexOf(x));
             _drumKitNumbers = _drumKits.ToDictionary(x => x.Value, x => x.Key);

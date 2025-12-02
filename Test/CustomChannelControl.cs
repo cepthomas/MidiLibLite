@@ -20,8 +20,9 @@ namespace Ephemera.MidiLibLite.Test
         /// <summary>
         /// Normal constructor.
         /// </summary>
-        public CustomChannelControl(OutputChannel channel) : base(channel)
+        public CustomChannelControl(OutputChannel channel) //: base(channel)
         {
+            BoundChannel = channel;
             //SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
             //Name = nameof(CustomChannelControl);
         }

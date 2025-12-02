@@ -170,7 +170,7 @@ namespace Ephemera.MidiLibLite
             {
                 lock (_lock)
                 {
-                    NebOsc.Message msg = null;
+                    NebOsc.Message msg;
 
                     switch (mevt)
                     {

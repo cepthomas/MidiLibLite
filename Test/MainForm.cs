@@ -78,7 +78,7 @@ namespace Ephemera.MidiLibLite.Test
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e) // -> or from script
         {
-            new ChannelControl(new OutputChannel(new NullOutputDevice(), 1, "nada"));
+            //new ChannelControl(new OutputChannel(new NullOutputDevice(), 1, "nada"));
             DemoScriptApp();
 
             base.OnLoad(e);
@@ -119,7 +119,12 @@ namespace Ephemera.MidiLibLite.Test
             // var ch3 = mgr.CreateOutputChannel("Microsoft GS Wavetable Synth", 10, "drums", 32); // kit.Jazz);
 
             ///// 3 - create a channel control for each output channel and bind object
-            CreateControls();
+            //CreateControls();
+            DestroyControls();
+            //foreach (var chout in _outputChannels) TODO1
+            //{
+            //    var cc = CreateControl(chout);
+            //}
 
             ///// 4 - do work
             // api.set_volume(hnd_keys, 0.7)
@@ -148,7 +153,6 @@ namespace Ephemera.MidiLibLite.Test
             // script: local hnd_drums = api.open_midi_output("Microsoft GS Wavetable Synth", 10, "drums", kit.Jazz)
             var ch3 = mgr.CreateOutputChannel("Microsoft GS Wavetable Synth", 10, "drums", 32); // kit.Jazz);
 
-
             // public InputChannel CreateInputChannel(string deviceName, int channelNumber, string channelName)
             // {
             //     // Check args.
@@ -156,13 +160,10 @@ namespace Ephemera.MidiLibLite.Test
             //     {
             //         throw new ArgumentException($"Invalid input midi device {deviceName ?? "null"}");
             //     }
-
             //     if (channelNumber < 1 || channelNumber > MidiDefs.NUM_CHANNELS)
             //     {
             //         throw new ArgumentException($"Invalid input midi channel {channelNumber}");
             //     }
-
-
             // public OutputChannel CreateOutputChannel(string deviceName, int channelNumber, string channelName, int patch)
             // {
             //     // Check args.
@@ -170,18 +171,19 @@ namespace Ephemera.MidiLibLite.Test
             //     {
             //         throw new ArgumentException($"Invalid output midi device {deviceName ?? "null"}");
             //     }
-
             //     if (channelNumber < 1 || channelNumber > MidiDefs.NUM_CHANNELS)
             //     {
             //         throw new ArgumentException($"Invalid output midi channel {channelNumber}");
             //     }
 
 
-
-
-
             ///// 3 - create a channel control for each output channel and bind object
-            CreateControls();
+            //CreateControls();
+            DestroyControls();
+            //foreach (var chout in _outputChannels) TODO1
+            //{
+            //    var cc = CreateControl(chout);
+            //}
 
             ///// 4 - do work
             // api.set_volume(hnd_keys, 0.7)
@@ -246,7 +248,7 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Cc_ChannelChange(object? sender, ChannelChangeEventArgs e) //TODO1 all these
+        void Cc_ChannelChange(object? sender, ChannelControl.ChannelChangeEventArgs e) //TODO1 all these
         {
             ChannelControl cc = (ChannelControl)sender!;
             OutputChannel channel = cc.BoundChannel;
@@ -254,11 +256,11 @@ namespace Ephemera.MidiLibLite.Test
             if (e.StateChange)
             {
                 // Update all channel enables.
-                bool anySolo = _channelControls.Where(c => c.State == ChannelState.Solo).Any();
+                bool anySolo = _channelControls.Where(c => c.State == ChannelControl.ChannelState.Solo).Any();
 
                 foreach (var cit in _channelControls)
                 {
-                    bool enable = anySolo ? cit.State == ChannelState.Solo : cit.State != ChannelState.Mute;
+                    bool enable = anySolo ? cit.State == ChannelControl.ChannelState.Solo : cit.State != ChannelControl.ChannelState.Mute;
 
                     var ch = cit.BoundChannel.Handle;
 
@@ -284,10 +286,10 @@ namespace Ephemera.MidiLibLite.Test
 
                 switch (cc.State)
                 {
-                    case ChannelState.Normal:
+                    case ChannelControl.ChannelState.Normal:
                         break;
 
-                    case ChannelState.Solo:
+                    case ChannelControl.ChannelState.Solo:
                         // Mute any other non-solo channels.
                         //_channels.Values.ForEach(ch =>
                         //{
@@ -298,7 +300,7 @@ namespace Ephemera.MidiLibLite.Test
                         //});
                         break;
 
-                    case ChannelState.Mute:
+                    case ChannelControl.ChannelState.Mute:
                         //channel.Kill();
                         break;
                 }
@@ -333,12 +335,6 @@ namespace Ephemera.MidiLibLite.Test
 
         void CreateControls()
         {
-            DestroyControls();
-
-//foreach (var chout in _outputChannels) TODOX
-//{
-//    var cc = CreateControl(chout);
-//}
 
         }
 
@@ -348,12 +344,15 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         ChannelControl CreateControl(OutputChannel channel)
         {
-            ChannelControl cc = new(channel)
+            ChannelControl cc = new()
             {
+                BoundChannel = channel,
                 DrawColor = _drawColor,
                 SelectedColor = _selectedColor,
                 Volume = 0.56
             };
+
+            
 
             //    // Adjust positioning for next iteration.
             //    x += control.Width + 5;

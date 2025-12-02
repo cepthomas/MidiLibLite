@@ -10,7 +10,7 @@ using System.Diagnostics;
 namespace Ephemera.NBagOfTricks
 {
     /// <summary>Definitions for use inside scripts. For doc see MusicDefinitions.md.</summary>
-    public static class MusicDefinitions
+    public static class MusicDefinitionsXXX
     {
         #region Fields
         /// <summary>The chord/scale note definitions. Key is chord/scale name, value is list of constituent notes.</summary>
@@ -23,7 +23,7 @@ namespace Ephemera.NBagOfTricks
         /// <summary>
         /// Load chord and scale definitions.
         /// </summary>
-        static MusicDefinitions()
+        static MusicDefinitionsXXX()
         {
             _chordsScales.Clear();
 

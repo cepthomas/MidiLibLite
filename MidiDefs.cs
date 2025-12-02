@@ -9,7 +9,7 @@ namespace Ephemera.MidiLibLite
 {
     public class MidiDefs // from all Midi*
     {
-        public static MidiDefs TheDefs { get; set; } = new(); //TODOX ??
+        public static MidiDefs TheDefs { get; set; } = new(); //TODO1 ??
 
         /// <summary>Midi constant.</summary>
         public const int MIN_MIDI = 0;

@@ -46,7 +46,7 @@ namespace Ephemera.MidiLibLite
 
 
     /// <summary>Describes one midi output channel. Some properties are optional.</summary>
-    [Serializable] // TODOX host should handle persistence?!
+    [Serializable] // TODO1 host should handle persistence?!
     public class OutputChannel
     {
         #region Persisted Editable Properties
@@ -126,9 +126,9 @@ namespace Ephemera.MidiLibLite
         [JsonIgnore]
         public ChannelHandle Handle { get; init; } // from Nebulua
 
+        /// <summary>True if channel is active.</summary>
         [Browsable(false)]
         [JsonIgnore]
-        /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
 
         /// <summary>Convenience property.</summary>
@@ -141,11 +141,10 @@ namespace Ephemera.MidiLibLite
         /// <summary>
         /// Constructor with required args.
         /// </summary>
+        /// <param name="device"></param>
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
-        /// <param name="chnd"></param>
         public OutputChannel(IOutputDevice device, int channelNumber, string channelName)
-        //public OutputChannel(int deviceId, int channelNumber, string channelName)
         {
             Device = device;
             ChannelNumber = channelNumber;
@@ -215,25 +214,24 @@ namespace Ephemera.MidiLibLite
         [JsonIgnore]
         public IInputDevice Device { get; init; }
 
+        /// <summary>True if channel is active.</summary>
         [Browsable(false)]
         [JsonIgnore]
-        /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
 
         /// <summary>Handle for use by scripts.</summary>
         [Browsable(false)]
         [JsonIgnore]
-        public ChannelHandle Handle { get; init; } // from Nebulua
+        public ChannelHandle Handle { get; init; }
         #endregion
 
         /// <summary>
         /// Constructor with required args.
         /// </summary>
+        /// <param name="device"></param>
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
-        /// <param name="chnd"></param>
         public InputChannel(IInputDevice device, int channelNumber, string channelName)
-        // public InputChannel(int deviceId, int channelNumber, string channelName)
         {
             Device = device;
             ChannelNumber = channelNumber;
