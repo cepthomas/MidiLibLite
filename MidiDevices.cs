@@ -23,17 +23,14 @@ namespace Ephemera.MidiLibLite
         /// <inheritdoc />
         public string DeviceName { get; }
 
-        /// <summary>Internal id.</summary>
-        int Id { get; }
+        /// <inheritdoc />
+        public int Id { get; }
 
         /// <inheritdoc />
         public bool CaptureEnable { get; set; }
 
         /// <inheritdoc />
-        public bool Valid => _midiIn is not null;
-
-/// <summary>Info about device channels. Key is channel number, 1-based.</summary>
-// public Dictionary<int, Channel> Channels = []; //TODOX
+        public bool Valid { get { return _midiIn is not null; } }
         #endregion
 
         #region Events
@@ -79,7 +76,7 @@ namespace Ephemera.MidiLibLite
 
         #region Traffic
         /// <summary>
-        /// Process real midi input event. ???TODO2 Don't throw in this thread!
+        /// Process driver level midi input event. ???TODO2 Don't throw in this thread!
         /// </summary>
         void MidiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
         {
@@ -144,17 +141,11 @@ namespace Ephemera.MidiLibLite
         /// <inheritdoc />
         public string DeviceName { get; }
 
-        /// <summary>Internal id.</summary>
-        int Id { get; }
+        /// <inheritdoc />
+        public int Id { get; }
 
         /// <inheritdoc />
-        public bool Valid => _midiOut is not null;
-
-        /// <inheritdoc />
-        public bool LogEnable { get; set; }
-
-/// <summary>Info about device channels. Key is channel number, 1-based.</summary>
-//        public Dictionary<int, Channel> Channels = []; //TODOX
+        public bool Valid { get { return _midiOut is not null;} }
         #endregion
 
         #region Lifecycle
@@ -225,6 +216,5 @@ namespace Ephemera.MidiLibLite
             return devs;
         }
         #endregion
-
     }
 }

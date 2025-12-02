@@ -298,7 +298,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"{BoundChannel.ChHandle} P{BoundChannel.Patch}";
+            return $"{BoundChannel.Handle} P{BoundChannel.Patch}";
 
             //    List<string> ret = [];
             //    ret.Add($"{(ch.Direction == Direction.Output ? "output: " : "input: ")}:{chanName}");

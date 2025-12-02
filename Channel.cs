@@ -148,7 +148,7 @@ namespace Ephemera.MidiLibLite
             Device = device;
             ChannelNumber = channelNumber;
             ChannelName = channelName;
-            Handle = new(device.deviceId, channelNumber, true);
+            Handle = new(device.Id, channelNumber, true);
         }
 
         #region Misc functions
@@ -234,7 +234,7 @@ namespace Ephemera.MidiLibLite
             Device = device;
             ChannelNumber = channelNumber;
             ChannelName = channelName;
-            Handle = new(device.deviceId, channelNumber, false);
+            Handle = new(device.Id, channelNumber, false);
         }
     }
 }

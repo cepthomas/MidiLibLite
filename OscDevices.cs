@@ -27,6 +27,9 @@ namespace Ephemera.MidiLibLite
 
         /// <inheritdoc />
         public bool Valid { get { return _oscInput is not null; } }
+
+        /// <inheritdoc />
+        public int Id => throw new NotImplementedException();
         #endregion
 
         #region Lifecycle
@@ -122,6 +125,9 @@ namespace Ephemera.MidiLibLite
 
         /// <inheritdoc />
         public bool Valid { get { return _oscOutput is not null; } }
+
+        /// <inheritdoc />
+        public int Id => throw new NotImplementedException();
         #endregion
 
         #region Lifecycle
