@@ -23,7 +23,7 @@ namespace Ephemera.MidiLibLite.Test
 
     public partial class MainForm : Form
     {
-        #region Fields
+        #region Fields => MLL?
         /// <summary>All midi devices to use for send.</summary>
         readonly List<IOutputDevice> _outputDevices = [];
         //readonly Dictionary<int, IOutputDevice> _outputDevices = [];
@@ -50,37 +50,25 @@ namespace Ephemera.MidiLibLite.Test
 
         /// <summary>All the output channel controls.</summary>
         readonly List<ChannelControl> _channelControls = new();
+        #endregion
 
+        #region Fields - app
         ///// <summary>Test settings.</summary>
         //readonly UserSettings _settings = new();
 
         /// <summary>Interop serializing access.</summary>
-        readonly object _lock = new();
+        //readonly object _lock = new();
 
 
         /// <summary>Where to put things.</summary>
         readonly string _outPath = @"..\..\out";
-        #endregion
 
         /// <summary>Cosmetics.</summary>
         readonly Color _drawColor = Color.Aquamarine;
 
         /// <summary>Cosmetics.</summary>
         readonly Color _selectedColor = Color.Yellow;
-
-        //public class MidiSettings
-        //{
-        //    public Color ControlColor { get; set; } = Color.Red; // from MidiGen
-        //    public Color ActiveColor { get; set; } = Color.DodgerBlue; // from Nebulua
-        //    public Color SelectedColor { get; set; } = Color.Moccasin; // from Nebulua
-        //    public Color BackColor { get; set; } = Color.AliceBlue; // from Nebulua
-        //    public List<string> InputDevices { get; set; } = new(); // from MidiLib
-        //    public List<string> OutputDevices { get; set; } = new();// from MidiLib
-        //}
-
-
-
-
+        #endregion
 
         #region Lifecycle
         /// <summary>
@@ -117,7 +105,7 @@ namespace Ephemera.MidiLibLite.Test
         /// Window is set up now.
         /// </summary>
         /// <param name="e"></param>
-        protected override void OnLoad(EventArgs e)
+        protected override void OnLoad(EventArgs e) // -> or from script
         {
             ///// 1 - create all devices
             bool ok = CreateDevices();
@@ -163,136 +151,8 @@ namespace Ephemera.MidiLibLite.Test
         }
         #endregion
 
-        #region Controls
-
-
-        void CreateControls()
-        {
-            DestroyControls();
-
-            foreach (var chout in _outputChannels)
-            {
-                var cc = CreateControl(chout);
-            }
-        }
-
-
-        /// <summary>
-        /// Create control.
-        /// </summary>
-        ChannelControl CreateControl(OutputChannel channel)
-        {
-            ChannelControl cc = new(channel);
-            cc.DrawColor = _drawColor;
-            cc.SelectedColor = _selectedColor;
-            cc.Volume = 0.56;
-
-            //cc.UpdatePresets();
-
-            cc.ChannelChange += Cc_ChannelChange;
-            cc.SendMidi += Cc_MidiSend;
-
-            Controls.Add(cc);
-
-            return cc;
-
-            //////////////// from Nebulua TODO1 pick over ////////////////
-            // Create channels and controls.
-            //List<ChannelHandle> valchs = [];
-            //for (int devNum = 0; devNum < _outputDevices.Count; devNum++)
-            //{
-            //    var output = _outputDevices[devNum];
-            //    output.Channels.ForEach(ch => { valchs.Add(new(devNum, ch.Key, Direction.Output)); });
-            //}
-            //valchs.ForEach(ch =>
-            //{
-            //    ChannelControl control = new(ch)
-            //    {
-            //        Location = new(x, y),
-            //        Info = GetInfo(ch)
-            //    };
-            //    control.ChannelControlEvent += ChannelControlEvent;
-            //    Controls.Add(control);
-            //    _channelControls.Add(control);
-            //    // Adjust positioning for next iteration.
-            //    x += control.Width + 5;
-            //});
-
-            //// local func
-            //List<string> GetInfo(ChannelHandle ch)
-            //{
-            //    string devName = "unknown";
-            //    string chanName = "unknown";
-            //    int patchNum = -1;
-            //    if (ch.Direction == Direction.Output)
-            //    {
-            //        if (ch.DeviceId < _outputDevices.Count)
-            //        {
-            //            var dev = _outputDevices[ch.DeviceId];
-            //            devName = dev.DeviceName;
-            //            chanName = dev.Channels[ch.ChannelNumber].ChannelName;
-            //            patchNum = dev.Channels[ch.ChannelNumber].Patch;
-            //        }
-            //    }
-            //    else
-            //    {
-            //        if (ch.DeviceId < _inputDevices.Count)
-            //        {
-            //            var dev = _inputDevices[ch.DeviceId];
-            //            devName = dev.DeviceName;
-            //            chanName = dev.Channels[ch.ChannelNumber].ChannelName;
-            //        }
-            //    }
-            //    List<string> ret = [];
-            //    ret.Add($"{(ch.Direction == Direction.Output ? "output: " : "input: ")}:{chanName}");
-            //    ret.Add($"device: {devName}");
-            //    if (patchNum != -1)
-            //    {
-            //        // Determine patch name.
-            //        string sname;
-            //        if (ch.ChannelNumber == MidiDefs.DEFAULT_DRUM_CHANNEL)
-            //        {
-            //            sname = $"kit: {patchNum}";
-            //            if (MidiDefs.DrumKits.TryGetValue(patchNum, out string? kitName))
-            //            {
-            //                sname += ($" {kitName}");
-            //            }
-            //        }
-            //        else
-            //        {
-            //            sname = $"patch: {patchNum}";
-            //            if (MidiDefs.Instruments.TryGetValue(patchNum, out string? patchName))
-            //            {
-            //                sname += ($" {patchName}");
-            //            }
-            //        }
-            //        ret.Add(sname);
-            //    }
-            //    return ret;
-            //}
-        }
-
-        /// <summary>
-        /// Destroy controls.
-        /// </summary>
-        void DestroyControls()
-        {
-            //KillAll();
-
-            // Clean out our current elements.
-            _channelControls.ForEach(c =>
-            {
-                Controls.Remove(c);
-                c.Dispose();
-            });
-            _channelControls.Clear();
-        }
-        #endregion
-
-
-
         ///// <summary>
-        ///// User clicked something. Send some midi.
+        ///// UI clicked something. Send some midi.
         ///// </summary>
         ///// <param name="sender"></param>
         ///// <param name="e"></param>
@@ -303,6 +163,9 @@ namespace Ephemera.MidiLibLite.Test
 
             if (chan.Enable)
             {
+                // get device
+
+
                 //SendNote(cc!.BoundChannel.ChannelNumber, e.Note, e.Velocity);
                 //SendController(cc!.BoundChannel.ChannelNumber, (MidiController)e.ControllerId, e.Value);
                 //SendEvent(chnd.DeviceId, evt);
@@ -310,7 +173,7 @@ namespace Ephemera.MidiLibLite.Test
         }
 
         /// <summary>
-        /// The user clicked something in one of the channel controls.
+        /// UI clicked something in one of the channel controls.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -393,6 +256,7 @@ namespace Ephemera.MidiLibLite.Test
             mout?.Send(evt);
         }
 
+
         // Midi input arrived from device. This is on a system thread.
         void Midi_ReceiveEvent(object? sender, BaseEvent e)
         {
@@ -414,6 +278,94 @@ namespace Ephemera.MidiLibLite.Test
             //_interop.ReceiveMidiNote(chnd, evt.NoteNumber, 0);
             //_interop.ReceiveMidiController(chnd, (int)evt.Controller, evt.ControllerValue);
         }
+
+        #region Controls
+        void CreateControls()
+        {
+            DestroyControls();
+
+            foreach (var chout in _outputChannels)
+            {
+                var cc = CreateControl(chout);
+            }
+        }
+
+
+        /// <summary>
+        /// Create control.
+        /// </summary>
+        ChannelControl CreateControl(OutputChannel channel)
+        {
+            ChannelControl cc = new(channel);
+            cc.DrawColor = _drawColor;
+            cc.SelectedColor = _selectedColor;
+            cc.Volume = 0.56;
+
+            //    // Adjust positioning for next iteration.
+            //    x += control.Width + 5;
+            //    Location = new(x, y),
+
+            //cc.UpdatePresets();
+
+            cc.ChannelChange += Cc_ChannelChange;
+            cc.SendMidi += Cc_MidiSend;
+
+            Controls.Add(cc);
+
+            return cc;
+        }
+
+        /// <summary>
+        /// Destroy controls.
+        /// </summary>
+        void DestroyControls()
+        {
+            KillAll();
+
+            // Clean out our current elements.
+            _channelControls.ForEach(c =>
+            {
+                Controls.Remove(c);
+                c.Dispose();
+            });
+            _channelControls.Clear();
+        }
+        #endregion
+
+
+        #region Misc
+
+        /// <summary>
+        /// Tell me something good.
+        /// </summary>
+        /// <param name="s"></param>
+        void Tell(string s)
+        {
+            txtViewer.AppendLine($"{s}");
+        }
+        #endregion
+
+//////////////////////////////// LIB level stuff //////////////////////////////
+//////////////////////////////// LIB level stuff //////////////////////////////
+//////////////////////////////// LIB level stuff //////////////////////////////
+//////////////////////////////// LIB level stuff //////////////////////////////
+//////////////////////////////// LIB level stuff //////////////////////////////
+//////////////////////////////// LIB level stuff //////////////////////////////
+//////////////////////////////// LIB level stuff //////////////////////////////
+
+
+
+
+
+        void KillAll() //TODO1
+        {
+
+        }
+
+
+
+
+
 
 
         #region Script => Host API
@@ -442,7 +394,7 @@ namespace Ephemera.MidiLibLite.Test
                 }
 
                 // Add the channel.
-                InputChannel ch = new(_inputDevices.IndexOf(indev), channelNumber, channelName)
+                InputChannel ch = new(indev, channelNumber, channelName)
                 {
                     Enable = true,
                 };
@@ -481,7 +433,7 @@ namespace Ephemera.MidiLibLite.Test
                 }
 
                 // Add the channel.
-                OutputChannel ch = new(_outputDevices.IndexOf(outdev), channelNumber, channelName)
+                OutputChannel ch = new(outdev, channelNumber, channelName)
                 {
                     Enable = true,
                     Patch = patch
@@ -505,7 +457,7 @@ namespace Ephemera.MidiLibLite.Test
         }
         #endregion
 
-        #region Devices => MLL?
+        #region Devices
         /// <summary>
         /// Create all I/O devices from user settings.
         /// </summary>
@@ -520,7 +472,7 @@ namespace Ephemera.MidiLibLite.Test
             // Set up input devices.
             foreach (var devname in MidiInputDevice.AvailableDevices())
             {
-                var indev = new MidiInputDevice(devname);//TODO1 retry
+                var indev = new MidiInputDevice(devname);//TODO1 support retry
 
                 if (!indev.Valid)
                 {
@@ -539,7 +491,7 @@ namespace Ephemera.MidiLibLite.Test
             foreach (var devname in MidiOutputDevice.AvailableDevices())
             {
                 // Try midi.
-                var outdev = new MidiOutputDevice(devname);//TODO1 retry
+                var outdev = new MidiOutputDevice(devname);//TODO1 support retry
                 if (!outdev.Valid)
                 {
                     // _logger.Error($"Something wrong with your output device:{devname}");
@@ -564,18 +516,6 @@ namespace Ephemera.MidiLibLite.Test
             _inputDevices.Clear();
             _outputDevices.ForEach(d => d.Dispose());
             _outputDevices.Clear();
-        }
-        #endregion
-
-        #region Misc
-
-        /// <summary>
-        /// Tell me something good.
-        /// </summary>
-        /// <param name="s"></param>
-        void Tell(string s)
-        {
-            txtViewer.AppendLine($"{s}");
         }
         #endregion
     }

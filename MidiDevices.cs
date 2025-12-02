@@ -23,6 +23,9 @@ namespace Ephemera.MidiLibLite
         /// <inheritdoc />
         public string DeviceName { get; }
 
+        /// <summary>Internal id.</summary>
+        int Id { get; }
+
         /// <inheritdoc />
         public bool CaptureEnable { get; set; }
 
@@ -51,6 +54,7 @@ namespace Ephemera.MidiLibLite
             if (ind >= 0)
             {
                 DeviceName = deviceName;
+                Id = ind;
                 _midiIn = new MidiIn(ind);
                 _midiIn.MessageReceived += MidiIn_MessageReceived;
                 _midiIn.ErrorReceived += MidiIn_ErrorReceived;
@@ -140,6 +144,9 @@ namespace Ephemera.MidiLibLite
         /// <inheritdoc />
         public string DeviceName { get; }
 
+        /// <summary>Internal id.</summary>
+        int Id { get; }
+
         /// <inheritdoc />
         public bool Valid => _midiOut is not null;
 
@@ -163,6 +170,7 @@ namespace Ephemera.MidiLibLite
             if (ind >= 0)
             {
                 DeviceName = deviceName;
+                Id = ind;
                 _midiOut = new MidiOut(ind);
             }
             else

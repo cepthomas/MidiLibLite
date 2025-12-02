@@ -32,7 +32,7 @@ namespace Ephemera.MidiLibLite
     {
         #region Fields
         readonly Container components = new();
-        readonly TextBox txtChannelInfo;
+        readonly TextBox txtInfo;
         readonly Slider sldVolume;
         readonly ToolTip toolTip;
 
@@ -132,22 +132,22 @@ namespace Ephemera.MidiLibLite
             sldControllerValue.ValueChanged += Controller_ValueChanged;
             Controls.Add(sldControllerValue);
 
-            txtChannelInfo = new()
+            txtInfo = new()
             {
                 Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
                 BorderStyle = BorderStyle.FixedSingle,
                 Location = new Point(2, 9),
-                Name = "txtChannelInfo",
+                Name = "txtInfo",
                 ReadOnly = true,
                 Size = new Size(40, 20),
                 Text = "???"
             };
-            txtChannelInfo.Click += ChannelInfo_Click;
-            Controls.Add(txtChannelInfo);
+            txtInfo.Click += ChannelInfo_Click;
+            Controls.Add(txtInfo);
 
             lblSolo = new()
             {
-                Location = new Point(txtChannelInfo.Right + 4, 9),
+                Location = new Point(txtInfo.Right + 4, 9),
                 Size = new Size(20, 20),
                 Text = "S"
             };
@@ -189,9 +189,8 @@ namespace Ephemera.MidiLibLite
             sldControllerValue.DrawColor = DrawColor;
             sldControllerValue.BackColor = BackColor;
 
-            txtChannelInfo.Text = $"{BoundChannel.ChHandle}";
-            txtChannelInfo.BackColor = DrawColor;
-            toolTip.SetToolTip(txtChannelInfo, txtChannelInfo.Text);
+            txtInfo.BackColor = DrawColor;
+            toolTip.SetToolTip(txtInfo, txtInfo.Text);
 
             lblSolo.BackColor = BackColor;
             lblSolo.Click += SoloMute_Click;
@@ -285,12 +284,12 @@ namespace Ephemera.MidiLibLite
         /// <summary>Draw mode checkboxes etc.</summary>
         void UpdateUi()
         {
-            txtChannelInfo.Text = ToString();
+            txtInfo.Text = ToString();
 
             StringBuilder sb = new();
             sb.AppendLine($"Channel {BoundChannel.ChannelNumber}");
             sb.AppendLine($"{BoundChannel.GetPatchName(BoundChannel.Patch)} {BoundChannel.Patch}");
-            toolTip.SetToolTip(txtChannelInfo, sb.ToString());
+            toolTip.SetToolTip(txtInfo, sb.ToString());
 
             lblSolo.BackColor = _state == ChannelState.Solo ? SelectedColor :  BackColor;
             lblMute.BackColor = _state == ChannelState.Mute ? SelectedColor : BackColor;
@@ -300,6 +299,32 @@ namespace Ephemera.MidiLibLite
         public override string ToString()
         {
             return $"{BoundChannel.ChHandle} P{BoundChannel.Patch}";
+
+            //    List<string> ret = [];
+            //    ret.Add($"{(ch.Direction == Direction.Output ? "output: " : "input: ")}:{chanName}");
+            //    ret.Add($"device: {devName}");
+            //    if (patchNum != -1)
+            //    {
+            //        // Determine patch name.
+            //        string sname;
+            //        if (ch.ChannelNumber == MidiDefs.DEFAULT_DRUM_CHANNEL)
+            //        {
+            //            sname = $"kit: {patchNum}";
+            //            if (MidiDefs.DrumKits.TryGetValue(patchNum, out string? kitName))
+            //            {
+            //                sname += ($" {kitName}");
+            //            }
+            //        }
+            //        else
+            //        {
+            //            sname = $"patch: {patchNum}";
+            //            if (MidiDefs.Instruments.TryGetValue(patchNum, out string? patchName))
+            //            {
+            //                sname += ($" {patchName}");
+            //            }
+            //        }
+            //        ret.Add(sname);
+            //    }
         }
         #endregion
     }

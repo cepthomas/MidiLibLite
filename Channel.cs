@@ -50,8 +50,8 @@ namespace Ephemera.MidiLibLite
     public class OutputChannel
     {
         #region Persisted Editable Properties
-        /// <summary>Channel name as defined by the script.</summary>
-        public string ChannelName { get; set; } = "TODOX";
+        /// <summary>Channel name - optional.</summary>
+        public string ChannelName { get; set; } = "";
 
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
@@ -119,10 +119,15 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Non-persisted Properties
+        /// <summary>Associated device.</summary>
+        [Browsable(false)]
+        [JsonIgnore]
+        public IOutputDevice Device { get; init; }
+
         /// <summary>Handle for use by scripts.</summary>
         [Browsable(false)]
         [JsonIgnore]
-        public ChannelHandle ChHandle { get; init; } // from Nebulua
+        public ChannelHandle Handle { get; init; } // from Nebulua
 
         /// <summary>Convenience property.</summary>
         [Browsable(false)]
@@ -137,11 +142,13 @@ namespace Ephemera.MidiLibLite
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
         /// <param name="chnd"></param>
-        public OutputChannel(int deviceId, int channelNumber, string channelName)
+        public OutputChannel(IOutputDevice device, int channelNumber, string channelName)
+        //public OutputChannel(int deviceId, int channelNumber, string channelName)
         {
+            Device = device;
             ChannelNumber = channelNumber;
             ChannelName = channelName;
-            ChHandle = new(deviceId, channelNumber, true);            
+            Handle = new(device.deviceId, channelNumber, true);
         }
 
         #region Misc functions
@@ -193,21 +200,26 @@ namespace Ephemera.MidiLibLite
         }
         int _channelNumber = 1;
 
-        /// <summary>Channel name as defined by the script.</summary>
-        public string ChannelName { get; set; } = "TODOX";
+        /// <summary>Channel name - optional.</summary>
+        public string ChannelName { get; set; } = "";
         #endregion
 
         #region Persisted Non-editable Properties
         #endregion
 
         #region Non-persisted Properties
+        /// <summary>Associated device.</summary>
+        [Browsable(false)]
+        [JsonIgnore]
+        public IInputDevice Device { get; init; }
+
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
 
         /// <summary>Handle for use by scripts.</summary>
         [Browsable(false)]
         [JsonIgnore]
-        public ChannelHandle ChHandle { get; init; } // from Nebulua
+        public ChannelHandle Handle { get; init; } // from Nebulua
         #endregion
 
         /// <summary>
@@ -216,11 +228,13 @@ namespace Ephemera.MidiLibLite
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
         /// <param name="chnd"></param>
-        public InputChannel(int deviceId, int channelNumber, string channelName)
+        public InputChannel(IInputDevice device, int channelNumber, string channelName)
+        // public InputChannel(int deviceId, int channelNumber, string channelName)
         {
+            Device = device;
             ChannelNumber = channelNumber;
             ChannelName = channelName;
-            ChHandle = new(deviceId, channelNumber, false);
+            Handle = new(device.deviceId, channelNumber, false);
         }
     }
 }
