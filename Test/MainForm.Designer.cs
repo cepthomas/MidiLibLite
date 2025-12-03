@@ -23,8 +23,8 @@ namespace Ephemera.MidiLibLite.Test
             btnKillMidi = new System.Windows.Forms.ToolStripButton();
             txtViewer = new Ephemera.NBagOfUis.TextViewer();
             sldVolume = new Ephemera.NBagOfUis.Slider();
-            cc1 = new ChannelControl();
-            cc2 = new ChannelControl();
+            cc1 = new CustomChannelControl();
+            cc2 = new CustomChannelControl();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -136,8 +136,8 @@ namespace Ephemera.MidiLibLite.Test
         private NBagOfUis.TextViewer txtViewer;
         private System.Windows.Forms.ToolStripButton btnLogMidi;
         private System.Windows.Forms.ToolStripButton btnKillMidi;
-        private ChannelControl cc1;
-        private ChannelControl cc2;
+        private CustomChannelControl cc1;
+        private CustomChannelControl cc2;
     }
 }
 

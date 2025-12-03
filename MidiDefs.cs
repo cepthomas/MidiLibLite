@@ -88,6 +88,17 @@ namespace Ephemera.MidiLibLite
         {
             return _drumKits.TryGetValue(which, out string? value) ? value : $"KIT_{which}";
         }
+
+        public static int GetControllerNumber(string which)
+        {
+            return 9999; //TODO1
+        }
+
+        // public static int GetDrumKitNumber(string which)
+        // public static int GetDrumNumber(string which)
+        // public static int GetInstrumentNumber(string which)
+        // public static int GetInstrumentOrDrumKitNumber(string which)
+
         #endregion
 
         #region All the GM names

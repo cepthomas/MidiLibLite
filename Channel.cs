@@ -13,38 +13,6 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLibLite
 {
-    /// <summary>References one channel. Supports translation to/from script unique int handle.</summary>
-    /// <param name="DeviceId">Index in internal list</param>
-    /// <param name="ChannelNumber">Midi channel 1-based</param>
-    /// <param name="Output">T or F</param>
-    public record struct ChannelHandle(int DeviceId, int ChannelNumber, bool Output)
-    {
-        const int OUTPUT_FLAG = 0x8000;
-
-        /// <summary>Create from int handle.</summary>
-        /// <param name="handle"></param>
-        public ChannelHandle(int handle) : this(-1, -1, false)
-        {
-            Output = (handle & OUTPUT_FLAG) > 0;
-            DeviceId = ((handle & ~OUTPUT_FLAG) >> 8) & 0xFF;
-            ChannelNumber = (handle & ~OUTPUT_FLAG) & 0xFF;
-        }
-
-        /// <summary>Operator to convert to int handle.</summary>
-        /// <param name="ch"></param>
-        public static implicit operator int(ChannelHandle ch)
-        {
-            return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Output ? OUTPUT_FLAG : OUTPUT_FLAG);
-        }
-
-        /// <summary>See me.</summary>
-        public override readonly string ToString()
-        {
-            return $"{(Output ? "OUT" : "IN")}  {DeviceId}:{ChannelNumber}";
-        }
-    }
-
-
     /// <summary>Describes one midi output channel. Some properties are optional.</summary>
     [Serializable] // TODO1 host should handle persistence?!
     public class OutputChannel
@@ -84,15 +52,15 @@ namespace Ephemera.MidiLibLite
         }
         int _patch = 0;
 
-        /// <summary>Edit current controller number.</summary>
-        [Browsable(true)]
-        [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-        public int ControllerId
-        {
-            get { return _controllerId; }
-            set { _controllerId = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI); }
-        }
-        int _controllerId = 0;
+         /// <summary>Edit current controller number.</summary>
+         [Browsable(true)]
+         [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
+         public int ControllerId
+         {
+             get { return _controllerId; }
+             set { _controllerId = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI); }
+         }
+         int _controllerId = 0;
         #endregion
 
         #region Persisted Non-editable Properties
@@ -152,7 +120,6 @@ namespace Ephemera.MidiLibLite
             Handle = new(device.Id, channelNumber, true);
         }
 
-        #region Misc functions
         /// <summary>Use default or custom presets.</summary>
         /// <exception cref="FileNotFoundException"></exception>
         public void UpdatePresets()
@@ -180,7 +147,6 @@ namespace Ephemera.MidiLibLite
         {
             return _instruments.TryGetValue(which, out string? value) ? value : $"PATCH_{which}";
         }
-        #endregion
     }
 
     /// <summary>Describes one midi input channel. Some properties are optional.</summary>
@@ -237,6 +203,37 @@ namespace Ephemera.MidiLibLite
             ChannelNumber = channelNumber;
             ChannelName = channelName;
             Handle = new(device.Id, channelNumber, false);
+        }
+    }
+
+    /// <summary>References one channel. Supports translation to/from script unique int handle.</summary>
+    /// <param name="DeviceId">Index in internal list</param>
+    /// <param name="ChannelNumber">Midi channel 1-based</param>
+    /// <param name="Output">T or F</param>
+    public record struct ChannelHandle(int DeviceId, int ChannelNumber, bool Output)
+    {
+        const int OUTPUT_FLAG = 0x8000;
+
+        /// <summary>Create from int handle.</summary>
+        /// <param name="handle"></param>
+        public ChannelHandle(int handle) : this(-1, -1, false)
+        {
+            Output = (handle & OUTPUT_FLAG) > 0;
+            DeviceId = ((handle & ~OUTPUT_FLAG) >> 8) & 0xFF;
+            ChannelNumber = (handle & ~OUTPUT_FLAG) & 0xFF;
+        }
+
+        /// <summary>Operator to convert to int handle.</summary>
+        /// <param name="ch"></param>
+        public static implicit operator int(ChannelHandle ch)
+        {
+            return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Output ? OUTPUT_FLAG : OUTPUT_FLAG);
+        }
+
+        /// <summary>See me.</summary>
+        public override readonly string ToString()
+        {
+            return $"{(Output ? "OUT" : "IN")}  {DeviceId}:{ChannelNumber}";
         }
     }
 }

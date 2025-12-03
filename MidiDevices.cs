@@ -35,7 +35,7 @@ namespace Ephemera.MidiLibLite
 
         #region Events
         /// <summary>Client needs to deal with this.</summary>
-        public event EventHandler<BaseEvent>? InputReceive;
+        public event EventHandler<BaseMidiEvent>? InputReceive;
         #endregion
 
         #region Lifecycle
@@ -74,7 +74,6 @@ namespace Ephemera.MidiLibLite
         }
         #endregion
 
-        #region Traffic
         /// <summary>
         /// Process driver level midi input event. ???TODO2 Don't throw in this thread!
         /// </summary>
@@ -85,14 +84,14 @@ namespace Ephemera.MidiLibLite
             // Decode the message. We only care about a few.
             var mevt = MidiEvent.FromRawMessage(e.RawMessage);
 
-            BaseEvent evt = mevt switch
+            BaseMidiEvent evt = mevt switch
             {
                 NoteOnEvent onevt => new NoteOn(onevt.Channel, onevt.NoteNumber, onevt.Velocity),
                 NoteEvent offevt => offevt.Velocity == 0 ?
                     new NoteOff(offevt.Channel, offevt.NoteNumber) :
                     new NoteOn(offevt.Channel, offevt.NoteNumber, offevt.Velocity),
                 ControlChangeEvent ctlevt => new Controller(ctlevt.Channel, (int)ctlevt.Controller, ctlevt.ControllerValue),
-                _ => new BaseEvent() // TODO2 just ignore? or ErrorInfo = $"Invalid message: {m}"
+                _ => new BaseMidiEvent() // TODO2 just ignore? or ErrorInfo = $"Invalid message: {m}"
             };
 
             InputReceive?.Invoke(this, evt);
@@ -106,9 +105,7 @@ namespace Ephemera.MidiLibLite
             // TODO2 just ignore?
             // string ErrorInfo = $"Message:0x{e.RawMessage:X8}";
         }
-        #endregion
 
-        #region Misc
         /// <summary>
         /// Get a list of available device names.
         /// </summary>
@@ -124,7 +121,6 @@ namespace Ephemera.MidiLibLite
 
             return devs;
         }
-        #endregion
     }
 
     /// <summary>
@@ -181,11 +177,10 @@ namespace Ephemera.MidiLibLite
         }
         #endregion
 
-        #region Traffic
         /// <summary>
         /// Send midi event. TODO2 OK to throw in here.
         /// </summary>
-        public void Send(BaseEvent evt)
+        public void Send(BaseMidiEvent evt)
         {
             MidiEvent mevt = evt switch
             {
@@ -198,9 +193,7 @@ namespace Ephemera.MidiLibLite
 
             _midiOut?.Send(mevt.GetAsShortMessage());
         }
-        #endregion
 
-        #region Misc
         /// <summary>
         /// Get a list of available device names.
         /// </summary>
@@ -216,6 +209,5 @@ namespace Ephemera.MidiLibLite
 
             return devs;
         }
-        #endregion
     }
 }

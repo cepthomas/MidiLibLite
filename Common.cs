@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows.Forms;
 using System.ComponentModel.DataAnnotations;
 using Ephemera.NBagOfTricks;
+using System.Runtime.CompilerServices;
 
 
 namespace Ephemera.MidiLibLite
@@ -22,17 +23,31 @@ namespace Ephemera.MidiLibLite
     /// <summary>Library error.</summary>
     public class MidiLibException(string message) : Exception(message) { }
 
-    #region Internal event definitions TODO2 own home?
-    public class BaseEvent
+
+
+TODO1 all need arg val + any others?
+// Check args.
+if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
+if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channelNumber)); }
+
+
+#region Internal event definitions TODO2 own home?
+public class BaseMidiEvent
     {
         /// <summary>Channel 1-NUM_CHANNELS.</summary>
         public int Channel { get; init; }
 
         /// <summary>Something to tell the client.</summary>
         public string ErrorInfo { get; set; } = "";
+
+        /// <summary>Read me.</summary>
+        public override string ToString()
+        {
+            return $"BaseMidiEvent:{Channel} {ErrorInfo}";
+        }
     }
 
-    public class NoteOn : BaseEvent
+    public class NoteOn : BaseMidiEvent
     {
         /// <summary>The note number to play.</summary>
         public int Note { get; init; }
@@ -54,7 +69,7 @@ namespace Ephemera.MidiLibLite
         }
     }
 
-    public class NoteOff : BaseEvent
+    public class NoteOff : BaseMidiEvent
     {
         /// <summary>The note number to play.</summary>
         public int Note { get; init; }
@@ -72,7 +87,7 @@ namespace Ephemera.MidiLibLite
         }
     }
 
-    public class Controller : BaseEvent
+    public class Controller : BaseMidiEvent
     {
         /// <summary>Specific controller id.</summary>
         public int ControllerId { get; init; }
@@ -94,7 +109,7 @@ namespace Ephemera.MidiLibLite
         }
     }
 
-    public class Patch : BaseEvent
+    public class Patch : BaseMidiEvent
     {
         /// <summary>Payload.</summary>
         public int Value { get; init; }
@@ -108,7 +123,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"Patch:{Value} TODO1 text get from channel";
+            return $"Patch:{Value} TODO2 text get from channel";
         }
     }
     #endregion

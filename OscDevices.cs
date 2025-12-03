@@ -15,7 +15,7 @@ namespace Ephemera.MidiLibLite
 
         #region Events
         /// <inheritdoc />
-        public event EventHandler<BaseEvent>? InputReceive;
+        public event EventHandler<BaseMidiEvent>? InputReceive;
         #endregion
 
         #region Properties
@@ -94,12 +94,12 @@ namespace Ephemera.MidiLibLite
 
             e.Messages.ForEach(m =>
             {
-                BaseEvent evt = (m.Address, m.Data.Count) switch
+                BaseMidiEvent evt = (m.Address, m.Data.Count) switch
                 {
                     ("/noteon/", 3) => new NoteOn((int)m.Data[0], (int)m.Data[1], (int)m.Data[2]),
                     ("/noteoff/", 2) => new NoteOff((int)m.Data[0], (int)m.Data[1]),
                     ("/controller/", 3) => new Controller((int)m.Data[0], (int)m.Data[1], (int)m.Data[2]),
-                    _ => new BaseEvent() // TODO2 just ignore? or throw new MidiLibException or  ErrorInfo = $"Invalid message: {m}"
+                    _ => new BaseMidiEvent() // TODO2 just ignore? or throw new MidiLibException or  ErrorInfo = $"Invalid message: {m}"
                 };
 
                 InputReceive?.Invoke(this, evt);
@@ -163,7 +163,7 @@ namespace Ephemera.MidiLibLite
 
         #region Public functions
         /// <inheritdoc />
-        public void Send(BaseEvent mevt)
+        public void Send(BaseMidiEvent mevt)
         {
             // Critical code section.
             if (_oscOutput is not null)

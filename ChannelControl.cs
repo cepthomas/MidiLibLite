@@ -33,7 +33,7 @@ namespace Ephemera.MidiLibLite
         #region Fields
         ChannelState _state = ChannelState.Normal;
         const int PAD = 4;
-        const int SIZE = 24;
+        const int SIZE = 32;
 
         readonly Container components = new();
         readonly ToolTip toolTip;
@@ -42,7 +42,7 @@ namespace Ephemera.MidiLibLite
         readonly Slider sldVolume;
 
         // TODO1 option ===>
-        readonly Slider sldControllerValue;
+        readonly Slider sldControllerValue; //TODO2 put controller in separate control
 
         // TODO1 option ===>
         //SimpleChannelControl - has only editable channel_num, patch pick, volume, ControlColor !!! not used???
@@ -53,13 +53,21 @@ namespace Ephemera.MidiLibLite
         #region Properties
         /// <summary>My channel.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public OutputChannel BoundChannel { get; init; }
+        public OutputChannel BoundChannel { get; set; }
         
         /// <summary>Drawing the active elements of a control.</summary>
-        public Color DrawColor { get; set; } = Color.Red;
+        public Color DrawColor 
+        {
+            set
+            {
+                sldVolume.DrawColor = value;
+                sldControllerValue.DrawColor = value;
+                txtInfo.BackColor = value;
+            }
+        }
 
         /// <summary>Drawing the control when selected.</summary>
-        public Color SelectedColor { get; set; } = Color.Green;
+        public Color SelectedColor { get; set; }
 
         /// <summary>The graphics draw area.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -88,15 +96,13 @@ namespace Ephemera.MidiLibLite
         public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
 
         /// <summary>UI midi send.</summary>
-        public event EventHandler<BaseEvent>? SendMidi;
+        public event EventHandler<BaseMidiEvent>? SendMidi;
 
         /// <summary>Derived class helper.</summary>
-        protected virtual void OnSendMidi(BaseEvent e) { SendMidi?.Invoke(this, e); }
+        protected virtual void OnSendMidi(BaseMidiEvent e) { SendMidi?.Invoke(this, e); }
         #endregion
 
         #region Lifecycle
-
-
         /// <summary>
         /// Constructor. Create controls.
         /// </summary>
@@ -107,6 +113,10 @@ namespace Ephemera.MidiLibLite
             // InitializeComponent();
             SuspendLayout();
 
+            // Satisfy designer and initial conditions,
+            var dev = new NullOutputDevice("DUMMY_DEVICE");
+            BoundChannel = new OutputChannel(dev, 1, "DUMMY_CHANNEL");
+
             txtInfo = new()
             {
                 Anchor = AnchorStyles.Top | AnchorStyles.Left,// | AnchorStyles.Right,
@@ -114,7 +124,7 @@ namespace Ephemera.MidiLibLite
                 Location = new(PAD, PAD),
                 Size = new(100, SIZE),
                 ReadOnly = true,
-                Text = "---???---"
+                Text = "!!!!!!!"
             };
             txtInfo.Click += ChannelInfo_Click;
             Controls.Add(txtInfo);
@@ -180,26 +190,8 @@ namespace Ephemera.MidiLibLite
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            sldVolume.DrawColor = DrawColor;
-            sldVolume.BackColor = BackColor;
-
-            sldControllerValue.DrawColor = DrawColor;
-            sldControllerValue.BackColor = BackColor;
-
-            txtInfo.BackColor = DrawColor;
-            toolTip.SetToolTip(txtInfo, txtInfo.Text);
-
-            lblSolo.BackColor = BackColor;
-            lblSolo.Click += SoloMute_Click;
-
-            lblMute.BackColor = BackColor;
-            lblMute.Click += SoloMute_Click;
-
-            if (!DesignMode)
-            {
-                sldVolume.Value = BoundChannel.Volume;
-                sldControllerValue.Value = BoundChannel.ControllerValue;
-            }
+            sldVolume.Value = BoundChannel.Volume;
+            sldControllerValue.Value = BoundChannel.ControllerValue;
 
             UpdateUi();
 
@@ -285,33 +277,12 @@ namespace Ephemera.MidiLibLite
         /// <summary>Draw mode checkboxes etc.</summary>
         void UpdateUi()
         {
-            if (!DesignMode)
-            {
-                txtInfo.Text = ToString();
+            txtInfo.Text = ToString();
 
-                StringBuilder sb = new();
-                sb.AppendLine($"Channel {BoundChannel.ChannelNumber}");
-                sb.AppendLine($"{BoundChannel.GetPatchName(BoundChannel.Patch)} {BoundChannel.Patch}");
-                //// Determine patch name.
-                //string sname;
-                //if (ch.ChannelNumber == MidiDefs.DEFAULT_DRUM_CHANNEL)
-                //{
-                //    sname = $"kit: {patchNum}";
-                //    if (MidiDefs.DrumKits.TryGetValue(patchNum, out string? kitName))
-                //    {
-                //        sname += ($" {kitName}");
-                //    }
-                //}
-                //else
-                //{
-                //    sname = $"patch: {patchNum}";
-                //    if (MidiDefs.Instruments.TryGetValue(patchNum, out string? patchName))
-                //    {
-                //        sname += ($" {patchName}");
-                //    }
-                //}
-                toolTip.SetToolTip(txtInfo, sb.ToString());
-            }
+            StringBuilder sb = new();
+            sb.AppendLine($"Channel {BoundChannel.Handle}");
+            sb.AppendLine($"Patch {BoundChannel.GetPatchName(BoundChannel.Patch)}({BoundChannel.Patch})");
+            toolTip.SetToolTip(txtInfo, sb.ToString());
 
             lblSolo.BackColor = _state == ChannelState.Solo ? SelectedColor :  BackColor;
             lblMute.BackColor = _state == ChannelState.Mute ? SelectedColor : BackColor;
@@ -320,14 +291,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            if (!DesignMode)
-            {
-                return $"{BoundChannel.Handle} P:{BoundChannel.Patch}";
-            }
-            else
-            {
-                return "DesignMode";
-            }
+            return $"{BoundChannel.Handle} P:{BoundChannel.Patch}";
         }
         #endregion
     }

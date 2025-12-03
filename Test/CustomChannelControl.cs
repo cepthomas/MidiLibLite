@@ -1,4 +1,4 @@
-﻿using System;
+﻿ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -12,33 +12,16 @@ namespace Ephemera.MidiLibLite.Test
 {
     public class CustomChannelControl : ChannelControl
     {
-        #region Fields
         int _lastNote = 0;
-        #endregion
 
-        #region Lifecycle
-        /// <summary>
-        /// Normal constructor.
-        /// </summary>
-        public CustomChannelControl(OutputChannel channel) //: base(channel)
-        {
-            BoundChannel = channel;
-            //SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
-            //Name = nameof(CustomChannelControl);
-        }
-        #endregion
-
-        #region Event handlers
-        /// <summary>
-        /// Paint the surface.
-        /// </summary>
+        /// <summary>Paint the surface.</summary>
         /// <param name="pe"></param>
         protected override void OnPaint(PaintEventArgs pe)
         {
             Graphics g = pe.Graphics;
             var r = DrawRect;
 
-            g.Clear(Color.LightGreen);
+            g.Clear(Color.LightCoral);
 
             // Border.
             g.DrawLine(Pens.Red, r.Left, r.Top, r.Right, r.Top);
@@ -47,9 +30,9 @@ namespace Ephemera.MidiLibLite.Test
             g.DrawLine(Pens.Red, r.Right, r.Top, r.Right, r.Bottom);
 
             // Grid.
-            for (int x = r.Left; x < r.Right; x += 10)
+            for (int x = r.Left; x < r.Right; x += 25)
             {
-                g.DrawLine(Pens.Red, x, r.Top, x, r.Bottom);
+                g.DrawLine(Pens.White, x, r.Top, x, r.Bottom);
             }
 
             base.OnPaint(pe);
@@ -129,9 +112,7 @@ namespace Ephemera.MidiLibLite.Test
 
             base.OnMouseLeave(e);
         }
-        #endregion
 
-        #region Private functions
         /// <summary>
         /// Get mouse x and y mapped to user coordinates.
         /// </summary>
@@ -142,6 +123,5 @@ namespace Ephemera.MidiLibLite.Test
 
             return (mp.X, mp.Y);
         }
-        #endregion
     }
 }
