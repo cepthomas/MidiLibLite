@@ -132,14 +132,16 @@ namespace Ephemera.MidiLibLite.Test
             InitControl(cctrl1);
             InitControl(cctrl2);
 
-            ///// 2 - create all channels - explicit
+            ///// 2 - create and bind all channels - explicit
             MidiOutputDevice device = new("VirtualMIDISynth #1"); // "Microsoft GS Wavetable Synth"
-            cch1.BoundChannel = new OutputChannel(device, 1, "cch1 !!!");
-            cch2.BoundChannel = new OutputChannel(device, 2, "cch2 !!!");
+            var chan1 = new OutputChannel(device, 1, "cch1 !!!");
+            var chan2 = new OutputChannel(device, 2, "cch2 !!!");
+            cch1.BoundChannel = chan1;
+            cch2.BoundChannel = chan2;
 
             ///// 3 - configure other stuff
-            cctrl1.Info = new() { ChannelNumber = 1, ControllerId = 77, ControllerValue = 50 };
-            cctrl2.Info = new() { ChannelNumber = 2, ControllerId = 88, ControllerValue = 60 };
+            cctrl1.Info = new() { DeviceId = device.Id, ChannelNumber = 1, ControllerId = 77, ControllerValue = 50 };
+            cctrl2.Info = new() { DeviceId = device.Id, ChannelNumber = 2, ControllerId = 88, ControllerValue = 60 };
 
             ///// 4 - do work
             // ????
@@ -192,39 +194,17 @@ namespace Ephemera.MidiLibLite.Test
             // function receive_midi_controller(chan_hnd, controller, value)
         }
 
-        ///// <summary>
-        ///// Create control.
-        ///// </summary>
-        //CustomChannelControl CreateControl(OutputChannel channel)
-        //{
-        //    CustomChannelControl cc = new()
-        //    {
-        //        BorderStyle = BorderStyle.FixedSingle,
-        //        BoundChannel = channel,
-        //        DrawColor = _drawColor,
-        //        SelectedColor = _selectedColor,
-        //        Volume = Defs.DEFAULT_VOLUME,
-        //    };
-
-        //    cc.ChannelChange += Cc_ChannelChange;
-        //    cc.SendMidi += Cc_MidiSend;
-        //    Controls.Add(cc);
-
-        //    return cc;
-        //}
-
         /// <summary>
         /// Init control.
         /// </summary>
         void InitControl(CustomChannelControl cc)
         {
             cc.BorderStyle = BorderStyle.FixedSingle;
-            // cc.BoundChannel = channel;
             cc.DrawColor = _drawColor;
             cc.SelectedColor = _selectedColor;
             cc.Volume = Defs.DEFAULT_VOLUME;
-            cc.ChannelChange += Cc_ChannelChange;
-            cc.SendMidi += Cc_MidiSend;
+            cc.ChannelChange += ChannelControl_ChannelChange;
+            cc.SendMidi += ChannelControl_MidiSend;
 
             if (!Controls.Contains(cc))
             {
@@ -238,10 +218,9 @@ namespace Ephemera.MidiLibLite.Test
         void InitControl(ControllerControl cc)
         {
             cc.BorderStyle = BorderStyle.FixedSingle;
-            // cc.BoundChannel = channel;
             cc.DrawColor = _drawColor;
             cc.SelectedColor = _selectedColor;
-            cc.SendMidi += Cc_MidiSend;
+            cc.SendMidi += ControllerControl_MidiSend;
 
             if (!Controls.Contains(cc))
             {
@@ -271,7 +250,7 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Cc_MidiSend(object? sender, BaseMidiEvent e)
+        void ChannelControl_MidiSend(object? sender, BaseMidiEvent e)
         {
             var cc = sender as ChannelControl;
             var channel = cc!.BoundChannel!;
@@ -287,7 +266,7 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Cc_ChannelChange(object? sender, ChannelControl.ChannelChangeEventArgs e)
+        void ChannelControl_ChannelChange(object? sender, ChannelControl.ChannelChangeEventArgs e)
         {
             var cc = sender as ChannelControl;
             var channel = cc!.BoundChannel!;
@@ -324,6 +303,22 @@ namespace Ephemera.MidiLibLite.Test
             {
                 Tell(INFO, $"PresetFileChange");
                 channel.UpdatePresets();
+            }
+        }
+
+        /// <summary>
+        /// UI clicked something -> send some midi.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ControllerControl_MidiSend(object? sender, BaseMidiEvent e)
+        {
+            var cc = sender as ControllerControl;
+            var dev = _mgr.GetOutputDevice(cc.Info.DeviceId);
+
+            //if (channel.Enable)
+            {
+                dev.Send(e);
             }
         }
 

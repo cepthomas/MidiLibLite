@@ -31,23 +31,17 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Fields
+        readonly Container components = new();
+        readonly protected ToolTip toolTip;
+        readonly TextBox txtInfo;
+        readonly Slider sldVolume;
+        // TODO2 option?  SimpleChannelControl
+        readonly Label lblSolo;
+        readonly Label lblMute;
+
         ChannelState _state = ChannelState.Normal;
         const int PAD = 4;
         const int SIZE = 32;
-
-        readonly Container components = new();
-        readonly protected ToolTip toolTip;
-
-        readonly TextBox txtInfo;
-        readonly Slider sldVolume;
-
-        // TODO1 option ===>
-        // readonly Slider sldControllerValue; //TODO1 put controller in separate control
-
-        // TODO1 option ===>
-        //SimpleChannelControl - has only editable channel_num, patch pick, volume, ControlColor !!! not used???
-        readonly Label lblSolo;
-        readonly Label lblMute;
         #endregion
 
         #region Properties
@@ -61,7 +55,6 @@ namespace Ephemera.MidiLibLite
             set
             {
                 sldVolume.DrawColor = value;
-                //sldControllerValue.DrawColor = value;
                 txtInfo.BackColor = value;
             }
         }
@@ -163,21 +156,6 @@ namespace Ephemera.MidiLibLite
             lblMute.Click += SoloMute_Click;
             Controls.Add(lblMute);
 
-            // sldControllerValue = new()
-            // {
-            //     Minimum = 0,
-            //     Maximum = MidiDefs.MAX_MIDI,
-            //     Resolution = 1,
-            //     Value = 50,
-            //     BorderStyle = BorderStyle.FixedSingle,
-            //     Orientation = Orientation.Horizontal,
-            //     Location = new(lblSolo.Right + PAD, PAD),
-            //     Size = new(80, SIZE),
-            //     Label = "booga"
-            // };
-            // sldControllerValue.ValueChanged += Controller_ValueChanged;
-            // Controls.Add(sldControllerValue);
-
             // Form.
             Size = new Size(lblSolo.Right + PAD, SIZE + PAD + PAD);
 
@@ -194,7 +172,6 @@ namespace Ephemera.MidiLibLite
         protected override void OnLoad(EventArgs e)
         {
             sldVolume.Value = BoundChannel.Volume;
-            // sldControllerValue.Value = BoundChannel.ControllerValue;
 
             UpdateUi();
 
@@ -216,23 +193,7 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Handlers for user selections
-        // /// <summary>
-        // /// Notify client.
-        // /// </summary>
-        // /// <param name="sender"></param>
-        // /// <param name="e"></param>
-        // void Controller_ValueChanged(object? sender, EventArgs e)
-        // {
-        //     // No need to check limits.
-        //     BoundChannel.ControllerValue = (int)(sender as Slider)!.Value;
-        //     OnSendMidi(new Controller(BoundChannel.ChannelNumber, BoundChannel.ControllerId, BoundChannel.ControllerValue));
-        // }
-
-        /// <summary>
-        /// Edit channel properties. Notifies client of any changes.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <summary>Edit channel properties. Notifies client of any changes.</summary>
         void ChannelInfo_Click(object? sender, EventArgs e)
         {
             var changes = SettingsEditor.Edit(BoundChannel, "Channel", 300);

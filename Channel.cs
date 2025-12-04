@@ -18,7 +18,7 @@ namespace Ephemera.MidiLibLite
     [Serializable] // TODO2 host should handle persistence?!
     public class OutputChannel
     {
-        #region Persisted Editable Properties
+        #region Persisted Properties
         /// <summary>Channel name - optional.</summary>
         public string ChannelName { get; set; } = "";
 
@@ -40,23 +40,10 @@ namespace Ephemera.MidiLibLite
         [Range(0, MidiDefs.MAX_MIDI)]
         public int Patch { get; set; } = 0;
 
-        // /// <summary>Edit current controller number.</summary>
-        // [Browsable(true)]
-        // [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-        // [Range(0, MidiDefs.MAX_MIDI)]
-        // public int ControllerId { get; set; } = 0;
-        #endregion
-
-        #region Persisted Non-editable Properties
         /// <summary>Current volume.</summary>
-        [Browsable(false)]
+        [Browsable(true)]
         [Range(0.0, Defs.MAX_VOLUME)]
         public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
-
-        // /// <summary>Controller payload.</summary>
-        // [Browsable(false)]
-        // [Range(0, MidiDefs.MAX_MIDI)]
-        // public int ControllerValue { get; set; } = 0;
         #endregion
 
         #region Non-persisted Properties
@@ -132,7 +119,7 @@ namespace Ephemera.MidiLibLite
         #region Fields
         #endregion
 
-        #region Persisted Editable Properties
+        #region Persisted Properties
         /// <summary>Actual 1-based midi channel number.</summary>
         [Browsable(true)]
         [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
@@ -140,10 +127,8 @@ namespace Ephemera.MidiLibLite
         public int ChannelNumber { get; set; } = 1;
 
         /// <summary>Channel name - optional.</summary>
+        [Browsable(true)]
         public string ChannelName { get; set; } = "";
-        #endregion
-
-        #region Persisted Non-editable Properties
         #endregion
 
         #region Non-persisted Properties

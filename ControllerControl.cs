@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Ephemera.MidiLibLite;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
@@ -19,7 +18,6 @@ namespace Ephemera.MidiLibLite
     [Serializable]
     public class ControllerInfo
     {
-        //TODO1 these:
         /// <summary>Edit current controller number.</summary>
         [Browsable(true)]
         [Editor(typeof(ControllerIdTypeEditor), typeof(UITypeEditor))]
@@ -37,50 +35,23 @@ namespace Ephemera.MidiLibLite
         [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
         [Range(1, MidiDefs.NUM_CHANNELS)]
         public int ChannelNumber { get; set; } = 0;
-        //public int ChannelHandle { get; set; } = 0;
+
+        [Browsable(false)]
+        public int DeviceId { get; set; } = 0;
     }
 
     public class ControllerControl : UserControl
     {
-        #region Types
-        // /// <summary>Channel playing.</summary>
-        // public enum ChannelState { Normal, Solo, Mute }
-
-        // /// <summary>Notify host of UI changes.</summary>
-        // public class ChannelChangeEventArgs : EventArgs
-        // {
-        //     public bool PatchChange { get; set; } = false;
-        //     public bool ChannelNumberChange { get; set; } = false;
-        //     public bool StateChange { get; set; } = false;
-        //     public bool PresetFileChange { get; set; } = false;
-        // }
-        #endregion
-
         #region Fields
-        // ChannelState _state = ChannelState.Normal;
-        const int PAD = 4;
-        const int SIZE = 32;
-
         readonly Container components = new();
         readonly protected ToolTip toolTip;
-
         readonly TextBox txtInfo;
-        // readonly Slider sldVolume;
-
         readonly Slider sldControllerValue;
         readonly Button btnSend;
 
-        // // TODO1 option ===>
-        // //SimpleChannelControl - has only editable channel_num, patch pick, volume, ControlColor !!! not used???
-        // readonly Label lblSolo;
-        // readonly Label lblMute;
+        const int PAD = 4;
+        const int SIZE = 32;
         #endregion
-
-
-
-
-
-        //OutputChannel BoundChannel = new();
 
         #region Properties
         /// <summary>My info.</summary>
@@ -92,17 +63,12 @@ namespace Ephemera.MidiLibLite
         }
         ControllerInfo _info = new();
 
-
-        // /// <summary>My channel.</summary>
-        // [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        // public OutputChannel BoundChannel { get; set; }
-
         /// <summary>Drawing the active elements of a control.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color DrawColor 
         {
             set
             {
-                // sldVolume.DrawColor = value;
                 sldControllerValue.DrawColor = value;
                 txtInfo.BackColor = value;
                 btnSend.BackColor = value;
@@ -110,6 +76,7 @@ namespace Ephemera.MidiLibLite
         }
 
         /// <summary>Drawing the control when selected.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color SelectedColor { get; set; }
 
         /// <summary>The graphics draw area.</summary>
@@ -118,27 +85,9 @@ namespace Ephemera.MidiLibLite
         {
             get { return new Rectangle(0, sldControllerValue.Bottom + PAD, Width, Height - (sldControllerValue.Bottom + PAD)); }
         }
-
-        // /// <summary>For muting/soloing.</summary>
-        // public ChannelState State
-        // {
-        //     get { return _state; }
-        //     set { _state = value; UpdateUi(); }
-        // }
-
-        // /// <summary>Current volume.</summary>
-        // [Range(0.0, Defs.MAX_VOLUME)]
-        // public double Volume
-        // {
-        //     get { return sldVolume.Value; }
-        //     set { sldVolume.Value = value; }
-        // }
         #endregion
 
         #region Events
-        // /// <summary>UI channel config change.</summary>
-        // public event EventHandler<ChannelChangeEventArgs>? ChannelChange;
-
         /// <summary>UI midi send.</summary>
         public event EventHandler<BaseMidiEvent>? SendMidi;
 
@@ -156,10 +105,6 @@ namespace Ephemera.MidiLibLite
 
             // InitializeComponent();
             SuspendLayout();
-
-            // // Satisfy designer and initial conditions,
-            // var dev = new NullOutputDevice("DUMMY_DEVICE");
-            // BoundChannel = new OutputChannel(dev, 1, "DUMMY_CHANNEL");
 
             txtInfo = new()
             {
@@ -183,39 +128,6 @@ namespace Ephemera.MidiLibLite
             };
             btnSend.Click += Send_Click;
             Controls.Add(btnSend);
-
-            // sldVolume = new()
-            // {
-            //     Minimum = 0.0,
-            //     Maximum = Defs.MAX_VOLUME,
-            //     Resolution = 0.05,
-            //     Value = 1.0,
-            //     BorderStyle = BorderStyle.FixedSingle,
-            //     Orientation = Orientation.Horizontal,
-            //     Location = new(txtInfo.Right + PAD, PAD),
-            //     Size = new(80, SIZE),
-            //     Label = "volume"
-            // };
-            // sldVolume.ValueChanged += (sender, e) => BoundChannel.Volume = (sender as Slider)!.Value;
-            // Controls.Add(sldVolume);
-
-            // lblSolo = new()
-            // {
-            //     Location = new(sldVolume.Right + PAD, PAD),
-            //     Size = new(20, SIZE/2),
-            //     Text = "S"
-            // };
-            // lblSolo.Click += SoloMute_Click;
-            // Controls.Add(lblSolo);
-
-            // lblMute = new()
-            // {
-            //     Location = new(sldVolume.Right + PAD, 20),
-            //     Size = new(20, SIZE/2),
-            //     Text = "M"
-            // };
-            // lblMute.Click += SoloMute_Click;
-            // Controls.Add(lblMute);
 
             sldControllerValue = new()
             {
@@ -247,7 +159,6 @@ namespace Ephemera.MidiLibLite
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            // sldVolume.Value = BoundChannel.Volume;
             sldControllerValue.Value = Info.ControllerValue;
 
             UpdateUi();
@@ -279,7 +190,6 @@ namespace Ephemera.MidiLibLite
         {
             // No need to check limits.
             Info.ControllerValue = (int)(sender as Slider)!.Value;
-            //OnSendMidi(new Controller(ChannelNumber, ControllerId, ControllerValue));
         }
 
         /// <summary>
@@ -290,50 +200,20 @@ namespace Ephemera.MidiLibLite
         void Send_Click(object? sender, EventArgs e)
         {
             // No need to check limits.
-            //ControllerValue = (int)(sender as Slider)!.Value;
-            OnSendMidi(new Controller(Info.ChannelNumber, Info.ControllerId, Info.ControllerValue));
+            OnSendMidi(new Controller(_info.ChannelNumber, _info.ControllerId, _info.ControllerValue));
         }
 
         /// <summary>
-        /// Edit channel properties. Notifies client of any changes.
+        /// Edit controller properties.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Info_Click(object? sender, EventArgs e) //TODO1
+        void Info_Click(object? sender, EventArgs e)
         {
             var changes = SettingsEditor.Edit(Info, "Controller", 300);
 
-            // Notify client.
-            //ChannelChangeEventArgs args = new()
-            //{
-            //    ChannelNumberChange = changes.Any(ch => ch.name == "ChannelNumber"),
-            //    PatchChange = changes.Any(ch => ch.name == "Patch"),
-            //    PresetFileChange = changes.Any(ch => ch.name == "PresetFile"),
-            //    StateChange = false
-            //};
-            //ChannelChange?.Invoke(this, new() { ChannelNumberChange = true });
-
             UpdateUi();
         }
-
-        // /// <summary>Handles solo and mute.</summary>
-        // void SoloMute_Click(object? sender, EventArgs e)
-        // {
-        //     var lbl = sender as Label;
-
-        //     // Figure out state.
-        //     if (sender == lblSolo)
-        //     {
-        //         State = lblSolo.BackColor == SelectedColor ? ChannelState.Normal : ChannelState.Solo;
-        //     }
-        //     else if (sender == lblMute)
-        //     {
-        //         State = lblMute.BackColor == SelectedColor ? ChannelState.Normal : ChannelState.Mute;
-        //     }
-
-        //     // Notify client.
-        //     ChannelChange?.Invoke(this, new() { StateChange = true });
-        // }
         #endregion
 
         #region Misc
@@ -344,12 +224,9 @@ namespace Ephemera.MidiLibLite
             sldControllerValue.Value = Info.ControllerValue;
 
             StringBuilder sb = new();
-            //sb.AppendLine($"Channel {BoundChannel.Handle}");
+            sb.AppendLine($"Channel TODO2 etc");
             // sb.AppendLine($"Patch {BoundChannel.GetPatchName(BoundChannel.Patch)}({BoundChannel.Patch})");
             toolTip.SetToolTip(txtInfo, sb.ToString());
-
-            //lblSolo.BackColor = _state == ChannelState.Solo ? SelectedColor :  BackColor;
-            //lblMute.BackColor = _state == ChannelState.Mute ? SelectedColor : BackColor;
         }
 
         /// <summary>Read me.</summary>

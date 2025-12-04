@@ -8,7 +8,6 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-// using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
 using Ephemera.NBagOfTricks;
@@ -209,6 +208,10 @@ namespace Ephemera.MidiLibLite
         }
         #endregion
 
+        public IOutputDevice GetOutputDevice(int id) // TODO2 bit klunky
+        {
+            return _outputDevices[id];
+        }
 
         /// <summary>
         /// Stop all midi. Doesn't throw.
