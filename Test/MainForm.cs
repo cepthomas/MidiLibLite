@@ -165,9 +165,9 @@ namespace Ephemera.MidiLibLite.Test
             // local hnd_ccin = api.open_midi_input("loopMIDI Port 1", 1, "my input")
             // local hnd_keys = api.open_midi_output("loopMIDI Port 2", 1, "keys", inst.AcousticGrandPiano)
             // local hnd_synth = api.open_midi_output("loopMIDI Port 2", 3, "synth", inst.Lead1Square)
-            var ch1 = _mgr.CreateInputChannel("loopMIDI Port 1", 1, "my input");
-            var ch2 = _mgr.CreateOutputChannel("Microsoft GS Wavetable Synth", 1, "keys", 0); // => AcousticGrandPiano);
-            var ch3 = _mgr.CreateOutputChannel("Microsoft GS Wavetable Synth", 10, "drums", 32); // => kit.Jazz);
+            var ch1 = _mgr.OpenMidiInput("loopMIDI Port 1", 1, "my input");
+            var ch2 = _mgr.OpenMidiOutput("Microsoft GS Wavetable Synth", 1, "keys", 0); // => AcousticGrandPiano);
+            var ch3 = _mgr.OpenMidiOutput("Microsoft GS Wavetable Synth", 10, "drums", 32); // => kit.Jazz);
 
             ///// 3 - create a channel control for each output channel and bind object
             DestroyControls();
@@ -187,12 +187,67 @@ namespace Ephemera.MidiLibLite.Test
             });
 
             ///// 4 - do work
-            // api.set_volume(hnd_keys, 0.7)
+            // call script api functions
+            // api.send_midi_note(hnd_strings, note_num, volume)
             // api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
-            // api.send_midi_note(hnd_strings, note_num, volume)--, 0)
+            //void SendMidiNote(ChannelHandle ch, int note_num, double volume)
+            //{
+            //}
+            //void SendMidiController(ChannelHandle ch, int controller_id, int value)
+            //{
+            //}
+
+            // callbacks from script
             // function receive_midi_note(chan_hnd, note_num, volume)
             // function receive_midi_controller(chan_hnd, controller, value)
+            //void ReceiveMidiNote(ChannelHandle ch, int note_num, double volume)
+            //{
+            //}
+            //void ReceiveMidiController(ChannelHandle ch, int controller_id, int value)
+            //{
+            //}
         }
+
+
+
+        //////////////////////////////// script api functions //////////////////////////////////
+        // api.send_midi_note(hnd_strings, note_num, volume)
+        // api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
+        void SendMidiNote(ChannelHandle chnd, int note_num, double volume)
+        {
+            if (note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note_num)); }
+
+            var ch = _mgr.GetOutputChannel(chnd);
+            if (volume == 0.0)
+            {
+                ch.Device.Send(new NoteOff(chnd.ChannelNumber, note_num));
+            }
+            else
+            {
+                ch.Device.Send(new NoteOn(chnd.ChannelNumber, note_num, (int)MathUtils.Constrain(volume * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI)));
+            }
+        }
+        void SendMidiController(ChannelHandle chnd, int controller_id, int value)
+        {
+            if (controller_id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(controller_id)); }
+            if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
+
+            var ch = _mgr.GetOutputChannel(chnd);
+            ch.Device.Send(new Controller(chnd.ChannelNumber, controller_id, value));
+        }
+
+        // TODO1 callbacks from script
+        // function receive_midi_note(chan_hnd, note_num, volume)
+        // function receive_midi_controller(chan_hnd, controller, value)
+        void ReceiveMidiNote(ChannelHandle chnd, int note_num, double volume)
+        {
+        }
+        void ReceiveMidiController(ChannelHandle chnd, int controller_id, int value)
+        {
+        }
+
+
+
 
         /// <summary>
         /// Init control.

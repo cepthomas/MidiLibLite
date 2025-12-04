@@ -9,9 +9,10 @@ namespace Ephemera.MidiLibLite
 {
     public class MidiDefs // from all Midi*
     {
-        public static MidiDefs TheDefs { get; set; } = new(); //TODO1 ??
+        /// <summary>The global collection.</summary>
+        public static MidiDefs TheDefs { get; set; } = new();
 
-        ///// <summary>Midi constant.</summary>
+        /// <summary>Midi constant.</summary>
         //public const int MIN_MIDI = 0;
 
         /// <summary>Midi constant.</summary>
@@ -101,7 +102,7 @@ namespace Ephemera.MidiLibLite
 
         public static int GetControllerNumber(string which)
         {
-            return 111; //TODO1
+            return 7; //TODO1
         }
 
         // public static int GetDrumKitNumber(string which)
@@ -196,5 +197,4 @@ namespace Ephemera.MidiLibLite
             return docs;
         }
     }
-
 }

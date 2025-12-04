@@ -19,17 +19,17 @@ namespace Ephemera.MidiLibLite
     public class Manager
     {
         #region Fields
-        /// <summary>All midi devices to use for send.</summary>
+        /// <summary>All midi devices to use for send. Index is the id.</summary>
         readonly List<IOutputDevice> _outputDevices = [];
 
-        /// <summary>All midi devices to use for receive.</summary>
+        /// <summary>All midi devices to use for receive. Index is the id.</summary>
         readonly List<IInputDevice> _inputDevices = [];
 
-        /// <summary>All the output channels.</summary>
-        readonly List<OutputChannel> _outputChannels = new();
+        /// <summary>All the output channels. Key is handle.</summary>
+        readonly Dictionary<int, OutputChannel> _outputChannels = new();
 
-        /// <summary>All the input channels.</summary>
-        readonly List<InputChannel> _inputChannels = new();
+        /// <summary>All the input channels. Key is handle.</summary>
+        readonly Dictionary<int, InputChannel> _inputChannels = new();
         #endregion
 
         #region Events
@@ -45,8 +45,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="channelNumber"></param>
         /// <param name="channelName"></param>
         /// <returns></returns>
-        /// <exception cref="MidiLibException"></exception>
-        public InputChannel CreateInputChannel(string deviceName, int channelNumber, string channelName)
+        public InputChannel OpenMidiInput(string deviceName, int channelNumber, string channelName)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
@@ -66,7 +65,7 @@ namespace Ephemera.MidiLibLite
                 Enable = true,
             };
 
-            _inputChannels.Add(ch);
+            _inputChannels.Add(ch.Handle, ch);
             return ch;
         }
 
@@ -78,8 +77,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="channelName"></param>
         /// <param name="patch"></param>
         /// <returns></returns>
-        /// <exception cref="MidiLibException"></exception>
-        public OutputChannel CreateOutputChannel(string deviceName, int channelNumber, string channelName, int patch)
+        public OutputChannel OpenMidiOutput(string deviceName, int channelNumber, string channelName, int patch)
         {
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
@@ -100,7 +98,7 @@ namespace Ephemera.MidiLibLite
                 Patch = patch
             };
 
-            _outputChannels.Add(ch);
+            _outputChannels.Add(ch.Handle, ch);
 
             // Send the patch now.
             if (patch >= 0)
@@ -111,12 +109,18 @@ namespace Ephemera.MidiLibLite
         }
         #endregion
 
+
+
+
+
+
+
         #region Devices
         /// <summary>
         /// Create all I/O devices from user settings.
         /// </summary>
         /// <returns>Success</returns>
-        public void CreateDevices() // TODO1 also OSC, null, etc => IInputDevice...
+        public void CreateDevices() // TODO1 also OSC, null - from script or api
         {
             // First...
             DestroyDevices();
@@ -208,10 +212,22 @@ namespace Ephemera.MidiLibLite
         }
         #endregion
 
+
+
+
         public IOutputDevice GetOutputDevice(int id) // TODO2 bit klunky
         {
             return _outputDevices[id];
         }
+
+
+        public OutputChannel GetOutputChannel(ChannelHandle chnd) // TODO2 bit klunky
+        {
+            return _outputChannels[chnd];
+        }
+
+
+
 
         /// <summary>
         /// Stop all midi. Doesn't throw.
@@ -221,9 +237,9 @@ namespace Ephemera.MidiLibLite
         {
             int cc = MidiDefs.GetControllerNumber("AllNotesOff");
 
-            if (channel == null)
+            if (channel is null)
             {
-                _outputChannels.ForEach(ch => ch.Device.Send(new Controller(ch.ChannelNumber, cc, 0)));
+                _outputChannels.ForEach(ch => ch.Value.Device.Send(new Controller(ch.Value.ChannelNumber, cc, 0)));
             }
             else
             {

@@ -47,8 +47,9 @@ namespace Ephemera.MidiLibLite
         #region Properties
         /// <summary>My channel.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        //public ChannelHandle BoundChannel { get; set; }
         public OutputChannel BoundChannel { get; set; }
-        
+
         /// <summary>Drawing the active elements of a control.</summary>
         public Color DrawColor 
         {
