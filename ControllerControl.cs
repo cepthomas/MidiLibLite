@@ -224,7 +224,7 @@ namespace Ephemera.MidiLibLite
             sldControllerValue.Value = Info.ControllerValue;
 
             StringBuilder sb = new();
-            sb.AppendLine($"Channel TODO2 etc");
+            sb.AppendLine($"Channel TODO1 etc");
             // sb.AppendLine($"Patch {BoundChannel.GetPatchName(BoundChannel.Patch)}({BoundChannel.Patch})");
             toolTip.SetToolTip(txtInfo, sb.ToString());
         }

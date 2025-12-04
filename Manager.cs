@@ -158,7 +158,7 @@ namespace Ephemera.MidiLibLite
             }
         }
 
-        //TODO2 support retry x2
+        //TODO1 support retry x2
         // ///// Determine midi output device. /////
         // Text = "Midi Generator - no output device";
         // timer1.Interval = 1000;
@@ -215,13 +215,13 @@ namespace Ephemera.MidiLibLite
 
 
 
-        public IOutputDevice GetOutputDevice(int id) // TODO2 bit klunky
+        public IOutputDevice GetOutputDevice(int id) // TODO1 bit klunky
         {
             return _outputDevices[id];
         }
 
 
-        public OutputChannel GetOutputChannel(ChannelHandle chnd) // TODO2 bit klunky
+        public OutputChannel GetOutputChannel(ChannelHandle chnd) // TODO1 bit klunky
         {
             return _outputChannels[chnd];
         }

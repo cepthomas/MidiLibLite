@@ -102,7 +102,7 @@ namespace Ephemera.MidiLibLite
 
         public static int GetControllerNumber(string which)
         {
-            return 7; //TODO1
+            return 7; TODO1
         }
 
         // public static int GetDrumKitNumber(string which)

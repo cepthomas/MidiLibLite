@@ -75,7 +75,7 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         /// <summary>
-        /// Process driver level midi input event. ???TODO2 Don't throw in this thread!
+        /// Process driver level midi input event. ???TODO1 Don't throw in this thread!
         /// </summary>
         void MidiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
         {
@@ -91,7 +91,7 @@ namespace Ephemera.MidiLibLite
                     new NoteOff(offevt.Channel, offevt.NoteNumber) :
                     new NoteOn(offevt.Channel, offevt.NoteNumber, offevt.Velocity),
                 ControlChangeEvent ctlevt => new Controller(ctlevt.Channel, (int)ctlevt.Controller, ctlevt.ControllerValue),
-                _ => new BaseMidiEvent() // TODO2 just ignore? or ErrorInfo = $"Invalid message: {m}"
+                _ => new BaseMidiEvent() // TODO1 just ignore? or ErrorInfo = $"Invalid message: {m}"
             };
 
             InputReceive?.Invoke(this, evt);
@@ -102,7 +102,7 @@ namespace Ephemera.MidiLibLite
         /// </summary>
         void MidiIn_ErrorReceived(object? sender, MidiInMessageEventArgs e)
         {
-            // TODO2 just ignore?
+            // TODO1 just ignore?
             // string ErrorInfo = $"Message:0x{e.RawMessage:X8}";
         }
 
@@ -178,7 +178,7 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         /// <summary>
-        /// Send midi event. TODO2 OK to throw in here.
+        /// Send midi event. TODO1 OK to throw in here.
         /// </summary>
         public void Send(BaseMidiEvent evt)
         {

@@ -35,7 +35,7 @@ namespace Ephemera.MidiLibLite
         readonly protected ToolTip toolTip;
         readonly TextBox txtInfo;
         readonly Slider sldVolume;
-        // TODO2 option?  SimpleChannelControl
+        // TODO1 option?  SimpleChannelControl
         readonly Label lblSolo;
         readonly Label lblMute;
 

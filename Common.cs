@@ -24,7 +24,7 @@ namespace Ephemera.MidiLibLite
         public const double MAX_VOLUME = 2.0;
     }
 
-    #region Internal event definitions TODO2 different home?
+    #region Internal event definitions TODO1 different home?
     public class BaseMidiEvent
     {
         /// <summary>Channel 1-NUM_CHANNELS.</summary>
@@ -137,7 +137,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"Patch:{Value} TODO2 text get from channel";
+            return $"Patch:{Value} TODO1 text get from channel";
         }
     }
     #endregion

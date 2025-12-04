@@ -401,7 +401,7 @@ namespace Ephemera.MidiLibLite.Test
 
 
 
-#if LEFTOVERS_TODO2
+#if LEFTOVERS_TODO1
         /// <summary>
         /// Input from internal non-midi device. Doesn't throw.
         /// </summary>

@@ -15,7 +15,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Ephemera.MidiLibLite
 {
     /// <summary>Describes one midi output channel. Some properties are optional.</summary>
-    [Serializable] // TODO2 host should handle persistence?!
+    [Serializable] // TODO1 host should handle persistence?!
     public class OutputChannel
     {
         #region Persisted Properties
