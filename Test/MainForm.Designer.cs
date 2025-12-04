@@ -23,8 +23,11 @@ namespace Ephemera.MidiLibLite.Test
             btnKillMidi = new System.Windows.Forms.ToolStripButton();
             txtViewer = new Ephemera.NBagOfUis.TextViewer();
             sldVolume = new Ephemera.NBagOfUis.Slider();
-            cc1 = new CustomChannelControl();
-            cc2 = new CustomChannelControl();
+            cch1 = new CustomChannelControl();
+            cch2 = new CustomChannelControl();
+            cctrl1 = new ControllerControl();
+            cctrl2 = new ControllerControl();
+            button1 = new System.Windows.Forms.Button();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -60,12 +63,12 @@ namespace Ephemera.MidiLibLite.Test
             // txtViewer
             // 
             txtViewer.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            txtViewer.Location = new System.Drawing.Point(357, 38);
+            txtViewer.Location = new System.Drawing.Point(357, 103);
             txtViewer.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             txtViewer.MaxText = 5000;
             txtViewer.Name = "txtViewer";
             txtViewer.Prompt = "";
-            txtViewer.Size = new System.Drawing.Size(557, 423);
+            txtViewer.Size = new System.Drawing.Size(557, 358);
             txtViewer.TabIndex = 58;
             txtViewer.WordWrap = true;
             // 
@@ -84,37 +87,66 @@ namespace Ephemera.MidiLibLite.Test
             sldVolume.TabIndex = 99;
             sldVolume.Value = 5D;
             // 
-            // cc1
+            // cch1
             // 
-            cc1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            cc1.DrawColor = System.Drawing.Color.Red;
-            cc1.Location = new System.Drawing.Point(8, 103);
-            cc1.Name = "cc1";
-            cc1.SelectedColor = System.Drawing.Color.Green;
-            cc1.Size = new System.Drawing.Size(320, 175);
-            cc1.State = ChannelControl.ChannelState.Normal;
-            cc1.TabIndex = 100;
-            cc1.Volume = 1D;
+            cch1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            cch1.Location = new System.Drawing.Point(8, 103);
+            cch1.Name = "cch1";
+            cch1.SelectedColor = System.Drawing.Color.Green;
+            cch1.Size = new System.Drawing.Size(320, 175);
+            cch1.State = ChannelControl.ChannelState.Normal;
+            cch1.TabIndex = 100;
+            cch1.Volume = 0.8D;
             // 
-            // cc2
+            // cch2
             // 
-            cc2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            cc2.DrawColor = System.Drawing.Color.Red;
-            cc2.Location = new System.Drawing.Point(8, 284);
-            cc2.Name = "cc2";
-            cc2.SelectedColor = System.Drawing.Color.Green;
-            cc2.Size = new System.Drawing.Size(320, 177);
-            cc2.State = ChannelControl.ChannelState.Normal;
-            cc2.TabIndex = 101;
-            cc2.Volume = 1D;
+            cch2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            cch2.Location = new System.Drawing.Point(8, 284);
+            cch2.Name = "cch2";
+            cch2.SelectedColor = System.Drawing.Color.Green;
+            cch2.Size = new System.Drawing.Size(320, 177);
+            cch2.State = ChannelControl.ChannelState.Normal;
+            cch2.TabIndex = 101;
+            cch2.Volume = 0.8D;
+            // 
+            // cctrl1
+            // 
+            cctrl1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            cctrl1.Location = new System.Drawing.Point(168, 41);
+            cctrl1.Name = "cctrl1";
+            cctrl1.SelectedColor = System.Drawing.Color.Empty;
+            cctrl1.Size = new System.Drawing.Size(236, 46);
+            cctrl1.TabIndex = 102;
+            // 
+            // cctrl2
+            // 
+            cctrl2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            cctrl2.Location = new System.Drawing.Point(420, 41);
+            cctrl2.Name = "cctrl2";
+            cctrl2.SelectedColor = System.Drawing.Color.Empty;
+            cctrl2.Size = new System.Drawing.Size(236, 46);
+            cctrl2.TabIndex = 103;
+            // 
+            // button1
+            // 
+            button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            button1.Location = new System.Drawing.Point(790, 41);
+            button1.Name = "button1";
+            button1.Size = new System.Drawing.Size(54, 45);
+            button1.TabIndex = 104;
+            button1.Text = "test";
+            button1.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(926, 475);
-            Controls.Add(cc2);
-            Controls.Add(cc1);
+            Controls.Add(button1);
+            Controls.Add(cctrl2);
+            Controls.Add(cctrl1);
+            Controls.Add(cch2);
+            Controls.Add(cch1);
             Controls.Add(sldVolume);
             Controls.Add(txtViewer);
             Controls.Add(toolStrip1);
@@ -136,8 +168,11 @@ namespace Ephemera.MidiLibLite.Test
         private NBagOfUis.TextViewer txtViewer;
         private System.Windows.Forms.ToolStripButton btnLogMidi;
         private System.Windows.Forms.ToolStripButton btnKillMidi;
-        private CustomChannelControl cc1;
-        private CustomChannelControl cc2;
+        private CustomChannelControl cch1;
+        private CustomChannelControl cch2;
+        private ControllerControl cctrl1;
+        private ControllerControl cctrl2;
+        private System.Windows.Forms.Button button1;
     }
 }
 

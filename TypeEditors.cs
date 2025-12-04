@@ -13,6 +13,7 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLibLite
 {
+    #region Patch editing
     /// <summary>Select a patch from list.</summary>
     public class PatchTypeEditor : UITypeEditor
     {
@@ -54,7 +55,54 @@ namespace Ephemera.MidiLibLite
             return res.Value;
         }
     }
+    #endregion
 
+    #region ControllerId editing
+    /// <summary>Select a controller from list.</summary>
+    public class ControllerIdTypeEditor : UITypeEditor
+    {
+        public override object? EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
+        {
+            if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service || context is null || context.Instance is null) { return null; }
+
+            var ctlrList = MidiDefs.TheDefs.GetControllerIdDefs();
+            var lb = new ListBox
+            {
+                Width = 150,
+                SelectionMode = SelectionMode.One
+            };
+            lb.Click += (_, __) => _service.CloseDropDown();
+            ctlrList.ForEach(v => lb.Items.Add($"{v.Value}({v.Key})"));
+            _service.DropDownControl(lb);
+
+            return lb.SelectedItem is null ? value : lb.SelectedIndex;
+        }
+
+        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) { return UITypeEditorEditStyle.DropDown; }
+    }
+
+    /// <summary>Convert between controller int and string versions.</summary>
+    public class ControllerIdConverter : Int64Converter
+    {
+        public override object? ConvertTo(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, Type destinationType)
+        {
+            if (context is null || context.Instance is null || value is not int) { return base.ConvertTo(context, culture, value, destinationType); }
+            var ctlrList = MidiDefs.TheDefs.GetControllerIdDefs();
+            return ctlrList[(int)value];
+        }
+
+        public override object? ConvertFrom(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
+        {
+            if (context is null || context.Instance is null || value is not int) { return base.ConvertFrom(context, culture, value); }
+            var ctlrList = MidiDefs.TheDefs.GetControllerIdDefs();
+            var res = ctlrList.FirstOrDefault(ch => ch.Value == (string)value);
+            return res.Value;
+        }
+    }
+    #endregion
+
+
+    #region Midi value editing
     /// <summary>Select a midi value from a range. Handles special case of channel number.</summary>
     public class MidiValueTypeEditor : UITypeEditor
     {
@@ -76,7 +124,9 @@ namespace Ephemera.MidiLibLite
 
         public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) { return UITypeEditorEditStyle.DropDown; }
     }
+    #endregion
 
+    #region Device editing
     /// <summary>Select a device from list.</summary>
     public class DeviceTypeEditor : UITypeEditor
     {
@@ -98,4 +148,5 @@ namespace Ephemera.MidiLibLite
 
         public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) { return UITypeEditorEditStyle.DropDown; }
     }
+    #endregion
 }

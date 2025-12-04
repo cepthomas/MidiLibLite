@@ -11,6 +11,10 @@ using System.Runtime.CompilerServices;
 
 namespace Ephemera.MidiLibLite
 {
+    /// <summary>Library error.</summary>
+    public class MidiLibException(string message) : Exception(message) { }
+
+
     public class Defs
     {
         /// <summary>Default value.</summary>
@@ -19,12 +23,8 @@ namespace Ephemera.MidiLibLite
         /// <summary>Allow UI controls some more headroom.</summary>
         public const double MAX_VOLUME = 2.0;
     }
- 
-    /// <summary>Library error.</summary>
-    public class MidiLibException(string message) : Exception(message) { }
 
-
-    #region Internal event definitions TODO2 own home?
+    #region Internal event definitions TODO2 different home?
     public class BaseMidiEvent
     {
         /// <summary>Channel 1-NUM_CHANNELS.</summary>

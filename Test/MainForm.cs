@@ -14,6 +14,7 @@ using System.Diagnostics;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 using Ephemera.MidiLibLite;
+using System.Runtime.CompilerServices;
 
 
 namespace Ephemera.MidiLibLite.Test
@@ -35,6 +36,10 @@ namespace Ephemera.MidiLibLite.Test
 
         /// <summary>The boss.</summary>
         readonly Manager _mgr = new();
+
+        const string ERROR = "ERR";
+        const string WARN = "WRN";
+        const string INFO = "INF";
         #endregion
 
         #region Lifecycle
@@ -52,8 +57,8 @@ namespace Ephemera.MidiLibLite.Test
             // The text output.
             txtViewer.Font = Font;
             txtViewer.WordWrap = true;
-            txtViewer.MatchText.Add("ERR", Color.LightPink);
-            txtViewer.MatchText.Add("WRN", Color.Plum);
+            txtViewer.MatchText.Add(ERROR, Color.LightPink);
+            txtViewer.MatchText.Add(WARN, Color.Plum);
 
             // Master volume.
             sldVolume.DrawColor = _drawColor;
@@ -61,7 +66,7 @@ namespace Ephemera.MidiLibLite.Test
             sldVolume.Maximum = Defs.MAX_VOLUME;
             sldVolume.Resolution = Defs.MAX_VOLUME / 50;
             sldVolume.Value = Defs.DEFAULT_VOLUME;
-            sldVolume.Label = "volume";
+            sldVolume.Label = "master volume";
 
             // Hook up some simple UI handlers.
             btnKillMidi.Click += (_, __) => { _mgr.Kill(); };
@@ -78,20 +83,20 @@ namespace Ephemera.MidiLibLite.Test
         {
             try
             {
-                DemoScriptApp();
-                //DemoStandardApp();
+                //DemoScriptApp();
+                DemoStandardApp();
             }
             catch (MidiLibException ex)
             {
-                Error(ex.Message);
+                Tell(ERROR, ex.Message);
             }
             catch (AppException ex)
             {
-                Error(ex.Message);
+                Tell(ERROR, ex.Message);
             }
             catch (Exception ex)
             {
-                Error(ex.Message);
+                Tell(ERROR, ex.Message);
             }
 
             base.OnLoad(e);
@@ -122,15 +127,19 @@ namespace Ephemera.MidiLibLite.Test
         void DemoStandardApp()
         {
             ///// 1 - configure controls
-            InitControl(cc1);
-            InitControl(cc2);
+            InitControl(cch1);
+            InitControl(cch2);
+            InitControl(cctrl1);
+            InitControl(cctrl2);
 
             ///// 2 - create all channels - explicit
             MidiOutputDevice device = new("VirtualMIDISynth #1"); // "Microsoft GS Wavetable Synth"
-            cc1.BoundChannel = new OutputChannel(device, 1, "cc1 !!!");
-            cc2.BoundChannel = new OutputChannel(device, 2, "cc2 !!!");
+            cch1.BoundChannel = new OutputChannel(device, 1, "cch1 !!!");
+            cch2.BoundChannel = new OutputChannel(device, 2, "cch2 !!!");
 
-            ///// 3 - NA
+            ///// 3 - configure other stuff
+            cctrl1.Info = new() { ChannelNumber = 1, ControllerId = 77, ControllerValue = 50 };
+            cctrl2.Info = new() { ChannelNumber = 2, ControllerId = 88, ControllerValue = 60 };
 
             ///// 4 - do work
             // ????
@@ -142,8 +151,10 @@ namespace Ephemera.MidiLibLite.Test
         void DemoScriptApp()
         {
             ///// 0 - pre-steps
-            cc1.Hide();
-            cc2.Hide();
+            cch1.Hide();
+            cch2.Hide();
+            cctrl1.Hide();
+            cctrl2.Hide();
 
             ///// 1 - create all devices
             _mgr.CreateDevices();
@@ -214,7 +225,28 @@ namespace Ephemera.MidiLibLite.Test
             cc.Volume = Defs.DEFAULT_VOLUME;
             cc.ChannelChange += Cc_ChannelChange;
             cc.SendMidi += Cc_MidiSend;
-            Controls.Add(cc);
+
+            if (!Controls.Contains(cc))
+            {
+                Controls.Add(cc);
+            }
+        }
+
+        /// <summary>
+        /// Init control.
+        /// </summary>
+        void InitControl(ControllerControl cc)
+        {
+            cc.BorderStyle = BorderStyle.FixedSingle;
+            // cc.BoundChannel = channel;
+            cc.DrawColor = _drawColor;
+            cc.SelectedColor = _selectedColor;
+            cc.SendMidi += Cc_MidiSend;
+
+            if (!Controls.Contains(cc))
+            {
+                Controls.Add(cc);
+            }
         }
 
         /// <summary>
@@ -262,6 +294,8 @@ namespace Ephemera.MidiLibLite.Test
 
             if (e.StateChange)
             {
+                Tell(INFO, $"StateChange");
+
                 // Update all channels.
                 bool anySolo = _channelControls.Where(c => c.State == ChannelControl.ChannelState.Solo).Any();
 
@@ -282,11 +316,13 @@ namespace Ephemera.MidiLibLite.Test
 
             if (e.PatchChange)
             {
+                Tell(INFO, $"PatchChange");
                 channel.Device.Send(new Patch(channel.ChannelNumber, channel.Patch));
             }
 
             if (e.PresetFileChange)
             {
+                Tell(INFO, $"PresetFileChange");
                 channel.UpdatePresets();
             }
         }
@@ -298,32 +334,20 @@ namespace Ephemera.MidiLibLite.Test
         /// <param name="e"></param>
         void Mgr_InputReceive(object? sender, BaseMidiEvent e)
         {
-            Info($"Received: {e}");
+            Tell(INFO, $"Received: {e}");
         }
         #endregion
 
         #region Misc internals
         /// <summary>Tell me something good.</summary>
         /// <param name="s">What</param>
-        void Info(string s)
+        void Tell(string cat, string s, [CallerFilePath] string file = "", [CallerLineNumber] int line = -1)
         {
-            txtViewer.AppendLine($"{s}");
-        }
-
-        /// <summary>Tell me something odd.</summary>
-        /// <param name="s">What</param>
-        void Warn(string s)
-        {
-            txtViewer.AppendLine($"WRN {s}");
-        }
-
-        /// <summary>Tell me something bad.</summary>
-        /// <param name="s">What</param>
-        void Error(string s)
-        {
-            txtViewer.AppendLine($"ERR {s}");
+            var fn = Path.GetFileName(file);
+            txtViewer.AppendLine($"{cat} {fn}({line}) {s}");
         }
         #endregion
+
 
 
 

@@ -15,7 +15,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Ephemera.MidiLibLite
 {
     /// <summary>Describes one midi output channel. Some properties are optional.</summary>
-    [Serializable] // TODO1 host should handle persistence?!
+    [Serializable] // TODO2 host should handle persistence?!
     public class OutputChannel
     {
         #region Persisted Editable Properties
@@ -27,21 +27,11 @@ namespace Ephemera.MidiLibLite
         [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
         [Range(1, MidiDefs.NUM_CHANNELS)]
         public int ChannelNumber { get; set; } = 1;
-        //{
-        //    get { return _channelNumber; }
-        //    set { _channelNumber = MathUtils.Constrain(value, 1, MidiDefs.NUM_CHANNELS); }
-        //}
-        //int _channelNumber = 1;
 
         /// <summary>Override default instrument presets.</summary>
         [Browsable(true)]
         [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
         public string PresetFile { get; set; } = "";
-        //{
-        //    get { return _presetFile; }
-        //    set { _presetFile = value; }
-        //}
-        //string _presetFile = "";
 
         /// <summary>Edit current instrument/patch number.</summary>
         [Browsable(true)]
@@ -49,22 +39,12 @@ namespace Ephemera.MidiLibLite
         [TypeConverter(typeof(PatchConverter))]
         [Range(0, MidiDefs.MAX_MIDI)]
         public int Patch { get; set; } = 0;
-        //{
-        //    get { return _patch; }
-        //    set { _patch = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI); }
-        //}
-        //int _patch = 0;
 
-        /// <summary>Edit current controller number.</summary>
-        [Browsable(true)]
-        [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-        [Range(0, MidiDefs.MAX_MIDI)]
-        public int ControllerId { get; set; } = 0;
-        //{
-        //    get { return _controllerId; }
-        //    set { _controllerId = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI); }
-        //}
-        //int _controllerId = 0;
+        // /// <summary>Edit current controller number.</summary>
+        // [Browsable(true)]
+        // [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
+        // [Range(0, MidiDefs.MAX_MIDI)]
+        // public int ControllerId { get; set; } = 0;
         #endregion
 
         #region Persisted Non-editable Properties
@@ -72,21 +52,11 @@ namespace Ephemera.MidiLibLite
         [Browsable(false)]
         [Range(0.0, Defs.MAX_VOLUME)]
         public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
-        //{
-        //    get { return _volume; }
-        //    set { _volume = MathUtils.Constrain(value, 0.0, Defs.MAX_VOLUME); }
-        //}
-        //double _volume = Defs.DEFAULT_VOLUME;
 
-        /// <summary>Controller payload.</summary>
-        [Browsable(false)]
-        [Range(0, MidiDefs.MAX_MIDI)]
-        public int ControllerValue { get; set; } = 0;
-        //{
-        //    get { return _controllerValue; }
-        //    set { _controllerValue = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI); }
-        //}
-        //int _controllerValue = 0;
+        // /// <summary>Controller payload.</summary>
+        // [Browsable(false)]
+        // [Range(0, MidiDefs.MAX_MIDI)]
+        // public int ControllerValue { get; set; } = 0;
         #endregion
 
         #region Non-persisted Properties
@@ -116,31 +86,31 @@ namespace Ephemera.MidiLibLite
         /// Constructor with required args.
         /// </summary>
         /// <param name="device"></param>
-        /// <param name="channelNumber"></param>
-        /// <param name="channelName"></param>
-        public OutputChannel(IOutputDevice device, int channelNumber, string channelName)
+        /// <param name="channel"></param>
+        /// <param name="name"></param>
+        public OutputChannel(IOutputDevice device, int channel, string name)
         {
+            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
+            if (string.IsNullOrEmpty(name)) { throw new ArgumentException(nameof(name)); }
+
             Device = device;
-            ChannelNumber = channelNumber;
-            ChannelName = channelName;
-            Handle = new(device.Id, channelNumber, true);
+            ChannelNumber = channel;
+            ChannelName = name;
+            Handle = new(device.Id, channel, true);
         }
 
         /// <summary>Use default or custom presets.</summary>
-        /// <exception cref="FileNotFoundException"></exception>
         public void UpdatePresets()
         {
-            if (PresetFile != "")
+            try
             {
-                if (!File.Exists(PresetFile))
-                {
-                    throw new FileNotFoundException(PresetFile);
-                }
-                _instruments = Utils.LoadDefs(PresetFile);
+                _instruments = PresetFile != "" ?
+                    Utils.LoadDefs(PresetFile) :
+                    MidiDefs.TheDefs.GetDefaultInstrumentDefs();
             }
-            else // use defaults
+            catch (Exception ex)
             {
-                _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
+                throw new MidiLibException($"Failed to load defs file {PresetFile}: {ex.Message}");
             }
         }
 
@@ -168,11 +138,6 @@ namespace Ephemera.MidiLibLite
         [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
         [Range(1, MidiDefs.NUM_CHANNELS)]
         public int ChannelNumber { get; set; } = 1;
-        //{
-        //    get { return _channelNumber; }
-        //    set { _channelNumber = MathUtils.Constrain(value, 1, MidiDefs.NUM_CHANNELS); }
-        //}
-        //int _channelNumber = 1;
 
         /// <summary>Channel name - optional.</summary>
         public string ChannelName { get; set; } = "";
@@ -202,14 +167,17 @@ namespace Ephemera.MidiLibLite
         /// Constructor with required args.
         /// </summary>
         /// <param name="device"></param>
-        /// <param name="channelNumber"></param>
-        /// <param name="channelName"></param>
-        public InputChannel(IInputDevice device, int channelNumber, string channelName)
+        /// <param name="channel"></param>
+        /// <param name="name"></param>
+        public InputChannel(IInputDevice device, int channel, string name)
         {
+            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
+            if (string.IsNullOrEmpty(name)) { throw new ArgumentException(nameof(name)); }
+
             Device = device;
-            ChannelNumber = channelNumber;
-            ChannelName = channelName;
-            Handle = new(device.Id, channelNumber, false);
+            ChannelNumber = channel;
+            ChannelName = name;
+            Handle = new(device.Id, channel, false);
         }
     }
 

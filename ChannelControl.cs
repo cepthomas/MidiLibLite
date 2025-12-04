@@ -36,13 +36,13 @@ namespace Ephemera.MidiLibLite
         const int SIZE = 32;
 
         readonly Container components = new();
-        readonly ToolTip toolTip;
+        readonly protected ToolTip toolTip;
 
         readonly TextBox txtInfo;
         readonly Slider sldVolume;
 
         // TODO1 option ===>
-        readonly Slider sldControllerValue; //TODO2 put controller in separate control
+        // readonly Slider sldControllerValue; //TODO1 put controller in separate control
 
         // TODO1 option ===>
         //SimpleChannelControl - has only editable channel_num, patch pick, volume, ControlColor !!! not used???
@@ -61,7 +61,7 @@ namespace Ephemera.MidiLibLite
             set
             {
                 sldVolume.DrawColor = value;
-                sldControllerValue.DrawColor = value;
+                //sldControllerValue.DrawColor = value;
                 txtInfo.BackColor = value;
             }
         }
@@ -125,7 +125,7 @@ namespace Ephemera.MidiLibLite
                 Location = new(PAD, PAD),
                 Size = new(100, SIZE),
                 ReadOnly = true,
-                Text = "!!!!!!!"
+                Text = "Hello world"
             };
             txtInfo.Click += ChannelInfo_Click;
             Controls.Add(txtInfo);
@@ -139,7 +139,8 @@ namespace Ephemera.MidiLibLite
                 BorderStyle = BorderStyle.FixedSingle,
                 Orientation = Orientation.Horizontal,
                 Location = new(txtInfo.Right + PAD, PAD),
-                Size = new(80, SIZE)
+                Size = new(80, SIZE),
+                Label = "volume"
             };
             sldVolume.ValueChanged += (sender, e) => BoundChannel.Volume = (sender as Slider)!.Value;
             Controls.Add(sldVolume);
@@ -162,22 +163,23 @@ namespace Ephemera.MidiLibLite
             lblMute.Click += SoloMute_Click;
             Controls.Add(lblMute);
 
-            sldControllerValue = new()
-            {
-                Minimum = 0,
-                Maximum = MidiDefs.MAX_MIDI,
-                Resolution = 1,
-                Value = 50,
-                BorderStyle = BorderStyle.FixedSingle,
-                Orientation = Orientation.Horizontal,
-                Location = new(lblSolo.Right + PAD, PAD),
-                Size = new(80, SIZE)
-            };
-            sldControllerValue.ValueChanged += Controller_ValueChanged;
-            Controls.Add(sldControllerValue);
+            // sldControllerValue = new()
+            // {
+            //     Minimum = 0,
+            //     Maximum = MidiDefs.MAX_MIDI,
+            //     Resolution = 1,
+            //     Value = 50,
+            //     BorderStyle = BorderStyle.FixedSingle,
+            //     Orientation = Orientation.Horizontal,
+            //     Location = new(lblSolo.Right + PAD, PAD),
+            //     Size = new(80, SIZE),
+            //     Label = "booga"
+            // };
+            // sldControllerValue.ValueChanged += Controller_ValueChanged;
+            // Controls.Add(sldControllerValue);
 
             // Form.
-            Size = new Size(sldControllerValue.Right + PAD, SIZE + PAD + PAD);
+            Size = new Size(lblSolo.Right + PAD, SIZE + PAD + PAD);
 
             ResumeLayout(false);
             PerformLayout();
@@ -186,13 +188,13 @@ namespace Ephemera.MidiLibLite
         }
 
         /// <summary>
-        /// Apply customization from system. BoundChannel should be valid now.
+        /// Apply customization from system. Properties should be valid now.
         /// </summary>
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
             sldVolume.Value = BoundChannel.Volume;
-            sldControllerValue.Value = BoundChannel.ControllerValue;
+            // sldControllerValue.Value = BoundChannel.ControllerValue;
 
             UpdateUi();
 
@@ -214,17 +216,17 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Handlers for user selections
-        /// <summary>
-        /// Notify client.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Controller_ValueChanged(object? sender, EventArgs e)
-        {
-            // No need to check limits.
-            BoundChannel.ControllerValue = (int)(sender as Slider)!.Value;
-            OnSendMidi(new Controller(BoundChannel.ChannelNumber, BoundChannel.ControllerId, BoundChannel.ControllerValue));
-        }
+        // /// <summary>
+        // /// Notify client.
+        // /// </summary>
+        // /// <param name="sender"></param>
+        // /// <param name="e"></param>
+        // void Controller_ValueChanged(object? sender, EventArgs e)
+        // {
+        //     // No need to check limits.
+        //     BoundChannel.ControllerValue = (int)(sender as Slider)!.Value;
+        //     OnSendMidi(new Controller(BoundChannel.ChannelNumber, BoundChannel.ControllerId, BoundChannel.ControllerValue));
+        // }
 
         /// <summary>
         /// Edit channel properties. Notifies client of any changes.
@@ -265,12 +267,7 @@ namespace Ephemera.MidiLibLite
             }
 
             // Notify client.
-            ChannelChangeEventArgs args = new()
-            {
-                StateChange = true
-            };
-
-            ChannelChange?.Invoke(this, new() { ChannelNumberChange = true });
+            ChannelChange?.Invoke(this, new() { StateChange = true });
         }
         #endregion
 

@@ -28,7 +28,7 @@ namespace Ephemera.MidiLibLite
         ///// <summary>Definitions from midi_defs.lua.</summary>
         //public static Dictionary<int, string> Drums { get; set; } = [];
         ///// <summary>Definitions from midi_defs.lua.</summary>
-        //public static Dictionary<int, string> Controllers { get; set; } = [];
+        //public static Dictionary<int, string> ControllerIds { get; set; } = [];
         ///// <summary>Definitions from midi_defs.lua.</summary>
         //public static Dictionary<int, string> DrumKits { get; set; } = [];
 
@@ -59,6 +59,13 @@ namespace Ephemera.MidiLibLite
             return _instruments;
         }
 
+        /// <summary>All controllers.</summary>
+        /// <returns></returns>
+        public Dictionary<int, string> GetControllerIdDefs()
+        {
+            return _controllerIds;
+        }
+
         /// <summary>
         /// Get drum name.
         /// </summary>
@@ -78,7 +85,7 @@ namespace Ephemera.MidiLibLite
         public string GetControllerName(int which)
         {
             if (which is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(which)); }
-            return _controllers.TryGetValue(which, out string? value) ? value : $"CTLR_{which}";
+            return _controllerIds.TryGetValue(which, out string? value) ? value : $"CTLR_{which}";
         }
 
         /// <summary>
@@ -148,7 +155,7 @@ namespace Ephemera.MidiLibLite
         };
 
         /// <summary>The midi controller definitions.</summary>
-        readonly Dictionary<int, string> _controllers = new()
+        readonly Dictionary<int, string> _controllerIds = new()
         {
             { 000, "BankSelect" }, { 001, "Modulation" }, { 002, "BreathController" }, { 004, "FootController" }, { 005, "PortamentoTime" },
             { 007, "Volume" }, { 008, "Balance" }, { 010, "Pan" }, { 011, "Expression" }, { 032, "BankSelectLSB" }, { 033, "ModulationLSB" },
@@ -179,7 +186,7 @@ namespace Ephemera.MidiLibLite
             docs.Add("- For most controllers marked on/off, on=127 and off=0");
             docs.Add("Controller          | Number");
             docs.Add("----------          | ------");
-            _controllers.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
+            _controllerIds.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
             docs.Add("# Midi GM Drum Kits");
             docs.Add("Note that these will vary depending on your Soundfont file.");
             docs.Add("Kit        | Number");

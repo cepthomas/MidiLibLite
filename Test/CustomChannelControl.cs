@@ -14,6 +14,9 @@ namespace Ephemera.MidiLibLite.Test
     {
         int _lastNote = 0;
 
+        //readonly ToolTip toolTip;
+
+
         /// <summary>Paint the surface.</summary>
         /// <param name="pe"></param>
         protected override void OnPaint(PaintEventArgs pe)
@@ -21,7 +24,9 @@ namespace Ephemera.MidiLibLite.Test
             Graphics g = pe.Graphics;
             var r = DrawRect;
 
-            g.Clear(Color.LightCoral);
+            //g.Clear(Color.LightCoral);
+
+            g.FillRectangle(Brushes.LightCoral, r);
 
             // Border.
             g.DrawLine(Pens.Red, r.Left, r.Top, r.Right, r.Top);
@@ -44,23 +49,28 @@ namespace Ephemera.MidiLibLite.Test
         /// <param name="e"></param>
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            var (ux, uy) = MouseToUser();
+            var res = MouseToUser();
 
-            // Also gen click?
-            if (e.Button == MouseButtons.Left)
+            if (res is not null)
             {
-                // Dragging. Did it change?
-                if (_lastNote != ux)
-                {
-                    if (_lastNote != -1)
-                    {
-                        // Turn off last note.
-                        OnSendMidi(new NoteOff(BoundChannel.ChannelNumber, _lastNote));
-                    }
+                toolTip.SetToolTip(this, $"X:{res.Value.ux} Y:{res.Value.uy}");
 
-                    // Start the new note.
-                    _lastNote = ux;
-                    OnSendMidi(new NoteOn(BoundChannel.ChannelNumber, ux, uy));
+                // Also gen click?
+                if (e.Button == MouseButtons.Left)
+                {
+                    // Dragging. Did it change?
+                    if (_lastNote != res.Value.ux)
+                    {
+                        if (_lastNote != -1)
+                        {
+                            // Turn off last note.
+                            OnSendMidi(new NoteOff(BoundChannel.ChannelNumber, _lastNote));
+                        }
+
+                        // Start the new note.
+                        _lastNote = res.Value.ux;
+                        OnSendMidi(new NoteOn(BoundChannel.ChannelNumber, res.Value.ux, res.Value.uy));
+                    }
                 }
             }
 
@@ -73,9 +83,12 @@ namespace Ephemera.MidiLibLite.Test
         /// <param name="e"></param>
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            var (ux, uy) = MouseToUser();
-            _lastNote = ux;
-            OnSendMidi(new NoteOn(BoundChannel.ChannelNumber, ux, uy));
+            var res = MouseToUser();
+            if (res is not null)
+            {
+                _lastNote = res.Value.ux;
+                OnSendMidi(new NoteOn(BoundChannel.ChannelNumber, res.Value.ux, res.Value.uy));
+            }
 
             base.OnMouseDown(e);
         }
@@ -117,13 +130,18 @@ namespace Ephemera.MidiLibLite.Test
         /// Get mouse x and y mapped to user coordinates.
         /// </summary>
         /// <returns>Tuple of x and y.</returns>
-        (int ux, int uy) MouseToUser()
+        (int ux, int uy)? MouseToUser()
         {
             var mp = PointToClient(MousePosition);
+            var r = DrawRect;
 
+            // Map and check.
+            int x = MathUtils.Map(mp.X, 0, r.Width, 0, MidiDefs.MAX_MIDI);
+            int y = MathUtils.Map(mp.Y, r.Bottom, r.Top, 0, MidiDefs.MAX_MIDI);
 
-
-            return (mp.X, mp.Y);
+            return (x >= 0 && x < MidiDefs.MAX_MIDI && y >= 0 && y < MidiDefs.MAX_MIDI) ?
+                (x, y) :
+                null;
         }
     }
 }
