@@ -121,6 +121,8 @@ namespace Ephemera.MidiLibLite.Test
         {
             var mp = PointToClient(MousePosition);
 
+
+
             return (mp.X, mp.Y);
         }
     }

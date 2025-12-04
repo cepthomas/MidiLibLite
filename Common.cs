@@ -24,17 +24,11 @@ namespace Ephemera.MidiLibLite
     public class MidiLibException(string message) : Exception(message) { }
 
 
-
-TODO1 all need arg val + any others?
-// Check args.
-if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
-if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channelNumber)); }
-
-
-#region Internal event definitions TODO2 own home?
-public class BaseMidiEvent
+    #region Internal event definitions TODO2 own home?
+    public class BaseMidiEvent
     {
         /// <summary>Channel 1-NUM_CHANNELS.</summary>
+        [Range(1, MidiDefs.NUM_CHANNELS)]
         public int Channel { get; init; }
 
         /// <summary>Something to tell the client.</summary>
@@ -50,13 +44,19 @@ public class BaseMidiEvent
     public class NoteOn : BaseMidiEvent
     {
         /// <summary>The note number to play.</summary>
+        [Range(0, MidiDefs.MAX_MIDI)]
         public int Note { get; init; }
 
         /// <summary>0 to 127.</summary>
+        [Range(0, MidiDefs.MAX_MIDI)]
         public int Velocity { get; init; }
 
         public NoteOn(int channel, int note, int velocity)
         {
+            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
+            if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note)); }
+            if (velocity is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(velocity)); }
+
             Channel = channel;
             Note  = note;
             Velocity = velocity;
@@ -72,10 +72,14 @@ public class BaseMidiEvent
     public class NoteOff : BaseMidiEvent
     {
         /// <summary>The note number to play.</summary>
+        [Range(0, MidiDefs.MAX_MIDI)]
         public int Note { get; init; }
 
         public NoteOff(int channel, int note)
         {
+            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
+            if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note)); }
+
             Channel = channel;
             Note  = note;
         }
@@ -90,13 +94,19 @@ public class BaseMidiEvent
     public class Controller : BaseMidiEvent
     {
         /// <summary>Specific controller id.</summary>
+        [Range(0, MidiDefs.MAX_MIDI)]
         public int ControllerId { get; init; }
 
         /// <summary>Payload.</summary>
+        [Range(0, MidiDefs.MAX_MIDI)]
         public int Value { get; init; }
 
         public Controller(int channel, int controllerId, int value)
         {
+            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
+            if (controllerId is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(controllerId)); }
+            if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
+
             Channel = channel;
             ControllerId = controllerId;
             Value = value;
@@ -112,10 +122,14 @@ public class BaseMidiEvent
     public class Patch : BaseMidiEvent
     {
         /// <summary>Payload.</summary>
+        [Range(0, MidiDefs.MAX_MIDI)]
         public int Value { get; init; }
 
         public Patch(int channel, int value)
         {
+            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
+            if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
+
             Channel = channel;
             Value = value;
         }
@@ -127,7 +141,6 @@ public class BaseMidiEvent
         }
     }
     #endregion
-
 
 
     public class Utils

@@ -84,6 +84,7 @@ namespace Ephemera.MidiLibLite
         }
 
         /// <summary>Current volume.</summary>
+        [Range(0.0, Defs.MAX_VOLUME)]
         public double Volume
         {
             get { return sldVolume.Value; }

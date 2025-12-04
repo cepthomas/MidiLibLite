@@ -155,7 +155,6 @@ namespace Ephemera.MidiLibLite
             }
         }
 
-
         //TODO2 support retry x2
         // ///// Determine midi output device. /////
         // Text = "Midi Generator - no output device";
@@ -185,10 +184,6 @@ namespace Ephemera.MidiLibLite
         //     }
         // }
 
-
-
-
-
         /// <summary>
         /// Clean up.
         /// </summary>
@@ -215,10 +210,10 @@ namespace Ephemera.MidiLibLite
         #endregion
 
 
-
         /// <summary>
         /// Stop all midi. Doesn't throw.
         /// </summary>
+        /// <param name="channel"></param>
         public void Kill(OutputChannel? channel = null)
         {
             int cc = MidiDefs.GetControllerNumber("AllNotesOff");

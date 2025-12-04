@@ -11,8 +11,8 @@ namespace Ephemera.MidiLibLite
     {
         public static MidiDefs TheDefs { get; set; } = new(); //TODO1 ??
 
-        /// <summary>Midi constant.</summary>
-        public const int MIN_MIDI = 0;
+        ///// <summary>Midi constant.</summary>
+        //public const int MIN_MIDI = 0;
 
         /// <summary>Midi constant.</summary>
         public const int MAX_MIDI = 127;
@@ -66,6 +66,7 @@ namespace Ephemera.MidiLibLite
         /// <returns>The drum name or a fabricated one if unknown.</returns>
         public string GetDrumName(int which)
         {
+            if (which is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(which)); }
             return _drums.TryGetValue(which, out string? value) ? value : $"DRUM_{which}";
         }
 
@@ -76,6 +77,7 @@ namespace Ephemera.MidiLibLite
         /// <returns>The controller name or a fabricated one if unknown.</returns>
         public string GetControllerName(int which)
         {
+            if (which is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(which)); }
             return _controllers.TryGetValue(which, out string? value) ? value : $"CTLR_{which}";
         }
 
@@ -86,12 +88,13 @@ namespace Ephemera.MidiLibLite
         /// <returns>The drumkit name or a fabricated one if unknown.</returns>
         public string GetDrumKitName(int which)
         {
+            if (which is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(which)); }
             return _drumKits.TryGetValue(which, out string? value) ? value : $"KIT_{which}";
         }
 
         public static int GetControllerNumber(string which)
         {
-            return 9999; //TODO1
+            return 111; //TODO1
         }
 
         // public static int GetDrumKitNumber(string which)

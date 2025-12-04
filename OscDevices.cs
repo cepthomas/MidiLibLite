@@ -39,6 +39,8 @@ namespace Ephemera.MidiLibLite
         /// </summary>
         public OscInput(string deviceName)
         {
+            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
+
             // Check for properly formed port.
             List<string> parts = deviceName.SplitByToken(":");
             if (parts.Count == 2)
@@ -137,6 +139,8 @@ namespace Ephemera.MidiLibLite
         /// <param name="deviceName">Client must supply name of device.</param>
         public OscOutput(string deviceName)
         {
+            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
+
             // Check for properly formed url:port.
             List<string> parts = deviceName.SplitByToken(":");
             if (parts.Count == 3)

@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Drawing.Design;
 using System.Text.Json.Serialization;
 using Ephemera.NBagOfTricks;
+using System.ComponentModel.DataAnnotations;
 
 
 namespace Ephemera.MidiLibLite
@@ -24,63 +25,68 @@ namespace Ephemera.MidiLibLite
         /// <summary>Actual 1-based midi channel number.</summary>
         [Browsable(true)]
         [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-        public int ChannelNumber
-        {
-            get { return _channelNumber; }
-            set { _channelNumber = MathUtils.Constrain(value, 1, MidiDefs.NUM_CHANNELS); }
-        }
-        int _channelNumber = 1;
+        [Range(1, MidiDefs.NUM_CHANNELS)]
+        public int ChannelNumber { get; set; } = 1;
+        //{
+        //    get { return _channelNumber; }
+        //    set { _channelNumber = MathUtils.Constrain(value, 1, MidiDefs.NUM_CHANNELS); }
+        //}
+        //int _channelNumber = 1;
 
         /// <summary>Override default instrument presets.</summary>
         [Browsable(true)]
         [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
-        public string PresetFile
-        {
-            get { return _presetFile; }
-            set { _presetFile = value; }
-        }
-        string _presetFile = "";
+        public string PresetFile { get; set; } = "";
+        //{
+        //    get { return _presetFile; }
+        //    set { _presetFile = value; }
+        //}
+        //string _presetFile = "";
 
         /// <summary>Edit current instrument/patch number.</summary>
         [Browsable(true)]
         [Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]
         [TypeConverter(typeof(PatchConverter))]
-        public int Patch
-        {
-            get { return _patch; }
-            set { _patch = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI); }
-        }
-        int _patch = 0;
+        [Range(0, MidiDefs.MAX_MIDI)]
+        public int Patch { get; set; } = 0;
+        //{
+        //    get { return _patch; }
+        //    set { _patch = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI); }
+        //}
+        //int _patch = 0;
 
-         /// <summary>Edit current controller number.</summary>
-         [Browsable(true)]
-         [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-         public int ControllerId
-         {
-             get { return _controllerId; }
-             set { _controllerId = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI); }
-         }
-         int _controllerId = 0;
+        /// <summary>Edit current controller number.</summary>
+        [Browsable(true)]
+        [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
+        [Range(0, MidiDefs.MAX_MIDI)]
+        public int ControllerId { get; set; } = 0;
+        //{
+        //    get { return _controllerId; }
+        //    set { _controllerId = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI); }
+        //}
+        //int _controllerId = 0;
         #endregion
 
         #region Persisted Non-editable Properties
         /// <summary>Current volume.</summary>
         [Browsable(false)]
-        public double Volume
-        {
-            get { return _volume; }
-            set { _volume = MathUtils.Constrain(value, 0.0, Defs.MAX_VOLUME); }
-        }
-        double _volume = Defs.DEFAULT_VOLUME;
+        [Range(0.0, Defs.MAX_VOLUME)]
+        public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
+        //{
+        //    get { return _volume; }
+        //    set { _volume = MathUtils.Constrain(value, 0.0, Defs.MAX_VOLUME); }
+        //}
+        //double _volume = Defs.DEFAULT_VOLUME;
 
         /// <summary>Controller payload.</summary>
         [Browsable(false)]
-        public int ControllerValue
-        {
-            get { return _controllerValue; }
-            set { _controllerValue = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI); }
-        }
-        int _controllerValue = 0;
+        [Range(0, MidiDefs.MAX_MIDI)]
+        public int ControllerValue { get; set; } = 0;
+        //{
+        //    get { return _controllerValue; }
+        //    set { _controllerValue = MathUtils.Constrain(value, 0, MidiDefs.MAX_MIDI); }
+        //}
+        //int _controllerValue = 0;
         #endregion
 
         #region Non-persisted Properties
@@ -160,12 +166,13 @@ namespace Ephemera.MidiLibLite
         /// <summary>Actual 1-based midi channel number.</summary>
         [Browsable(true)]
         [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-        public int ChannelNumber
-        {
-            get { return _channelNumber; }
-            set { _channelNumber = MathUtils.Constrain(value, 1, MidiDefs.NUM_CHANNELS); }
-        }
-        int _channelNumber = 1;
+        [Range(1, MidiDefs.NUM_CHANNELS)]
+        public int ChannelNumber { get; set; } = 1;
+        //{
+        //    get { return _channelNumber; }
+        //    set { _channelNumber = MathUtils.Constrain(value, 1, MidiDefs.NUM_CHANNELS); }
+        //}
+        //int _channelNumber = 1;
 
         /// <summary>Channel name - optional.</summary>
         public string ChannelName { get; set; } = "";

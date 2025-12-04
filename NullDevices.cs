@@ -32,6 +32,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="deviceName">Client must supply name of device.</param>
         public NullInputDevice(string deviceName)
         {
+            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
             DeviceName = deviceName;
  //           Id = ind;
         }
@@ -63,6 +64,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="deviceName">Client must supply name of device.</param>
         public NullOutputDevice(string deviceName)
         {
+            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
             DeviceName = deviceName;
 //            Id = ind;
         }

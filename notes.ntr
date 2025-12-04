@@ -1,5 +1,57 @@
 
 
+
+[Required]: Ensures that a property has a non-null value.
+
+[StringLength(int maximumLength, int minimumLength = 0)]: Validates the length of a string property, allowing for both maximum and optional minimum lengths.
+
+[Range(double minimum, double maximum)]: Checks if a numeric property's value falls within a specified range.
+
+[RegularExpression(string pattern)]: Validates a string property against a provided regular expression pattern.
+
+[EmailAddress]: Validates if a string property has a valid email address format.
+
+[Url]: Validates if a string property has a valid URL format.
+
+[Phone]: Validates if a string property has a valid phone number format.
+
+[CreditCard]: Validates if a string property has a credit card format.
+
+[Compare(string otherProperty)]: Compares the value of one property to another property within the same model.
+
+[ValidateNever]: Excludes a property or parameter from validation.
+
+
+
+        [Range(1, MidiDefs.NUM_CHANNELS)]
+
+        [Range(0, MidiDefs.MAX_MIDI)]
+
+ { get; set; } = 0;
+
+
+
+[Required]: Ensures that a property has a non-null value.
+
+TODO1 all need arg val + any others?
+
+// Check args.
+
+            if (string.IsNullOrEmpty(PPP)) { throw new ArgumentException(nameof(PPP)); }
+
+            if (PPP is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(PPP)); }
+
+            if (PPP is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(PPP)); }
+
+            if (PPP is null) { throw new ArgumentNullException(nameof(PPP)); }
+
+            if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
+            if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note)); }
+            if (velocity is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(velocity)); }
+
+
+
+
 ----- should libs have Logger??
 C:\Dev\Libs\MidiLib\MidiInput.cs:
 C:\Dev\Libs\MidiLib\MidiOsc.cs:
