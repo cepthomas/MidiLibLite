@@ -15,8 +15,9 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLibLite
 {
+    /// <summary>One channel controller config. Host can persist these.</summary>
     [Serializable]
-    public class ControllerSettings //TODO1 persist these
+    public class ControllerConfig
     {
         /// <summary>Edit current controller number.</summary>
         [Browsable(true)]
@@ -39,8 +40,6 @@ namespace Ephemera.MidiLibLite
 
 
 
-
-
     public class ControllerControl : UserControl
     {
         #region Fields
@@ -55,14 +54,14 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Properties
-        /// <summary>My settings.</summary>
+        /// <summary>My config.</summary>
         //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public ControllerSettings Settings
+        public ControllerConfig Config
         {
-            get {  return _settings; }
-            set {  _settings = value; UpdateUi(); }
+            get {  return _config; }
+            set {  _config = value; UpdateUi(); }
         }
-        ControllerSettings _settings = new();
+        ControllerConfig _config = new();
 
 
         public int DeviceId { get; set; } = 0; // TODO1 ?? IDevice Device { get; init; }
@@ -74,7 +73,7 @@ namespace Ephemera.MidiLibLite
         {
             set
             {
-                sldControllerValue.ControlColor = value;
+                sldControllerValue.DrawColor = value;
                 txtInfo.BackColor = value;
                 btnSend.BackColor = value;
             }
@@ -164,7 +163,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            sldControllerValue.Value = Settings.ControllerValue;
+            sldControllerValue.Value = Config.ControllerValue;
 
             UpdateUi();
 
@@ -194,7 +193,7 @@ namespace Ephemera.MidiLibLite
         void Controller_ValueChanged(object? sender, EventArgs e)
         {
             // No need to check limits.
-            Settings.ControllerValue = (int)(sender as Slider)!.Value;
+            Config.ControllerValue = (int)(sender as Slider)!.Value;
         }
 
         /// <summary>
@@ -205,7 +204,7 @@ namespace Ephemera.MidiLibLite
         void Send_Click(object? sender, EventArgs e)
         {
             // No need to check limits.
-            OnSendMidi(new Controller(_settings.ChannelNumber, _settings.ControllerId, _settings.ControllerValue));
+            OnSendMidi(new Controller(_config.ChannelNumber, _config.ControllerId, _config.ControllerValue));
         }
 
         /// <summary>
@@ -215,7 +214,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="e"></param>
         void Info_Click(object? sender, EventArgs e)
         {
-            var changes = SettingsEditor.Edit(Settings, "Controller", 300);
+            var changes = SettingsEditor.Edit(Config, "Controller", 300);
 
             UpdateUi();
         }
@@ -226,10 +225,10 @@ namespace Ephemera.MidiLibLite
         void UpdateUi()
         {
             txtInfo.Text = ToString();
-            sldControllerValue.Value = Settings.ControllerValue;
+            sldControllerValue.Value = Config.ControllerValue;
 
             StringBuilder sb = new();
-            sb.AppendLine($"Channel, patch TODOX etc");
+            sb.AppendLine($"Channel, patch TODO_defs etc");
             // sb.AppendLine($"Patch {BoundChannel.GetPatchName(BoundChannel.Patch)}({BoundChannel.Patch})");
             toolTip.SetToolTip(txtInfo, sb.ToString());
         }
@@ -237,8 +236,8 @@ namespace Ephemera.MidiLibLite
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            //return $"{Settings.ChannelHandle} CId:{Settings.ControllerId}";
-            return $"Ch:{Settings.ChannelNumber} CId:{Settings.ControllerId}";
+            //return $"{Config.ChannelHandle} CId:{Config.ControllerId}";
+            return $"Ch:{Config.ChannelNumber} CId:{Config.ControllerId}";
         }
         #endregion
     }

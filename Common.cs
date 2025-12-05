@@ -137,7 +137,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"Patch:{Value} TODOX text get from channel";
+            return $"Patch:{Value} TODO_defs text get from channel";
         }
     }
     #endregion

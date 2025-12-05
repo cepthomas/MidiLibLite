@@ -35,7 +35,7 @@ namespace Ephemera.MidiLibLite
         readonly protected ToolTip toolTip;
         readonly TextBox txtInfo;
         readonly Slider sldVolume;
-        // TODO2 thes could be optional for a simple control
+        // TODO2 these could be optional for a simple control
         readonly Label lblSolo;
         readonly Label lblMute;
 
@@ -55,7 +55,7 @@ namespace Ephemera.MidiLibLite
         {
             set
             {
-                sldVolume.ControlColor = value;
+                sldVolume.DrawColor = value;
                 txtInfo.BackColor = value;
             }
         }
@@ -136,7 +136,7 @@ namespace Ephemera.MidiLibLite
                 Size = new(80, SIZE),
                 Label = "volume"
             };
-            sldVolume.ValueChanged += (sender, e) => BoundChannel.Volume = (sender as Slider)!.Value;
+            sldVolume.ValueChanged += (sender, e) => BoundChannel.Config.Volume = (sender as Slider)!.Value;
             Controls.Add(sldVolume);
 
             lblSolo = new()
@@ -172,7 +172,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            sldVolume.Value = BoundChannel.Volume;
+            sldVolume.Value = BoundChannel.Config.Volume;
 
             UpdateUi();
 
@@ -241,7 +241,7 @@ namespace Ephemera.MidiLibLite
 
             StringBuilder sb = new();
             sb.AppendLine($"Channel {BoundChannel.Handle}");
-            sb.AppendLine($"Patch {BoundChannel.GetPatchName(BoundChannel.Patch)}({BoundChannel.Patch})");
+            sb.AppendLine($"Patch {BoundChannel.GetPatchName(BoundChannel.Config.Patch)}({BoundChannel.Config.Patch})");
             toolTip.SetToolTip(txtInfo, sb.ToString());
 
             lblSolo.BackColor = _state == ChannelState.Solo ? SelectedColor :  BackColor;
@@ -251,7 +251,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"{BoundChannel.Handle} P:{BoundChannel.Patch}";
+            return $"{BoundChannel.Handle} P:{BoundChannel.Config.Patch}";
         }
         #endregion
     }

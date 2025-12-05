@@ -215,7 +215,7 @@ namespace Ephemera.MidiLibLite
 
 
 
-        public IOutputDevice GetOutputDevice(int id) // TODOX bit klunky
+        public IOutputDevice GetOutputDevice(int id) // TODO1 bit klunky
         {
             return _outputDevices[id];
         }
@@ -239,11 +239,11 @@ namespace Ephemera.MidiLibLite
 
             if (channel is null)
             {
-                _outputChannels.ForEach(ch => ch.Value.Device.Send(new Controller(ch.Value.ChannelNumber, cc, 0)));
+                _outputChannels.ForEach(ch => ch.Value.Device.Send(new Controller(ch.Value.Config.ChannelNumber, cc, 0)));
             }
             else
             {
-                channel.Device.Send(new Controller(channel.ChannelNumber, cc, 0));
+                channel.Device.Send(new Controller(channel.Config.ChannelNumber, cc, 0));
             }
         }
     }

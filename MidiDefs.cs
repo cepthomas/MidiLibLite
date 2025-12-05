@@ -41,7 +41,7 @@ namespace Ephemera.MidiLibLite
 
         #region Lifecycle
         /// <summary>
-        /// Initialize some collections. TODOX load from defs using Utils.LoadDefs(PresetFile);
+        /// Initialize some collections. TODO_defs load from defs using Utils.LoadDefs(PresetFile);
         /// </summary>
         public MidiDefs()
         {
@@ -102,7 +102,7 @@ namespace Ephemera.MidiLibLite
 
         public static int GetControllerNumber(string which)
         {
-            return 7; //TODOX
+            return 7; //TODO_defs
         }
 
         // public static int GetDrumKitNumber(string which)

@@ -14,14 +14,13 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLibLite
 {
+    // TODO1 other flavors:
+    //  - OSC uses url:port for DeviceName
+    //  - NULL uses ??? for DeviceName
 
-    // OSC uses url:port for DeviceName
-    // NULL uses ??? for DeviceName
-
-
-
+    /// <summary>One channel config. Host can persist these.</summary>
     [Serializable]
-    public class OutputChannelSettings // TODO1 persist these
+    public class OutputChannelConfig
     {
         /// <summary>Device name.</summary>
         [Editor(typeof(DeviceTypeEditor), typeof(UITypeEditor))]
@@ -51,9 +50,9 @@ namespace Ephemera.MidiLibLite
         public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
     }
 
-
+    /// <summary>One channel config. Host can persist these.</summary>
     [Serializable]
-    public class InputChannelSettings //TODO1 persist these
+    public class InputChannelConfig
     {
         /// <summary>Device name.</summary>
         [Editor(typeof(DeviceTypeEditor), typeof(UITypeEditor))]
@@ -69,12 +68,8 @@ namespace Ephemera.MidiLibLite
     }
 
 
-
-
-
-
     /// <summary>Describes one midi output channel. Some properties are optional.</summary>
-    // [Serializable] // TODO1 host should handle persistence? Or put persists in a separate class?
+    // [Serializable]
     public class OutputChannel
     {
         // #region Persisted Properties
@@ -108,13 +103,13 @@ namespace Ephemera.MidiLibLite
 
 
 
-        /// <summary>My settings.</summary>
-        public OutputChannelSettings Settings
+        /// <summary>My config.</summary>
+        public OutputChannelConfig Config
         {
-            get {  return _settings; }
-            set {  _settings = value; UpdateUi(); }
+            get {  return _config; }
+            set {  _config = value; UpdateUi(); }
         }
-        OutputChannelSettings _settings = new();
+        OutputChannelConfig _config = new();
 
         #region Properties
         /// <summary>Associated device.</summary>
@@ -145,16 +140,16 @@ namespace Ephemera.MidiLibLite
         /// <param name="device"></param>
         /// <param name="channel"></param>
         /// <param name="name"></param>
-        public OutputChannel(IOutputDevice device, OutputChannelSettings settings)//, int channel, string name)
+        public OutputChannel(IOutputDevice device, OutputChannelConfig config)//, int channel, string name)
         {
             // if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             // if (string.IsNullOrEmpty(name)) { throw new ArgumentException(nameof(name)); }
 
             Device = device;
-            _settings = settings;
+            _config = config;
             // ChannelNumber = channel;
             // ChannelName = name;
-            Handle = new(device.Id, channel, true);
+            Handle = new(device.Id, _config.ChannelNumber, true);
         }
 
         /// <summary>Use default or custom presets.</summary>
@@ -162,13 +157,13 @@ namespace Ephemera.MidiLibLite
         {
             try
             {
-                _instruments = PresetFile != "" ?
-                    Utils.LoadDefs(PresetFile) :
+                _instruments = _config.PresetFile != "" ?
+                    Utils.LoadDefs(_config.PresetFile) :
                     MidiDefs.TheDefs.GetDefaultInstrumentDefs();
             }
             catch (Exception ex)
             {
-                throw new MidiLibException($"Failed to load defs file {PresetFile}: {ex.Message}");
+                throw new MidiLibException($"Failed to load defs file {_config.PresetFile}: {ex.Message}");
             }
         }
 
@@ -204,13 +199,13 @@ namespace Ephemera.MidiLibLite
 
         #region Properties
 
-        /// <summary>My settings.</summary>
-        public InputChannelSettings Settings
+        /// <summary>My config.</summary>
+        public InputChannelConfig Config
         {
-            get {  return _settings; }
-            set {  _settings = value; UpdateUi(); }
+            get {  return _config; }
+            set {  _config = value; UpdateUi(); }
         }
-        InputChannelSettings _settings = new();
+        InputChannelConfig _config = new();
 
 
         /// <summary>Associated device.</summary>
@@ -235,16 +230,16 @@ namespace Ephemera.MidiLibLite
         /// <param name="device"></param>
         /// <param name="channel"></param>
         /// <param name="name"></param>
-        public InputChannel(IInputDevice device, InputChannelSettings settings)// int channel, string name)
+        public InputChannel(IInputDevice device, InputChannelConfig config)// int channel, string name)
         {
             // if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             // if (string.IsNullOrEmpty(name)) { throw new ArgumentException(nameof(name)); }
 
             Device = device;
-            _settings = settings;
+            _config = config;
             // ChannelNumber = channel;
             // ChannelName = name;
-            Handle = new(device.Id, channel, false);
+            Handle = new(device.Id, _config.ChannelNumber, false);
         }
     }
 
