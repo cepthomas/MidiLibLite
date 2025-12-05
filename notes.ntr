@@ -30,10 +30,10 @@ X UnselectedColor - only MidiLib - gone
 BackColor - ??? probably delete
 
 ----- BackColor
-NDraw
-Nebulator
-NProcessing
-NScope
+X NDraw
+X Nebulator
+X NProcessing
+X NScope
 
 
 ////////////// all settings colors /////////////////
