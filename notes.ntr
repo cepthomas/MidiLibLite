@@ -1,5 +1,101 @@
 
 
+
+Nebulua
+        [Description("Overall background.")]
+        public Color BackColor { get; set; } = Color.LightYellow;
+
+        [Description("Button icons.")]
+        public Color IconColor { get; set; } = Color.Purple;
+
+        [Description("Active control surfaces.")]
+        public Color ActiveColor { get; set; } = Color.DodgerBlue;
+        // MLL calls this DrawColor
+
+        [Description("The color used for selected controls.")]
+        public Color SelectedColor { get; set; } = Color.Moccasin;
+
+X PenColor - delete
+
+X IconColor - OK
+X ForeColor -> IconColor  (not NBUI!)
+
+X ActiveColor -> ControlColor
+X DrawColor -> ControlColor
+
+X SelectedColor - keep for now
+X UnselectedColor - only MidiLib - gone
+
+
+BackColor - ??? probably delete
+
+----- BackColor
+NDraw
+Nebulator
+NProcessing
+NScope
+
+
+////////////// all settings colors /////////////////
+
+----- NDraw
+[Description("Form Color")]
+! public Color BackColor { get; set; } = Color.LightGray;
+
+[Description("Grid Color")]
+X public Color GridColor { get; set; } = Color.Gray;
+
+----- Nebulator
+[Description("The color used for button icons.")]
+X public Color ForeColor { get; set; } = Color.Purple;
+
+[Description("The color used for overall background.")]
+! public Color BackColor { get; set; } = Color.AliceBlue;
+
+[Description("The color used for active control surfaces.")]
+X public Color ControlColor { get; set; } = Color.Yellow;
+
+[Description("The color used for selected controls.")]
+public Color SelectedColor { get; set; } = Color.Violet;
+
+----- NProcessing
+[Description("The color used for selected controls.")]
+public Color SelectedColor { get; set; } = Color.Violet;
+
+[Description("The color used for overall background.")]
+! public Color BackColor { get; set; } = Color.AliceBlue;
+
+----- NScope
+[Description("The color used for active control surfaces.")]
+X public Color ControlColor { get; set; } = Color.Yellow;
+
+[Description("The color used for overall background.")]
+! public Color BackColor { get; set; } = Color.AliceBlue;
+
+
+
+
+okkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk
+
+----- ClipPlayer
+----- Midifrier
+----- MidiGenerator
+[Description("The color used for active control surfaces.")]
+X public Color ControlColor { get; set; } = Color.MediumOrchid;
+
+----- Wavicler
+[Description("The color used for active control surfaces.")]
+X public Color ControlColor { get; set; } = Color.MediumOrchid;
+
+[DisplayName("Wave Color")]
+X public Color WaveColor { get; set; } = Color.ForestGreen;
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+
             try
             {
                 DemoScriptApp();

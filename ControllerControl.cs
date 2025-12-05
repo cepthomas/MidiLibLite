@@ -16,7 +16,7 @@ using Ephemera.NBagOfUis;
 namespace Ephemera.MidiLibLite
 {
     [Serializable]
-    public class ControllerInfo
+    public class ControllerSettings //TODO1 persist these
     {
         /// <summary>Edit current controller number.</summary>
         [Browsable(true)]
@@ -35,10 +35,11 @@ namespace Ephemera.MidiLibLite
         [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
         [Range(1, MidiDefs.NUM_CHANNELS)]
         public int ChannelNumber { get; set; } = 0;
-
-        [Browsable(false)]
-        public int DeviceId { get; set; } = 0;
     }
+
+
+
+
 
     public class ControllerControl : UserControl
     {
@@ -54,33 +55,37 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Properties
-        /// <summary>My info.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public ControllerInfo Info
+        /// <summary>My settings.</summary>
+        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ControllerSettings Settings
         {
-            get {  return _info; }
-            set {  _info = value; UpdateUi(); }
+            get {  return _settings; }
+            set {  _settings = value; UpdateUi(); }
         }
-        ControllerInfo _info = new();
+        ControllerSettings _settings = new();
+
+
+        public int DeviceId { get; set; } = 0; // TODO1 ?? IDevice Device { get; init; }
+
 
         /// <summary>Drawing the active elements of a control.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public Color DrawColor 
+      //  [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Color ControlColor 
         {
             set
             {
-                sldControllerValue.DrawColor = value;
+                sldControllerValue.ControlColor = value;
                 txtInfo.BackColor = value;
                 btnSend.BackColor = value;
             }
         }
 
         /// <summary>Drawing the control when selected.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+       // [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color SelectedColor { get; set; }
 
         /// <summary>The graphics draw area.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+     //   [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         protected Rectangle DrawRect
         {
             get { return new Rectangle(0, sldControllerValue.Bottom + PAD, Width, Height - (sldControllerValue.Bottom + PAD)); }
@@ -159,7 +164,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            sldControllerValue.Value = Info.ControllerValue;
+            sldControllerValue.Value = Settings.ControllerValue;
 
             UpdateUi();
 
@@ -189,7 +194,7 @@ namespace Ephemera.MidiLibLite
         void Controller_ValueChanged(object? sender, EventArgs e)
         {
             // No need to check limits.
-            Info.ControllerValue = (int)(sender as Slider)!.Value;
+            Settings.ControllerValue = (int)(sender as Slider)!.Value;
         }
 
         /// <summary>
@@ -200,7 +205,7 @@ namespace Ephemera.MidiLibLite
         void Send_Click(object? sender, EventArgs e)
         {
             // No need to check limits.
-            OnSendMidi(new Controller(_info.ChannelNumber, _info.ControllerId, _info.ControllerValue));
+            OnSendMidi(new Controller(_settings.ChannelNumber, _settings.ControllerId, _settings.ControllerValue));
         }
 
         /// <summary>
@@ -210,7 +215,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="e"></param>
         void Info_Click(object? sender, EventArgs e)
         {
-            var changes = SettingsEditor.Edit(Info, "Controller", 300);
+            var changes = SettingsEditor.Edit(Settings, "Controller", 300);
 
             UpdateUi();
         }
@@ -221,10 +226,10 @@ namespace Ephemera.MidiLibLite
         void UpdateUi()
         {
             txtInfo.Text = ToString();
-            sldControllerValue.Value = Info.ControllerValue;
+            sldControllerValue.Value = Settings.ControllerValue;
 
             StringBuilder sb = new();
-            sb.AppendLine($"Channel TODO1 etc");
+            sb.AppendLine($"Channel, patch TODOX etc");
             // sb.AppendLine($"Patch {BoundChannel.GetPatchName(BoundChannel.Patch)}({BoundChannel.Patch})");
             toolTip.SetToolTip(txtInfo, sb.ToString());
         }
@@ -232,8 +237,8 @@ namespace Ephemera.MidiLibLite
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            //return $"{Info.ChannelHandle} CId:{Info.ControllerId}";
-            return $"Ch:{Info.ChannelNumber} CId:{Info.ControllerId}";
+            //return $"{Settings.ChannelHandle} CId:{Settings.ControllerId}";
+            return $"Ch:{Settings.ChannelNumber} CId:{Settings.ControllerId}";
         }
         #endregion
     }

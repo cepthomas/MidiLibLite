@@ -215,7 +215,7 @@ namespace Ephemera.MidiLibLite
 
 
 
-        public IOutputDevice GetOutputDevice(int id) // TODO1 bit klunky
+        public IOutputDevice GetOutputDevice(int id) // TODOX bit klunky
         {
             return _outputDevices[id];
         }

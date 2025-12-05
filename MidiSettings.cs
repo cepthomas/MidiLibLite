@@ -28,7 +28,7 @@ namespace Ephemera.MidiLibLite
     //    [Description("Active control surfaces.")]
     //    [Browsable(true)]
     //    [JsonConverter(typeof(JsonColorConverter))]
-    //    public Color ActiveColor { get; set; } = Color.DodgerBlue; // from Nebulua
+    //    public Color ControlColor { get; set; } = Color.DodgerBlue; // from Nebulua
 
     //    [DisplayName("Selected Color")]
     //    [Description("The color used for selected controls.")]

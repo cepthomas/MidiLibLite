@@ -101,7 +101,7 @@ namespace Ephemera.MidiLibLite
                     ("/noteon/", 3) => new NoteOn((int)m.Data[0], (int)m.Data[1], (int)m.Data[2]),
                     ("/noteoff/", 2) => new NoteOff((int)m.Data[0], (int)m.Data[1]),
                     ("/controller/", 3) => new Controller((int)m.Data[0], (int)m.Data[1], (int)m.Data[2]),
-                    _ => new BaseMidiEvent() // TODO1 just ignore? or throw new MidiLibException or  ErrorInfo = $"Invalid message: {m}"
+                    _ => new BaseMidiEvent() // TODO2 just ignore? or throw new MidiLibException or  ErrorInfo = $"Invalid message: {m}"
                 };
 
                 InputReceive?.Invoke(this, evt);

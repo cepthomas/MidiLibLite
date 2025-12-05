@@ -12,7 +12,7 @@ M.MIDDLE_C4 = 60
 M.DEFAULT_OCTAVE = 4 -- middle C
 
 
---- All the builtin chord defs. TODO1 combine with C:\Dev\Libs\NBagOfTricks\MusicDefinitions.cs
+--- All the builtin chord defs. TODOX combine with C:\Dev\Libs\NBagOfTricks\MusicDefinitions.cs
 local chord_defs =
 {
 --  Chord    | Notes             | Description

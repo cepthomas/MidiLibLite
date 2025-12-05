@@ -35,7 +35,7 @@ namespace Ephemera.MidiLibLite
         readonly protected ToolTip toolTip;
         readonly TextBox txtInfo;
         readonly Slider sldVolume;
-        // TODO1 option?  SimpleChannelControl
+        // TODO2 thes could be optional for a simple control
         readonly Label lblSolo;
         readonly Label lblMute;
 
@@ -51,11 +51,11 @@ namespace Ephemera.MidiLibLite
         public OutputChannel BoundChannel { get; set; }
 
         /// <summary>Drawing the active elements of a control.</summary>
-        public Color DrawColor 
+        public Color ControlColor 
         {
             set
             {
-                sldVolume.DrawColor = value;
+                sldVolume.ControlColor = value;
                 txtInfo.BackColor = value;
             }
         }

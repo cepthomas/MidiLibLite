@@ -29,7 +29,7 @@ namespace Ephemera.MidiLibLite.Test
         readonly string _outPath = @"..\..\out";
 
         /// <summary>Cosmetics.</summary>
-        readonly Color _drawColor = Color.Aquamarine;
+        readonly Color _controlColor = Color.Aquamarine;
 
         /// <summary>Cosmetics.</summary>
         readonly Color _selectedColor = Color.Yellow;
@@ -61,7 +61,7 @@ namespace Ephemera.MidiLibLite.Test
             txtViewer.MatchText.Add(WARN, Color.Plum);
 
             // Master volume.
-            sldVolume.DrawColor = _drawColor;
+            sldVolume.DrawColor = _controlColor;
             sldVolume.Minimum = 0.0;
             sldVolume.Maximum = Defs.MAX_VOLUME;
             sldVolume.Resolution = Defs.MAX_VOLUME / 50;
@@ -255,7 +255,7 @@ namespace Ephemera.MidiLibLite.Test
         void InitControl(CustomChannelControl cc)
         {
             cc.BorderStyle = BorderStyle.FixedSingle;
-            cc.DrawColor = _drawColor;
+            cc.ControlColor = _controlColor;
             cc.SelectedColor = _selectedColor;
             cc.Volume = Defs.DEFAULT_VOLUME;
             cc.ChannelChange += ChannelControl_ChannelChange;
@@ -273,7 +273,7 @@ namespace Ephemera.MidiLibLite.Test
         void InitControl(ControllerControl cc)
         {
             cc.BorderStyle = BorderStyle.FixedSingle;
-            cc.DrawColor = _drawColor;
+            cc.ControlColor = _controlColor;
             cc.SelectedColor = _selectedColor;
             cc.SendMidi += ControllerControl_MidiSend;
 
