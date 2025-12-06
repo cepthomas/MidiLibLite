@@ -94,9 +94,7 @@ namespace Ephemera.MidiLibLite.Test
             cch1.Name = "cch1";
             cch1.SelectedColor = System.Drawing.Color.Green;
             cch1.Size = new System.Drawing.Size(320, 175);
-            cch1.State = ChannelControl.ChannelState.Normal;
             cch1.TabIndex = 100;
-            cch1.Volume = 0.8D;
             // 
             // cch2
             // 
@@ -105,9 +103,7 @@ namespace Ephemera.MidiLibLite.Test
             cch2.Name = "cch2";
             cch2.SelectedColor = System.Drawing.Color.Green;
             cch2.Size = new System.Drawing.Size(320, 177);
-            cch2.State = ChannelControl.ChannelState.Normal;
             cch2.TabIndex = 101;
-            cch2.Volume = 0.8D;
             // 
             // cctrl1
             // 

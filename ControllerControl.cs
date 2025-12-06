@@ -190,7 +190,7 @@ namespace Ephemera.MidiLibLite
         #region Handlers for user selections
         /// <summary>
         /// Notify client.
-        /// </summary>
+        /// </summary>  
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void Controller_ValueChanged(object? sender, EventArgs e)

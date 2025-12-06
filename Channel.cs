@@ -14,6 +14,19 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLibLite
 {
+    [Flags]
+    public enum ChannelControlOptions
+    {
+        Info = 0x01,
+        Notes = 0x02,
+        SoloMute = 0x04,
+        Controller = 0x08,
+        All = 0xFF
+    }
+
+
+    //----------------------------------------------------------------
+
     /// <summary>One channel config. Host can persist these.</summary>
     [Serializable]
     public class OutputChannelConfig
@@ -44,7 +57,28 @@ namespace Ephemera.MidiLibLite
         // [Browsable(true)]
         [Range(0.0, Defs.MAX_VOLUME)]
         public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
+    
+/////////////////////////////////////////////////////////////////////
+/////////////////////////// TODOC ///////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+
+        /// <summary>Edit current controller number.</summary>
+        [Editor(typeof(ControllerIdTypeEditor), typeof(UITypeEditor))]
+        [TypeConverter(typeof(ControllerIdConverter))]
+        [Range(0, MidiDefs.MAX_MIDI)]
+        public int ControllerId { get; set; } = 0;
+
+        /// <summary>Controller payload.</summary>
+        [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
+        [Range(0, MidiDefs.MAX_MIDI)]
+        public int ControllerValue { get; set; } = 50;
+
+        /// <summary>Display options.</summary>
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public ChannelControlOptions DisplayOptions { get; set; } = ChannelControlOptions.All;
     }
+
+    //----------------------------------------------------------------
 
     /// <summary>One channel config. Host can persist these.</summary>
     [Serializable]
@@ -63,69 +97,25 @@ namespace Ephemera.MidiLibLite
         public int ChannelNumber { get; set; } = 1;
     }
 
+    //----------------------------------------------------------------
 
     /// <summary>Describes one midi output channel. Some properties are optional.</summary>
-    // [Serializable]
     public class OutputChannel
     {
-        // #region Persisted Properties
-        // /// <summary>Channel name - optional.</summary>
-        // public string ChannelName { get; set; } = "";
-
-        // /// <summary>Actual 1-based midi channel number.</summary>
-        // [Browsable(true)]
-        // [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-        // [Range(1, MidiDefs.NUM_CHANNELS)]
-        // public int ChannelNumber { get; set; } = 1;
-
-        // /// <summary>Override default instrument presets.</summary>
-        // [Browsable(true)]
-        // [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
-        // public string PresetFile { get; set; } = "";
-
-        // /// <summary>Current instrument/patch number.</summary>
-        // [Browsable(true)]
-        // [Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]
-        // [TypeConverter(typeof(PatchConverter))]
-        // [Range(0, MidiDefs.MAX_MIDI)]
-        // public int Patch { get; set; } = 0;
-
-        // /// <summary>Current volume.</summary>
-        // [Browsable(true)]
-        // [Range(0.0, Defs.MAX_VOLUME)]
-        // public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
-        // #endregion
-
-
-
-
         /// <summary>My config.</summary>
         public OutputChannelConfig Config { get; init; }
-        //{
-        //    get {  return _config; }
-        //    set {  _config = value; UpdateUi(); }
-        //}
-        //OutputChannelConfig _config = new();
 
         #region Properties
         /// <summary>Associated device.</summary>
-        // [Browsable(false)]
-        // [JsonIgnore]
         public IOutputDevice Device { get; init; }
 
         /// <summary>Handle for use by scripts.</summary>
-        // [Browsable(false)]
-        // [JsonIgnore]
         public ChannelHandle Handle { get; init; } // from Nebulua
 
         /// <summary>True if channel is active.</summary>
-        // [Browsable(false)]
-        // [JsonIgnore]
         public bool Enable { get; set; } = true;
 
         /// <summary>Convenience property.</summary>
-        // [Browsable(false)]
-        // [JsonIgnore]
         public Dictionary<int, string> Instruments { get { return _instruments; } }
         Dictionary<int, string> _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
         #endregion
@@ -135,17 +125,10 @@ namespace Ephemera.MidiLibLite
         /// </summary>
         /// <param name="config"></param>
         /// <param name="device"></param>
-        // / <param name="channel"></param>
-        // / <param name="name"></param>
-        public OutputChannel(OutputChannelConfig config, IOutputDevice device)//, int channel, string name)
+        public OutputChannel(OutputChannelConfig config, IOutputDevice device)
         {
-            // if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
-            // if (string.IsNullOrEmpty(name)) { throw new ArgumentException(nameof(name)); }
-
             Device = device;
             Config = config;
-            // ChannelNumber = channel;
-            // ChannelName = name;
             Handle = new(device.Id, Config.ChannelNumber, true);
         }
 
@@ -179,45 +162,17 @@ namespace Ephemera.MidiLibLite
     [Serializable]
     public class InputChannel
     {
-        // #region Fields
-        // #endregion
-
-        // #region Persisted Properties
-        // /// <summary>Actual 1-based midi channel number.</summary>
-        // [Browsable(true)]
-        // [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-        // [Range(1, MidiDefs.NUM_CHANNELS)]
-        // public int ChannelNumber { get; set; } = 1;
-
-        // /// <summary>Channel name - optional.</summary>
-        // [Browsable(true)]
-        // public string ChannelName { get; set; } = "";
-        // #endregion
-
         #region Properties
-
         /// <summary>My config.</summary>
         public InputChannelConfig Config { get; init; }
-        //{
-        //    get {  return _config; }
-        //    set {  _config = value; UpdateUi(); }
-        //}
-        //InputChannelConfig _config = new();
-
 
         /// <summary>Associated device.</summary>
-        // [Browsable(false)]
-        // [JsonIgnore]
         public IInputDevice Device { get; init; }
 
         /// <summary>True if channel is active.</summary>
-        // [Browsable(false)]
-        // [JsonIgnore]
         public bool Enable { get; set; } = true;
 
         /// <summary>Handle for use by scripts.</summary>
-        // [Browsable(false)]
-        // [JsonIgnore]
         public ChannelHandle Handle { get; init; }
         #endregion
 
@@ -226,17 +181,10 @@ namespace Ephemera.MidiLibLite
         /// </summary>
         /// <param name="config"></param>
         /// <param name="device"></param>
-        ///// <param name="channel"></param>
-        ///// <param name="name"></param>
-        public InputChannel(InputChannelConfig config, IInputDevice device)// int channel, string name)
+        public InputChannel(InputChannelConfig config, IInputDevice device)
         {
-            // if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
-            // if (string.IsNullOrEmpty(name)) { throw new ArgumentException(nameof(name)); }
-
             Device = device;
             Config = config;
-            // ChannelNumber = channel;
-            // ChannelName = name;
             Handle = new(device.Id, Config.ChannelNumber, false);
         }
     }

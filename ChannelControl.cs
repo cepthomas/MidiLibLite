@@ -12,32 +12,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
 
-    // public class ControllerControl : UserControl // TODO1 put back with ChannelControl?
-
-// public class OutputChannelConfig
-// {
-//     public string DeviceName { get; set; } = "";
-//     public string ChannelName { get; set; } = "";
-//     public int ChannelNumber { get; set; } = 1;
-//     public string PresetFile { get; set; } = "";
-//     public int Patch { get; set; } = 0;
-//     public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
-// }
-
-// public class InputChannelConfig
-// {
-//     public string DeviceName { get; set; } = "";
-//     public string ChannelName { get; set; } = "";
-//     public int ChannelNumber { get; set; } = 1;
-// }
-
-// public class ControllerConfig
-// {
-//     public string DeviceName { get; set; } = "";
-//     public int ChannelNumber { get; set; } = 0;
-//     public int ControllerId { get; set; } = 1;
-//     public int ControllerValue { get; set; } = 0;
-// }
+// public class ControllerControl : UserControl // TODO1 put back with ChannelControl?
 
 
 
@@ -60,23 +35,27 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Fields
-        readonly Container components = new();
-        readonly protected ToolTip toolTip;
-        readonly TextBox txtInfo;
-        readonly Slider sldVolume;
-        // TODO2 these could be optional for a simple control
-        readonly Label lblSolo;
-        readonly Label lblMute;
-
         ChannelState _state = ChannelState.Normal;
         const int PAD = 4;
         const int SIZE = 32;
+
+        readonly Container components = new();
+        readonly protected ToolTip toolTip;
+
+        TextBox txtInfo;
+        Slider sldVolume;
+        // TODO2 these could be optional for a simple control
+        Label lblSolo;
+        Label lblMute;
+        // TODOC
+        Slider sldControllerValue;
+        Button btnSend;
+
         #endregion
 
         #region Properties
         /// <summary>My channel.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        //public ChannelHandle BoundChannel { get; set; }
         public OutputChannel BoundChannel { get; set; }
 
         /// <summary>Drawing the active elements of a control.</summary>
@@ -84,8 +63,10 @@ namespace Ephemera.MidiLibLite
         {
             set
             {
-                sldVolume.DrawColor = value;
                 txtInfo.BackColor = value;
+                sldVolume.DrawColor = value;
+                sldControllerValue.DrawColor = value;
+                btnSend.BackColor = value;
             }
         }
 
@@ -100,6 +81,7 @@ namespace Ephemera.MidiLibLite
         }
 
         /// <summary>For muting/soloing.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public ChannelState State
         {
             get { return _state; }
@@ -107,6 +89,7 @@ namespace Ephemera.MidiLibLite
         }
 
         /// <summary>Current volume.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [Range(0.0, Defs.MAX_VOLUME)]
         public double Volume
         {
@@ -135,62 +118,116 @@ namespace Ephemera.MidiLibLite
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 
             // InitializeComponent();
-            SuspendLayout();
+            // SuspendLayout();
 
-            // Satisfy designer and initial conditions,
-            var dev = new NullOutputDevice("DUMMY_DEVICE");
-            BoundChannel = new OutputChannel(new() { ChannelName = "DUMMY_CHANNEL" }, dev);
+            // // Satisfy designer and initial conditions,
+            // var dev = new NullOutputDevice("DUMMY_DEVICE");
+            // BoundChannel = new OutputChannel(new() { ChannelName = "DUMMY_CHANNEL" }, dev);
 
-            txtInfo = new()
-            {
-                Anchor = AnchorStyles.Top | AnchorStyles.Left,// | AnchorStyles.Right,
-                BorderStyle = BorderStyle.FixedSingle,
-                Location = new(PAD, PAD),
-                Size = new(100, SIZE),
-                ReadOnly = true,
-                Text = "Hello world"
-            };
-            txtInfo.Click += ChannelInfo_Click;
-            Controls.Add(txtInfo);
+            // // Create the controls per the config.
+            // var opts = BoundChannel.Config.DisplayOptions; // shorthand
+            // int xPos = PAD;
+            // int yPos = PAD;
 
-            sldVolume = new()
-            {
-                Minimum = 0.0,
-                Maximum = Defs.MAX_VOLUME,
-                Resolution = 0.05,
-                Value = 1.0,
-                BorderStyle = BorderStyle.FixedSingle,
-                Orientation = Orientation.Horizontal,
-                Location = new(txtInfo.Right + PAD, PAD),
-                Size = new(80, SIZE),
-                Label = "volume"
-            };
-            sldVolume.ValueChanged += (sender, e) => BoundChannel.Config.Volume = (sender as Slider)!.Value;
-            Controls.Add(sldVolume);
+            // if (opts.HasFlag(ChannelControlOptions.Info))
+            // {
+            //     txtInfo = new()
+            //     {
+            //         Anchor = AnchorStyles.Top | AnchorStyles.Left,
+            //         BorderStyle = BorderStyle.FixedSingle,
+            //         Location = new(xPos, yPos),
+            //         Size = new(100, SIZE),
+            //         ReadOnly = true,
+            //         Text = "Hello world"
+            //     };
+            //     txtInfo.Click += ChannelInfo_Click;
+            //     Controls.Add(txtInfo);
 
-            lblSolo = new()
-            {
-                Location = new(sldVolume.Right + PAD, PAD),
-                Size = new(20, SIZE/2),
-                Text = "S"
-            };
-            lblSolo.Click += SoloMute_Click;
-            Controls.Add(lblSolo);
+            //     xPos = txtInfo.Right + PAD;
+            // }
 
-            lblMute = new()
-            {
-                Location = new(sldVolume.Right + PAD, 20),
-                Size = new(20, SIZE/2),
-                Text = "M"
-            };
-            lblMute.Click += SoloMute_Click;
-            Controls.Add(lblMute);
+            // if (opts.HasFlag(ChannelControlOptions.Notes))
+            // {
+            //     sldVolume = new()
+            //     {
+            //         Minimum = 0.0,
+            //         Maximum = Defs.MAX_VOLUME,
+            //         Resolution = 0.05,
+            //         Value = 1.0,
+            //         BorderStyle = BorderStyle.FixedSingle,
+            //         Orientation = Orientation.Horizontal,
+            //         Location = new(xPos, yPos),
+            //         Size = new(80, SIZE),
+            //         Label = "volume"
+            //     };
+            //     sldVolume.ValueChanged += (sender, e) => BoundChannel.Config.Volume = (sender as Slider)!.Value;
+            //     Controls.Add(sldVolume);
 
-            // Form.
-            Size = new Size(lblSolo.Right + PAD, SIZE + PAD + PAD);
+            //     xPos = sldVolume.Right + PAD;
+            // }
 
-            ResumeLayout(false);
-            PerformLayout();
+            // if (opts.HasFlag(ChannelControlOptions.SoloMute))
+            // {
+            //     lblSolo = new()
+            //     {
+            //         Location = new(xPos, yPos),
+            //         Size = new(20, SIZE / 2),
+            //         Text = "S"
+            //     };
+            //     lblSolo.Click += SoloMute_Click;
+            //     Controls.Add(lblSolo);
+
+            //     lblMute = new()
+            //     {
+            //         Location = new(xPos, yPos + SIZE + PAD),
+            //         Size = new(20, SIZE / 2),
+            //         Text = "M"
+            //     };
+            //     lblMute.Click += SoloMute_Click;
+            //     Controls.Add(lblMute);
+
+            //     xPos = lblSolo.Right + PAD;
+            // }
+
+
+            // if (opts.HasFlag(ChannelControlOptions.Notes))
+            // {
+            //     btnSend = new()
+            //     {
+            //         FlatStyle = FlatStyle.Flat,
+            //         UseVisualStyleBackColor = true,
+            //         Location = new(xPos, yPos),
+            //         Size = new(SIZE, SIZE),
+            //         Text = "!",
+            //     };
+            //     btnSend.Click += Send_Click;
+            //     Controls.Add(btnSend);
+
+            //     xPos = btnSend.Right + PAD;
+
+            //     sldControllerValue = new()
+            //     {
+            //         Minimum = 0,
+            //         Maximum = MidiDefs.MAX_MIDI,
+            //         Resolution = 1,
+            //         Value = 50,
+            //         BorderStyle = BorderStyle.FixedSingle,
+            //         Orientation = Orientation.Horizontal,
+            //         Location = new(xPos, yPos),
+            //         Size = new(80, SIZE),
+            //         Label = "value"
+            //     };
+            //     sldControllerValue.ValueChanged += Controller_ValueChanged;
+            //     Controls.Add(sldControllerValue);
+
+            //     xPos = sldControllerValue.Right + PAD;
+            // }
+
+            // // Form.
+            // Size = new Size(xPos, yPos + SIZE + PAD);
+
+            // ResumeLayout(false);
+            // PerformLayout();
 
             toolTip = new(components);
         }
@@ -201,9 +238,122 @@ namespace Ephemera.MidiLibLite
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            sldVolume.Value = BoundChannel.Config.Volume;
+            SuspendLayout();
 
+            // Satisfy designer and initial conditions,
+            var dev = new NullOutputDevice("DUMMY_DEVICE");
+            BoundChannel = new OutputChannel(new() { ChannelName = "DUMMY_CHANNEL" }, dev);
+
+            // Create the controls per the config.
+            var opts = BoundChannel.Config.DisplayOptions; // shorthand
+            int xPos = PAD;
+            int yPos = PAD;
+
+            if (opts.HasFlag(ChannelControlOptions.Info))
+            {
+                txtInfo = new()
+                {
+                    Anchor = AnchorStyles.Top | AnchorStyles.Left,
+                    BorderStyle = BorderStyle.FixedSingle,
+                    Location = new(xPos, yPos),
+                    Size = new(100, SIZE),
+                    ReadOnly = true,
+                    Text = "Hello world"
+                };
+                txtInfo.Click += ChannelInfo_Click;
+                Controls.Add(txtInfo);
+
+                xPos = txtInfo.Right + PAD;
+            }
+
+            if (opts.HasFlag(ChannelControlOptions.Notes))
+            {
+                sldVolume = new()
+                {
+                    Minimum = 0.0,
+                    Maximum = Defs.MAX_VOLUME,
+                    Resolution = 0.05,
+                    Value = 1.0,
+                    BorderStyle = BorderStyle.FixedSingle,
+                    Orientation = Orientation.Horizontal,
+                    Location = new(xPos, yPos),
+                    Size = new(80, SIZE),
+                    Label = "volume"
+                };
+                sldVolume.ValueChanged += (sender, e) => BoundChannel.Config.Volume = (sender as Slider)!.Value;
+                Controls.Add(sldVolume);
+
+                xPos = sldVolume.Right + PAD;
+            }
+
+            if (opts.HasFlag(ChannelControlOptions.SoloMute))
+            {
+                lblSolo = new()
+                {
+                    Location = new(xPos, yPos),
+                    Size = new(20, SIZE / 2),
+                    Text = "S"
+                };
+                lblSolo.Click += SoloMute_Click;
+                Controls.Add(lblSolo);
+
+                lblMute = new()
+                {
+                    Location = new(xPos, yPos + SIZE + PAD),
+                    Size = new(20, SIZE / 2),
+                    Text = "M"
+                };
+                lblMute.Click += SoloMute_Click;
+                Controls.Add(lblMute);
+
+                xPos = lblSolo.Right + PAD;
+            }
+
+            if (opts.HasFlag(ChannelControlOptions.Notes))
+            {
+                btnSend = new()
+                {
+                    FlatStyle = FlatStyle.Flat,
+                    UseVisualStyleBackColor = true,
+                    Location = new(xPos, yPos),
+                    Size = new(SIZE, SIZE),
+                    Text = "!",
+                };
+                btnSend.Click += Send_Click;
+                Controls.Add(btnSend);
+
+                xPos = btnSend.Right + PAD;
+
+                sldControllerValue = new()
+                {
+                    Minimum = 0,
+                    Maximum = MidiDefs.MAX_MIDI,
+                    Resolution = 1,
+                    Value = 50,
+                    BorderStyle = BorderStyle.FixedSingle,
+                    Orientation = Orientation.Horizontal,
+                    Location = new(xPos, yPos),
+                    Size = new(80, SIZE),
+                    Label = "value"
+                };
+                sldControllerValue.ValueChanged += Controller_ValueChanged;
+                Controls.Add(sldControllerValue);
+
+                xPos = sldControllerValue.Right + PAD;
+            }
+
+            // Form.
+            Size = new Size(xPos, yPos + SIZE + PAD);
+
+            ResumeLayout(false);
+            PerformLayout();
+
+
+
+            sldVolume.Value = BoundChannel.Config.Volume;
             UpdateUi();
+
+
 
             base.OnLoad(e);
         }
@@ -260,12 +410,38 @@ namespace Ephemera.MidiLibLite
             // Notify client.
             ChannelChange?.Invoke(this, new() { StateChange = true });
         }
+
+        /// <summary>
+        /// Notify client.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Controller_ValueChanged(object? sender, EventArgs e)
+        {
+            // No need to check limits.
+            BoundChannel.Config.ControllerValue = (int)(sender as Slider)!.Value;
+        }
+
+        /// <summary>
+        /// Notify client.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Send_Click(object? sender, EventArgs e)
+        {
+            // No need to check limits.
+            OnSendMidi(new Controller(BoundChannel.Config.ChannelNumber, BoundChannel.Config.ControllerId, BoundChannel.Config.ControllerValue));
+        }
         #endregion
 
         #region Misc
         /// <summary>Draw mode checkboxes etc.</summary>
         void UpdateUi()
         {
+            //if (BoundChannel is not null)
+            //{
+            //}
+
             txtInfo.Text = ToString();
 
             StringBuilder sb = new();
