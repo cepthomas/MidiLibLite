@@ -120,8 +120,8 @@ namespace Ephemera.MidiLibLite.Test
         }
         #endregion
 
-        const string INDEV = "loopMIDI Port 1";
-        const string OUTDEV = "VirtualMIDISynth #1"; // "Microsoft GS Wavetable Synth"
+const string INDEV = "loopMIDI Port 1";
+const string OUTDEV = "VirtualMIDISynth #1"; // "Microsoft GS Wavetable Synth"
 
 
         /// <summary>
@@ -129,21 +129,19 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         void DemoStandardApp()
         {
-            ///// 1 - configure controls
+            ///// 1 - create devices - explicit
+            MidiOutputDevice device = new(OUTDEV);
+
+            ///// 2 - configure controls
             InitControl(cch1);
             InitControl(cch2);
             InitControl(cctrl1);
             InitControl(cctrl2);
 
-            ///// 2 - create and bind all channels - explicit
-            MidiOutputDevice device = new(OUTDEV); // "Microsoft GS Wavetable Synth"
-
+            ///// 3 - create and bind channels
             //var ch1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
-            var ch1 = _mgr.OpenMidiOutput(OUTDEV, 1, "cch1 !!!", 0); // => AcousticGrandPiano);
+            var ch1 = _mgr.OpenMidiOutput(OUTDEV, 1, "cch1 !!!", 0);  // => "AcousticGrandPiano"
             var ch2 = _mgr.OpenMidiOutput(OUTDEV, 2, "cch2 !!!", 12); // => ???);
-
-            //var chan1 = _mgr.OpenMidiOutput(device, 1, "cch1 !!!");
-            //var chan2 = _mgr.OpenMidiOutput(device, 2, "cch2 !!!");
 
             cch1.BoundChannel = ch1;
             cch2.BoundChannel = ch2;
@@ -161,7 +159,7 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         void DemoScriptApp()
         {
-            ///// 0 - pre-steps
+            ///// 0 - pre-steps - only for this demo
             cch1.Hide();
             cch2.Hide();
             cctrl1.Hide();

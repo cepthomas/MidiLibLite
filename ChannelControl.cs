@@ -50,7 +50,6 @@ namespace Ephemera.MidiLibLite
         // TODOC
         Slider sldControllerValue;
         Button btnSend;
-
         #endregion
 
         #region Properties
@@ -73,15 +72,15 @@ namespace Ephemera.MidiLibLite
         /// <summary>Drawing the control when selected.</summary>
         public Color SelectedColor { get; set; }
 
-        /// <summary>The graphics draw area. If not used returns null.</summary>
+        /// <summary>The graphics draw area. If not used returns Empty rect.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        protected Rectangle? DrawRect
+        protected Rectangle DrawRect
         {
             get
             {
                 return BoundChannel.Config.DisplayOptions.HasFlag(ChannelControlOptions.OwnerDraw) ?
                     new Rectangle(0, txtInfo.Bottom + PAD, Width, Height - (txtInfo.Bottom + PAD)) :
-                    null;
+                    new Rectangle(0, 0, 0, 0);
             }
         }
 

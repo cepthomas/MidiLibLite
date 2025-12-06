@@ -24,25 +24,26 @@ namespace Ephemera.MidiLibLite.Test
             Graphics g = pe.Graphics;
             var r = DrawRect;
 
-            //g.Clear(Color.LightCoral);
-
-            g.FillRectangle(Brushes.LightCoral, r);
-
-            // Border.
-            g.DrawLine(Pens.Black, r.Left, r.Top, r.Right, r.Top);
-            g.DrawLine(Pens.Black, r.Left, r.Bottom, r.Right, r.Bottom);
-            g.DrawLine(Pens.Black, r.Left, r.Top, r.Left, r.Bottom);
-            g.DrawLine(Pens.Black, r.Right, r.Top, r.Right, r.Bottom);
-
-            // Grid.
-            for (int x = r.Left; x < r.Right; x += 25)
+            if (!r.IsEmpty)
             {
-                g.DrawLine(Pens.Black, x, r.Top, x, r.Bottom);
-            }
+                g.FillRectangle(Brushes.LightCoral, r);
 
-            for (int y = r.Bottom; y > r.Top; y -= 25)
-            {
-                g.DrawLine(Pens.Black, r.Left, y, r.Right, y);
+                // Border.
+                g.DrawLine(Pens.Black, r.Left, r.Top, r.Right, r.Top);
+                g.DrawLine(Pens.Black, r.Left, r.Bottom, r.Right, r.Bottom);
+                g.DrawLine(Pens.Black, r.Left, r.Top, r.Left, r.Bottom);
+                g.DrawLine(Pens.Black, r.Right, r.Top, r.Right, r.Bottom);
+
+                // Grid.
+                for (int x = r.Left; x < r.Right; x += 25)
+                {
+                    g.DrawLine(Pens.Black, x, r.Top, x, r.Bottom);
+                }
+
+                for (int y = r.Bottom; y > r.Top; y -= 25)
+                {
+                    g.DrawLine(Pens.Black, r.Left, y, r.Right, y);
+                }
             }
 
             base.OnPaint(pe);
@@ -140,13 +141,19 @@ namespace Ephemera.MidiLibLite.Test
             var mp = PointToClient(MousePosition);
             var r = DrawRect;
 
-            // Map and check.
-            int x = MathUtils.Map(mp.X, 0, r.Width, 0, MidiDefs.MAX_MIDI);
-            int y = MathUtils.Map(mp.Y, r.Bottom, r.Top, 0, MidiDefs.MAX_MIDI);
+            if (!r.IsEmpty)
+            {
+                // Map and check.
+                int x = MathUtils.Map(mp.X, 0, r.Width, 0, MidiDefs.MAX_MIDI);
+                int y = MathUtils.Map(mp.Y, r.Bottom, r.Top, 0, MidiDefs.MAX_MIDI);
+                return (x, y);
+            }            
+            return null;
 
-            return (x >= 0 && x < MidiDefs.MAX_MIDI && y >= 0 && y < MidiDefs.MAX_MIDI) ?
-                (x, y) :
-                null;
+
+            // return (x >= 0 && x < MidiDefs.MAX_MIDI && y >= 0 && y < MidiDefs.MAX_MIDI) ?
+            //     (x, y) :
+            //     null;
         }
     }
 }

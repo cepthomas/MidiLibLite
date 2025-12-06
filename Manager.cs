@@ -52,8 +52,8 @@ namespace Ephemera.MidiLibLite
             if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channelNumber)); }
 
             // Locate the device. TODO1 other flavors:
-            //  - OSC uses url:port for DeviceName
-            //  - NULL uses ??? for DeviceName
+            //  - OSC uses OSC:url:port for DeviceName
+            //  - NULL uses NULL for DeviceName
             var indevs = _inputDevices.Where(o => o.DeviceName == deviceName);
             if (!indevs.Any())
             {
@@ -92,7 +92,7 @@ namespace Ephemera.MidiLibLite
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
             if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channelNumber)); }
 
-            // Locate the device. TODO1 other flavors:
+            // Locate the device. TODO1 other flavors. See OpenMidiInput.
             var outdevs = _outputDevices.Where(o => o.DeviceName == deviceName);
             if (!outdevs.Any())
             {
@@ -135,7 +135,7 @@ namespace Ephemera.MidiLibLite
 
         #region Devices
         /// <summary>
-        /// Create all I/O devices from user settings.
+        /// Create all I/O devices.
         /// </summary>
         /// <returns>Success</returns>
         public void CreateDevices() // TODO1 also OSC, null - from script or api
