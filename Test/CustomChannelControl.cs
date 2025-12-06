@@ -29,15 +29,20 @@ namespace Ephemera.MidiLibLite.Test
             g.FillRectangle(Brushes.LightCoral, r);
 
             // Border.
-            g.DrawLine(Pens.Red, r.Left, r.Top, r.Right, r.Top);
-            g.DrawLine(Pens.Red, r.Left, r.Bottom, r.Right, r.Bottom);
-            g.DrawLine(Pens.Red, r.Left, r.Top, r.Left, r.Bottom);
-            g.DrawLine(Pens.Red, r.Right, r.Top, r.Right, r.Bottom);
+            g.DrawLine(Pens.Black, r.Left, r.Top, r.Right, r.Top);
+            g.DrawLine(Pens.Black, r.Left, r.Bottom, r.Right, r.Bottom);
+            g.DrawLine(Pens.Black, r.Left, r.Top, r.Left, r.Bottom);
+            g.DrawLine(Pens.Black, r.Right, r.Top, r.Right, r.Bottom);
 
             // Grid.
             for (int x = r.Left; x < r.Right; x += 25)
             {
-                g.DrawLine(Pens.White, x, r.Top, x, r.Bottom);
+                g.DrawLine(Pens.Black, x, r.Top, x, r.Bottom);
+            }
+
+            for (int y = r.Bottom; y > r.Top; y -= 25)
+            {
+                g.DrawLine(Pens.Black, r.Left, y, r.Right, y);
             }
 
             base.OnPaint(pe);
@@ -64,12 +69,12 @@ namespace Ephemera.MidiLibLite.Test
                         if (_lastNote != -1)
                         {
                             // Turn off last note.
-                            OnSendMidi(new NoteOff(BoundChannel.ChannelNumber, _lastNote));
+                            OnSendMidi(new NoteOff(BoundChannel.Config.ChannelNumber, _lastNote));
                         }
 
                         // Start the new note.
                         _lastNote = res.Value.ux;
-                        OnSendMidi(new NoteOn(BoundChannel.ChannelNumber, res.Value.ux, res.Value.uy));
+                        OnSendMidi(new NoteOn(BoundChannel.Config.ChannelNumber, res.Value.ux, res.Value.uy));
                     }
                 }
             }
@@ -87,7 +92,7 @@ namespace Ephemera.MidiLibLite.Test
             if (res is not null)
             {
                 _lastNote = res.Value.ux;
-                OnSendMidi(new NoteOn(BoundChannel.ChannelNumber, res.Value.ux, res.Value.uy));
+                OnSendMidi(new NoteOn(BoundChannel.Config.ChannelNumber, res.Value.ux, res.Value.uy));
             }
 
             base.OnMouseDown(e);
@@ -101,7 +106,7 @@ namespace Ephemera.MidiLibLite.Test
         {
             if (_lastNote != -1)
             {
-                OnSendMidi(new NoteOff(BoundChannel.ChannelNumber, _lastNote));
+                OnSendMidi(new NoteOff(BoundChannel.Config.ChannelNumber, _lastNote));
                 _lastNote = -1;
             }
 
@@ -117,7 +122,7 @@ namespace Ephemera.MidiLibLite.Test
             // Turn off last click.
             if (_lastNote != -1)
             {
-                OnSendMidi(new NoteOff(BoundChannel.ChannelNumber, _lastNote));
+                OnSendMidi(new NoteOff(BoundChannel.Config.ChannelNumber, _lastNote));
             }
 
             // Reset and tell client.

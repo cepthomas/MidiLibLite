@@ -12,6 +12,35 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
 
+    // public class ControllerControl : UserControl // TODO1 put back with ChannelControl?
+
+// public class OutputChannelConfig
+// {
+//     public string DeviceName { get; set; } = "";
+//     public string ChannelName { get; set; } = "";
+//     public int ChannelNumber { get; set; } = 1;
+//     public string PresetFile { get; set; } = "";
+//     public int Patch { get; set; } = 0;
+//     public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
+// }
+
+// public class InputChannelConfig
+// {
+//     public string DeviceName { get; set; } = "";
+//     public string ChannelName { get; set; } = "";
+//     public int ChannelNumber { get; set; } = 1;
+// }
+
+// public class ControllerConfig
+// {
+//     public string DeviceName { get; set; } = "";
+//     public int ChannelNumber { get; set; } = 0;
+//     public int ControllerId { get; set; } = 1;
+//     public int ControllerValue { get; set; } = 0;
+// }
+
+
+
 namespace Ephemera.MidiLibLite
 {
     public class ChannelControl : UserControl
@@ -110,7 +139,7 @@ namespace Ephemera.MidiLibLite
 
             // Satisfy designer and initial conditions,
             var dev = new NullOutputDevice("DUMMY_DEVICE");
-            BoundChannel = new OutputChannel(dev, 1, "DUMMY_CHANNEL");
+            BoundChannel = new OutputChannel(new() { ChannelName = "DUMMY_CHANNEL" }, dev);
 
             txtInfo = new()
             {

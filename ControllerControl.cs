@@ -19,23 +19,23 @@ namespace Ephemera.MidiLibLite
     [Serializable]
     public class ControllerConfig
     {
+        [Editor(typeof(DeviceTypeEditor), typeof(UITypeEditor))]
+        public string DeviceName { get; set; } = "";
+
+        [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
+        [Range(1, MidiDefs.NUM_CHANNELS)]
+        public int ChannelNumber { get; set; } = 0;
+
         /// <summary>Edit current controller number.</summary>
-        [Browsable(true)]
         [Editor(typeof(ControllerIdTypeEditor), typeof(UITypeEditor))]
         [TypeConverter(typeof(ControllerIdConverter))]
         [Range(0, MidiDefs.MAX_MIDI)]
         public int ControllerId { get; set; } = 1;
 
         /// <summary>Controller payload.</summary>
-        [Browsable(true)]
         [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
         [Range(0, MidiDefs.MAX_MIDI)]
         public int ControllerValue { get; set; } = 0;
-
-        [Browsable(true)]
-        [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-        [Range(1, MidiDefs.NUM_CHANNELS)]
-        public int ChannelNumber { get; set; } = 0;
     }
 
 
@@ -63,8 +63,11 @@ namespace Ephemera.MidiLibLite
         }
         ControllerConfig _config = new();
 
-
-        public int DeviceId { get; set; } = 0; // TODO1 ?? IDevice Device { get; init; }
+        /// <summary>Associated device.</summary>
+        // [Browsable(false)]
+        // [JsonIgnore]
+        public IOutputDevice Device { get; init; } // TODO1
+        // public int DeviceId { get; set; } = 0;
 
 
         /// <summary>Drawing the active elements of a control.</summary>
@@ -83,7 +86,7 @@ namespace Ephemera.MidiLibLite
        // [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color SelectedColor { get; set; }
 
-        /// <summary>The graphics draw area.</summary>
+        /// <summary>The graphics draw area. TODO1 needed?</summary>
      //   [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         protected Rectangle DrawRect
         {

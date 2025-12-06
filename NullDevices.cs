@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Ephemera.NBagOfTricks;
 
 
-// TODO1 add scaffolding.
+// TODO2 add scaffolding.
 
 
 namespace Ephemera.MidiLibLite
@@ -14,7 +14,7 @@ namespace Ephemera.MidiLibLite
         public string DeviceName { get; }
 
         /// <inheritdoc />
-        public bool Valid { get { return true; } }
+        public bool Valid { get; set; }
 
         /// <inheritdoc />
         public bool CaptureEnable { get; set; }
@@ -33,8 +33,9 @@ namespace Ephemera.MidiLibLite
         public NullInputDevice(string deviceName)
         {
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
+
             DeviceName = deviceName;
- //           Id = ind;
+            // Id = ind;
         }
 
         /// <summary>
@@ -52,7 +53,7 @@ namespace Ephemera.MidiLibLite
         public string DeviceName { get; }
 
         /// <inheritdoc />
-        public bool Valid { get { return true; } }
+        public bool Valid { get; set; }
 
         /// <inheritdoc />
         public int Id { get; }
@@ -66,7 +67,7 @@ namespace Ephemera.MidiLibLite
         {
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
             DeviceName = deviceName;
-//            Id = ind;
+            // Id = ind;
         }
 
         /// <summary>

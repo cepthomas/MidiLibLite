@@ -120,6 +120,9 @@ namespace Ephemera.MidiLibLite.Test
         }
         #endregion
 
+        const string INDEV = "loopMIDI Port 1";
+        const string OUTDEV = "VirtualMIDISynth #1"; // "Microsoft GS Wavetable Synth"
+
 
         /// <summary>
         /// A standard app where controls/channels are defined in VS designer.
@@ -133,15 +136,21 @@ namespace Ephemera.MidiLibLite.Test
             InitControl(cctrl2);
 
             ///// 2 - create and bind all channels - explicit
-            MidiOutputDevice device = new("VirtualMIDISynth #1"); // "Microsoft GS Wavetable Synth"
-            var chan1 = new OutputChannel(device, 1, "cch1 !!!");
-            var chan2 = new OutputChannel(device, 2, "cch2 !!!");
-            cch1.BoundChannel = chan1;
-            cch2.BoundChannel = chan2;
+            MidiOutputDevice device = new(OUTDEV); // "Microsoft GS Wavetable Synth"
 
-            ///// 3 - configure other stuff
-            cctrl1.Info = new() { DeviceId = device.Id, ChannelNumber = 1, ControllerId = 77, ControllerValue = 50 };
-            cctrl2.Info = new() { DeviceId = device.Id, ChannelNumber = 2, ControllerId = 88, ControllerValue = 60 };
+            //var ch1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
+            var ch1 = _mgr.OpenMidiOutput(OUTDEV, 1, "cch1 !!!", 0); // => AcousticGrandPiano);
+            var ch2 = _mgr.OpenMidiOutput(OUTDEV, 2, "cch2 !!!", 12); // => ???);
+
+            //var chan1 = _mgr.OpenMidiOutput(device, 1, "cch1 !!!");
+            //var chan2 = _mgr.OpenMidiOutput(device, 2, "cch2 !!!");
+
+            cch1.BoundChannel = ch1;
+            cch2.BoundChannel = ch2;
+
+            ///// 3 - configure other stuff - controllers
+            //cctrl1.Info = new() { DeviceId = device.Id, ChannelNumber = 1, ControllerId = 77, ControllerValue = 50 };
+            //cctrl2.Info = new() { DeviceId = device.Id, ChannelNumber = 2, ControllerId = 88, ControllerValue = 60 };
 
             ///// 4 - do work
             // ????
@@ -165,9 +174,9 @@ namespace Ephemera.MidiLibLite.Test
             // local hnd_ccin = api.open_midi_input("loopMIDI Port 1", 1, "my input")
             // local hnd_keys = api.open_midi_output("loopMIDI Port 2", 1, "keys", inst.AcousticGrandPiano)
             // local hnd_synth = api.open_midi_output("loopMIDI Port 2", 3, "synth", inst.Lead1Square)
-            var ch1 = _mgr.OpenMidiInput("loopMIDI Port 1", 1, "my input");
-            var ch2 = _mgr.OpenMidiOutput("Microsoft GS Wavetable Synth", 1, "keys", 0); // => AcousticGrandPiano);
-            var ch3 = _mgr.OpenMidiOutput("Microsoft GS Wavetable Synth", 10, "drums", 32); // => kit.Jazz);
+            var ch1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
+            var ch2 = _mgr.OpenMidiOutput(OUTDEV, 1, "keys", 0); // => AcousticGrandPiano);
+            var ch3 = _mgr.OpenMidiOutput(OUTDEV, 10, "drums", 32); // => kit.Jazz);
 
             ///// 3 - create a channel control for each output channel and bind object
             DestroyControls();
@@ -310,6 +319,8 @@ namespace Ephemera.MidiLibLite.Test
             var cc = sender as ChannelControl;
             var channel = cc!.BoundChannel!;
 
+            Tell(INFO, $"Channel send [{e}]");
+
             if (channel.Enable)
             {
                 channel.Device.Send(e);
@@ -350,13 +361,13 @@ namespace Ephemera.MidiLibLite.Test
 
             if (e.PatchChange)
             {
-                Tell(INFO, $"PatchChange");
-                channel.Device.Send(new Patch(channel.ChannelNumber, channel.Patch));
+                Tell(INFO, $"PatchChange [{channel.Config.Patch}]");
+                channel.Device.Send(new Patch(channel.Config.ChannelNumber, channel.Config.Patch));
             }
 
             if (e.PresetFileChange)
             {
-                Tell(INFO, $"PresetFileChange");
+                Tell(INFO, $"PresetFileChange [{channel.Config.PresetFile}]");
                 channel.UpdatePresets();
             }
         }
@@ -369,11 +380,12 @@ namespace Ephemera.MidiLibLite.Test
         void ControllerControl_MidiSend(object? sender, BaseMidiEvent e)
         {
             var cc = sender as ControllerControl;
-            var dev = _mgr.GetOutputDevice(cc.Info.DeviceId);
 
-            //if (channel.Enable)
+            Tell(INFO, $"Controller send [{e}]");
+
+            //if (cc.Enable)
             {
-                dev.Send(e);
+                cc.Device.Send(e);
             }
         }
 
@@ -384,7 +396,7 @@ namespace Ephemera.MidiLibLite.Test
         /// <param name="e"></param>
         void Mgr_InputReceive(object? sender, BaseMidiEvent e)
         {
-            Tell(INFO, $"Received: {e}");
+            Tell(INFO, $"Received [{e}]");
         }
         #endregion
 
@@ -401,11 +413,11 @@ namespace Ephemera.MidiLibLite.Test
 
 
 
-#if LEFTOVERS_TODO1
+#if LEFTOVERS
         /// <summary>
         /// Input from internal non-midi device. Doesn't throw.
         /// </summary>
-        void InjectMidiInEvent(string devName, int channel, int noteNum, int velocity)
+        void InjectMidiInEvent(string devName, int channel, int noteNum, int velocity) // TODO2
         {
             var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
 
@@ -421,45 +433,9 @@ namespace Ephemera.MidiLibLite.Test
         }
 
         /// <summary>
-        /// Create string suitable for logging. Doesn't throw.
-        /// </summary>
-        /// <param name="evt">Midi event to format.</param>
-        /// <param name="tick">Current tick.</param>
-        /// <param name="chanHnd">Channel info.</param>
-        /// <returns>Suitable string.</returns>
-        string FormatMidiEvent(MidiEvent evt, int tick, int chanHnd)
-        {
-            // Common part.
-            ChannelHandle ch = new(chanHnd);
-
-            string s = $"{tick:00000} {MusicTime.Format(tick)} {evt.CommandCode} Dev:{ch.DeviceId} Ch:{ch.ChannelNumber} ";
-
-            switch (evt)
-            {
-                case NoteEvent e:
-                    var snote = ch.ChannelNumber == 10 || ch.ChannelNumber == 16 ?
-                        $"DRUM_{e.NoteNumber}" :
-                        MusicDefinitions.NoteNumberToName(e.NoteNumber);
-                    s = $"{s} {e.NoteNumber}:{snote} Vel:{e.Velocity}";
-                    break;
-
-                case ControlChangeEvent e:
-                    var sctl = Enum.IsDefined(e.Controller) ? e.Controller.ToString() : $"CTLR_{e.Controller}";
-                    s = $"{s} {(int)e.Controller}:{sctl} Val:{e.ControllerValue}";
-                    break;
-
-                default: // Ignore others for now.
-                    break;
-            }
-
-            return s;
-        }
-
-
-        /// <summary>
         /// Read the lua midi definitions for internal consumption.
         /// </summary>
-        void ReadMidiDefs()
+        void ReadMidiDefs() // TODO_defs
         {
             //var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
 
@@ -493,7 +469,7 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         /// <param name="scode"></param>
         /// <returns></returns>
-        (int ecode, string sres) ExecuteLuaChunk(List<string> scode)
+        (int ecode, string sres) ExecuteLuaChunk(List<string> scode) // TODO_defs
         {
             var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
             var luaPath = $"{srcDir}/LBOT/?.lua;{srcDir}/lua/?.lua;;";

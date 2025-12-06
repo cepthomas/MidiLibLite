@@ -51,16 +51,25 @@ namespace Ephemera.MidiLibLite
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
             if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channelNumber)); }
 
-            // Locate the device.
-            var indev = _inputDevices.Where(o => o.DeviceName == deviceName);
-            if (!indev.Any())
+            // Locate the device. TODO1 other flavors:
+            //  - OSC uses url:port for DeviceName
+            //  - NULL uses ??? for DeviceName
+            var indevs = _inputDevices.Where(o => o.DeviceName == deviceName);
+            if (!indevs.Any())
             {
                 throw new MidiLibException($"Invalid input device name [{deviceName}]");
             }
-            var dev = indev.ElementAt(0);
+            var dev = indevs.ElementAt(0);
+
+            var config = new InputChannelConfig()
+            {
+                DeviceName = deviceName,
+                ChannelName = channelName,
+                ChannelNumber = channelNumber
+            };
 
             // Add the channel.
-            InputChannel ch = new(dev, channelNumber, channelName)
+            InputChannel ch = new(config, dev)
             {
                 Enable = true,
             };
@@ -83,19 +92,28 @@ namespace Ephemera.MidiLibLite
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
             if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channelNumber)); }
 
-            // Locate the device.
-            var outdev = _outputDevices.Where(o => o.DeviceName == deviceName);
-            if (!outdev.Any())
+            // Locate the device. TODO1 other flavors:
+            var outdevs = _outputDevices.Where(o => o.DeviceName == deviceName);
+            if (!outdevs.Any())
             {
                 throw new MidiLibException($"Invalid output device name [{deviceName}]");
             }
-            var dev = outdev.ElementAt(0);
+            var dev = outdevs.ElementAt(0);
+
+            var config = new OutputChannelConfig()
+            {
+                DeviceName = deviceName,
+                ChannelName = channelName,
+                ChannelNumber = channelNumber,
+                PresetFile = "",
+                Patch = patch,
+                Volume = Defs.DEFAULT_VOLUME
+            };
 
             // Add the channel.
-            OutputChannel ch = new(dev, channelNumber, channelName)
+            OutputChannel ch = new(config, dev)
             {
                 Enable = true,
-                Patch = patch
             };
 
             _outputChannels.Add(ch.Handle, ch);
@@ -158,7 +176,7 @@ namespace Ephemera.MidiLibLite
             }
         }
 
-        //TODO1 support retry x2
+        //TODO1 support retry x2 from MG:
         // ///// Determine midi output device. /////
         // Text = "Midi Generator - no output device";
         // timer1.Interval = 1000;
