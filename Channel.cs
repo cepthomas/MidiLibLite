@@ -17,11 +17,11 @@ namespace Ephemera.MidiLibLite
     [Flags]
     public enum ChannelControlOptions
     {
-        Info = 0x01,
-        Notes = 0x02,
-        SoloMute = 0x04,
-        Controller = 0x08,
-        All = 0xFF
+        Notes = 0x01,
+        SoloMute = 0x02,
+        Controller = 0x04,
+        All = 0x0F, // of above
+        OwnerDraw = 0x80
     }
 
 

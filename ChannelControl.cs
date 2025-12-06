@@ -40,7 +40,7 @@ namespace Ephemera.MidiLibLite
         const int SIZE = 32;
 
         readonly Container components = new();
-        readonly protected ToolTip toolTip;
+        protected ToolTip toolTip;
 
         TextBox txtInfo;
         Slider sldVolume;
@@ -73,11 +73,16 @@ namespace Ephemera.MidiLibLite
         /// <summary>Drawing the control when selected.</summary>
         public Color SelectedColor { get; set; }
 
-        /// <summary>The graphics draw area.</summary>
+        /// <summary>The graphics draw area. If not used returns null.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        protected Rectangle DrawRect
+        protected Rectangle? DrawRect
         {
-            get { return new Rectangle(0, sldVolume.Bottom + PAD, Width, Height - (sldVolume.Bottom + PAD)); }
+            get
+            {
+                return BoundChannel.Config.DisplayOptions.HasFlag(ChannelControlOptions.OwnerDraw) ?
+                    new Rectangle(0, txtInfo.Bottom + PAD, Width, Height - (txtInfo.Bottom + PAD)) :
+                    null;
+            }
         }
 
         /// <summary>For muting/soloing.</summary>
@@ -110,19 +115,30 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Lifecycle
+
         /// <summary>
-        /// Constructor. Create controls.
+        /// Normal constructor.
+        /// </summary>
+        public ChannelControl(OutputChannel channel)
+        {
+            SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
+
+            BoundChannel = channel;
+        }
+
+        /// <summary>
+        /// Constructor for the VS designer.
         /// </summary>
         public ChannelControl()
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 
-            // InitializeComponent();
+            // // InitializeComponent();
             // SuspendLayout();
 
-            // // Satisfy designer and initial conditions,
-            // var dev = new NullOutputDevice("DUMMY_DEVICE");
-            // BoundChannel = new OutputChannel(new() { ChannelName = "DUMMY_CHANNEL" }, dev);
+            // Satisfy designer and initial conditions,
+            var dev = new NullOutputDevice("DUMMY_DEVICE");
+            BoundChannel = new OutputChannel(new() { ChannelName = "DUMMY_CHANNEL" }, dev);
 
             // // Create the controls per the config.
             // var opts = BoundChannel.Config.DisplayOptions; // shorthand
@@ -189,7 +205,6 @@ namespace Ephemera.MidiLibLite
             //     xPos = lblSolo.Right + PAD;
             // }
 
-
             // if (opts.HasFlag(ChannelControlOptions.Notes))
             // {
             //     btnSend = new()
@@ -229,7 +244,7 @@ namespace Ephemera.MidiLibLite
             // ResumeLayout(false);
             // PerformLayout();
 
-            toolTip = new(components);
+            // toolTip = new(components);
         }
 
         /// <summary>
@@ -249,7 +264,7 @@ namespace Ephemera.MidiLibLite
             int xPos = PAD;
             int yPos = PAD;
 
-            if (opts.HasFlag(ChannelControlOptions.Info))
+            if (true)//opts.HasFlag(ChannelControlOptions.Info))
             {
                 txtInfo = new()
                 {
@@ -349,7 +364,10 @@ namespace Ephemera.MidiLibLite
             PerformLayout();
 
 
+            toolTip = new(components);
 
+
+            // other inits???
             sldVolume.Value = BoundChannel.Config.Volume;
             UpdateUi();
 
