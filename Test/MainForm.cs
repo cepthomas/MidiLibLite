@@ -40,6 +40,10 @@ namespace Ephemera.MidiLibLite.Test
         const string ERROR = "ERR";
         const string WARN = "WRN";
         const string INFO = "INF";
+
+        const string INDEV = "loopMIDI Port 1";
+        const string OUTDEV1 = "VirtualMIDISynth #1";
+        const string OUTDEV2 = "Microsoft GS Wavetable Synth";
         #endregion
 
         #region Lifecycle
@@ -120,18 +124,33 @@ namespace Ephemera.MidiLibLite.Test
         }
         #endregion
 
-const string INDEV = "loopMIDI Port 1";
-const string OUTDEV = "VirtualMIDISynth #1"; // "Microsoft GS Wavetable Synth"
-
-
         /// <summary>
-        /// A standard app where controls/channels are defined in VS designer.
+        /// A standard app where controls are defined in VS designer.
         /// </summary>
         void DemoStandardApp()
         {
             ///// 1 - create devices - explicit
-            MidiOutputDevice device = new(OUTDEV);
+            //MidiOutputDevice device = new(OUTDEV1);
 
+            ///// 1 - create all devices
+            _mgr.CreateDevices();
+
+            ///// 3 - create channels
+            //var chanin11 = _mgr.OpenMidiInput(INDEV, 1, "my input");
+            var chanout1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);  // TODO1 patch by name => "AcousticGrandPiano"
+            var chanout2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12); // => ???);
+
+
+            ///// 2 - configure controls and bind channels
+            InitControl(cch1);
+            InitControl(cch2);
+            //InitControl(cctrl1);
+            //InitControl(cctrl2);
+            cch1.BoundChannel = chanout1;
+            cch2.BoundChannel = chanout2;
+
+
+            /*
             ///// 2 - configure controls
             InitControl(cch1);
             InitControl(cch2);
@@ -140,11 +159,12 @@ const string OUTDEV = "VirtualMIDISynth #1"; // "Microsoft GS Wavetable Synth"
 
             ///// 3 - create and bind channels
             //var ch1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
-            var ch1 = _mgr.OpenMidiOutput(OUTDEV, 1, "cch1 !!!", 0);  // => "AcousticGrandPiano"
-            var ch2 = _mgr.OpenMidiOutput(OUTDEV, 2, "cch2 !!!", 12); // => ???);
+            var ch1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "cch1 !!!", 0);  // => "AcousticGrandPiano"
+            var ch2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "cch2 !!!", 12); // => ???);
 
             cch1.BoundChannel = ch1;
             cch2.BoundChannel = ch2;
+            */
 
             ///// 3 - configure other stuff - controllers
             //cctrl1.Info = new() { DeviceId = device.Id, ChannelNumber = 1, ControllerId = 77, ControllerValue = 50 };
@@ -155,15 +175,15 @@ const string OUTDEV = "VirtualMIDISynth #1"; // "Microsoft GS Wavetable Synth"
         }
 
         /// <summary>
-        /// App driven by a script - as Nebulua/Nebulator.
+        /// App driven by a script - as Nebulua/Nebulator. Creates channels and controls dynamically.
         /// </summary>
         void DemoScriptApp()
         {
             ///// 0 - pre-steps - only for this demo
             cch1.Hide();
             cch2.Hide();
-            cctrl1.Hide();
-            cctrl2.Hide();
+            //cctrl1.Hide();
+            //cctrl2.Hide();
 
             ///// 1 - create all devices
             _mgr.CreateDevices();
@@ -172,25 +192,27 @@ const string OUTDEV = "VirtualMIDISynth #1"; // "Microsoft GS Wavetable Synth"
             // local hnd_ccin = api.open_midi_input("loopMIDI Port 1", 1, "my input")
             // local hnd_keys = api.open_midi_output("loopMIDI Port 2", 1, "keys", inst.AcousticGrandPiano)
             // local hnd_synth = api.open_midi_output("loopMIDI Port 2", 3, "synth", inst.Lead1Square)
+            List<OutputChannel> channels = [];
             var ch1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
-            var ch2 = _mgr.OpenMidiOutput(OUTDEV, 1, "keys", 0); // => AcousticGrandPiano);
-            var ch3 = _mgr.OpenMidiOutput(OUTDEV, 10, "drums", 32); // => kit.Jazz);
+            var chan1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "keys", 0); // => AcousticGrandPiano);
+            channels.Add(chan1);
+            var chan2 = _mgr.OpenMidiOutput(OUTDEV1, 10, "drums", 32); // => kit.Jazz);
+            channels.Add(chan2);
 
-            ///// 3 - create a channel control for each output channel and bind object
-            DestroyControls();
+            ///// 3 - create a control for each channel and bind object
+            //DestroyControls();
             int x = sldVolume.Left;
             int y = sldVolume.Bottom + 10;
 
-            OutputChannel[] chs = [ ch2, ch3 ];
-            chs.ForEach(ch =>
+            channels.ForEach(chan =>
             {
-                var cc = new CustomChannelControl() { BoundChannel = ch };
+                var cc = new CustomChannelControl(chan);
                 InitControl(cc);
                 cc.Location = new(x, y);
                 cc.Size = new(320, 175);
                 y += cc.Size.Height + 8;
 
-                ch.UpdatePresets();
+                chan.UpdatePresets();
             });
 
             ///// 4 - do work
@@ -257,7 +279,7 @@ const string OUTDEV = "VirtualMIDISynth #1"; // "Microsoft GS Wavetable Synth"
 
 
         /// <summary>
-        /// Init control.
+        /// Common init control.
         /// </summary>
         void InitControl(CustomChannelControl cc)
         {
@@ -274,21 +296,21 @@ const string OUTDEV = "VirtualMIDISynth #1"; // "Microsoft GS Wavetable Synth"
             }
         }
 
-        /// <summary>
-        /// Init control.
-        /// </summary>
-        void InitControl(ControllerControl cc)
-        {
-            cc.BorderStyle = BorderStyle.FixedSingle;
-            cc.ControlColor = _controlColor;
-            cc.SelectedColor = _selectedColor;
-            cc.SendMidi += ControllerControl_MidiSend;
+        ///// <summary>
+        ///// Init control.
+        ///// </summary>
+        //void InitControl(ControllerControl cc)
+        //{
+        //    cc.BorderStyle = BorderStyle.FixedSingle;
+        //    cc.ControlColor = _controlColor;
+        //    cc.SelectedColor = _selectedColor;
+        //    cc.SendMidi += ControllerControl_MidiSend;
 
-            if (!Controls.Contains(cc))
-            {
-                Controls.Add(cc);
-            }
-        }
+        //    if (!Controls.Contains(cc))
+        //    {
+        //        Controls.Add(cc);
+        //    }
+        //}
 
         /// <summary>
         /// Destroy controls.

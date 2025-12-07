@@ -12,16 +12,26 @@ namespace Ephemera.MidiLibLite.Test
 {
     public class CustomChannelControl : ChannelControl
     {
-        int _lastNote = 0;
+        /// <summary>Tracking for note off.</summary>
+        int _lastNote = -1;
 
-        //readonly ToolTip toolTip;
+        /// <summary>Normal constructor.</summary>
+        public CustomChannelControl(OutputChannel channel) : base(channel)
+        {
+            //BoundChannel = channel;
+        }
+
+        /// <summary>Constructor for the VS designer.</summary>
+        public CustomChannelControl() : base()
+        {
+        }
 
 
         /// <summary>Paint the surface.</summary>
-        /// <param name="pe"></param>
-        protected override void OnPaint(PaintEventArgs pe)
+        /// <param name="e"></param>
+        protected override void OnPaint(PaintEventArgs e)
         {
-            Graphics g = pe.Graphics;
+            Graphics g = e.Graphics;
             var r = DrawRect;
 
             if (!r.IsEmpty)
@@ -46,7 +56,7 @@ namespace Ephemera.MidiLibLite.Test
                 }
             }
 
-            base.OnPaint(pe);
+            base.OnPaint(e);
         }
 
         /// <summary>

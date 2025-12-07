@@ -18,6 +18,7 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             toolStrip1 = new System.Windows.Forms.ToolStrip();
             btnLogMidi = new System.Windows.Forms.ToolStripButton();
             btnKillMidi = new System.Windows.Forms.ToolStripButton();
@@ -25,8 +26,6 @@ namespace Ephemera.MidiLibLite.Test
             sldVolume = new Ephemera.NBagOfUis.Slider();
             cch1 = new CustomChannelControl();
             cch2 = new CustomChannelControl();
-            cctrl1 = new ControllerControl();
-            cctrl2 = new ControllerControl();
             button1 = new System.Windows.Forms.Button();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -93,7 +92,7 @@ namespace Ephemera.MidiLibLite.Test
             cch1.Location = new System.Drawing.Point(8, 103);
             cch1.Name = "cch1";
             cch1.SelectedColor = System.Drawing.Color.Green;
-            cch1.Size = new System.Drawing.Size(320, 175);
+            cch1.Size = new System.Drawing.Size(336, 175);
             cch1.TabIndex = 100;
             // 
             // cch2
@@ -102,26 +101,8 @@ namespace Ephemera.MidiLibLite.Test
             cch2.Location = new System.Drawing.Point(8, 284);
             cch2.Name = "cch2";
             cch2.SelectedColor = System.Drawing.Color.Green;
-            cch2.Size = new System.Drawing.Size(320, 177);
+            cch2.Size = new System.Drawing.Size(336, 177);
             cch2.TabIndex = 101;
-            // 
-            // cctrl1
-            // 
-            cctrl1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            cctrl1.Location = new System.Drawing.Point(168, 41);
-            cctrl1.Name = "cctrl1";
-            cctrl1.SelectedColor = System.Drawing.Color.Empty;
-            cctrl1.Size = new System.Drawing.Size(236, 46);
-            cctrl1.TabIndex = 102;
-            // 
-            // cctrl2
-            // 
-            cctrl2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            cctrl2.Location = new System.Drawing.Point(420, 41);
-            cctrl2.Name = "cctrl2";
-            cctrl2.SelectedColor = System.Drawing.Color.Empty;
-            cctrl2.Size = new System.Drawing.Size(236, 46);
-            cctrl2.TabIndex = 103;
             // 
             // button1
             // 
@@ -139,8 +120,6 @@ namespace Ephemera.MidiLibLite.Test
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(926, 475);
             Controls.Add(button1);
-            Controls.Add(cctrl2);
-            Controls.Add(cctrl1);
             Controls.Add(cch2);
             Controls.Add(cch1);
             Controls.Add(sldVolume);
@@ -166,8 +145,6 @@ namespace Ephemera.MidiLibLite.Test
         private System.Windows.Forms.ToolStripButton btnKillMidi;
         private CustomChannelControl cch1;
         private CustomChannelControl cch2;
-        private ControllerControl cctrl1;
-        private ControllerControl cctrl2;
         private System.Windows.Forms.Button button1;
     }
 }

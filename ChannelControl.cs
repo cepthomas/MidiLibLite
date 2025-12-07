@@ -58,7 +58,7 @@ namespace Ephemera.MidiLibLite
         public OutputChannel BoundChannel { get; set; }
 
         /// <summary>Drawing the active elements of a control.</summary>
-        public Color ControlColor 
+        public Color ControlColor
         {
             set
             {
@@ -135,7 +135,7 @@ namespace Ephemera.MidiLibLite
             // // InitializeComponent();
             // SuspendLayout();
 
-            // Satisfy designer and initial conditions,
+            // Dummy channel to satisfy designer.
             var dev = new NullOutputDevice("DUMMY_DEVICE");
             BoundChannel = new OutputChannel(new() { ChannelName = "DUMMY_CHANNEL" }, dev);
 
@@ -254,9 +254,9 @@ namespace Ephemera.MidiLibLite
         {
             SuspendLayout();
 
-            // Satisfy designer and initial conditions,
-            var dev = new NullOutputDevice("DUMMY_DEVICE");
-            BoundChannel = new OutputChannel(new() { ChannelName = "DUMMY_CHANNEL" }, dev);
+            //// Satisfy designer and initial conditions,
+            //var dev = new NullOutputDevice("DUMMY_DEVICE");
+            //BoundChannel = new OutputChannel(new() { ChannelName = "DUMMY_CHANNEL" }, dev);
 
             // Create the controls per the config.
             var opts = BoundChannel.Config.DisplayOptions; // shorthand
