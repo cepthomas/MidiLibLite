@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
-
-
-// public class ControllerControl : UserControl // TODO1 put back with ChannelControl?
-
 
 
 namespace Ephemera.MidiLibLite
@@ -42,20 +40,21 @@ namespace Ephemera.MidiLibLite
         readonly Container components = new();
         protected ToolTip toolTip;
 
-        TextBox txtInfo;
-        Slider sldVolume;
-        // TODO2 these could be optional for a simple control
-        Label lblSolo;
-        Label lblMute;
-        // TODOC
-        Slider sldControllerValue;
-        Button btnSend;
+        TextBox txtInfo = new();
+        Slider sldVolume = new();
+        // optional:
+        Label lblSolo = new();
+        Label lblMute = new();
+        // optional:
+        Slider sldControllerValue = new();
+        Button btnSend = new();
         #endregion
 
         #region Properties
         /// <summary>My channel.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public OutputChannel BoundChannel { get; set; }
+        //public OutputChannel BoundChannel { get; init; }
 
         /// <summary>Drawing the active elements of a control.</summary>
         public Color ControlColor
@@ -113,138 +112,54 @@ namespace Ephemera.MidiLibLite
         protected virtual void OnSendMidi(BaseMidiEvent e) { SendMidi?.Invoke(this, e); }
         #endregion
 
+        //const string fn = @"C:\Dev\Libs\MidiLibLite\dump.txt";
+
         #region Lifecycle
 
         /// <summary>
         /// Normal constructor.
         /// </summary>
-        public ChannelControl(OutputChannel channel)
+        public ChannelControl(OutputChannel? channel = null)
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 
-            BoundChannel = channel;
+            //File.AppendAllText(fn, $"ChannelControl(OutputChannel?) {DesignMode}");
+
+            if (channel is null) // in designer
+            {
+                // Dummy channel to satisfy designer.
+                var cfig = new OutputChannelConfig() { ChannelName = "DUMMY_CHANNEL" };
+                var dev = new NullOutputDevice("DUMMY_DEVICE");
+                BoundChannel = new OutputChannel(cfig, dev);
+            }
+            else // real
+            {
+                BoundChannel = channel;
+            }
         }
 
-        /// <summary>
-        /// Constructor for the VS designer.
-        /// </summary>
+
         public ChannelControl()
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 
-            // // InitializeComponent();
-            // SuspendLayout();
+            //File.AppendAllText(fn, $"ChannelControl(OutputChannel?) {DesignMode}");
 
-            // Dummy channel to satisfy designer.
-            var dev = new NullOutputDevice("DUMMY_DEVICE");
-            BoundChannel = new OutputChannel(new() { ChannelName = "DUMMY_CHANNEL" }, dev);
-
-            // // Create the controls per the config.
-            // var opts = BoundChannel.Config.DisplayOptions; // shorthand
-            // int xPos = PAD;
-            // int yPos = PAD;
-
-            // if (opts.HasFlag(ChannelControlOptions.Info))
-            // {
-            //     txtInfo = new()
-            //     {
-            //         Anchor = AnchorStyles.Top | AnchorStyles.Left,
-            //         BorderStyle = BorderStyle.FixedSingle,
-            //         Location = new(xPos, yPos),
-            //         Size = new(100, SIZE),
-            //         ReadOnly = true,
-            //         Text = "Hello world"
-            //     };
-            //     txtInfo.Click += ChannelInfo_Click;
-            //     Controls.Add(txtInfo);
-
-            //     xPos = txtInfo.Right + PAD;
-            // }
-
-            // if (opts.HasFlag(ChannelControlOptions.Notes))
-            // {
-            //     sldVolume = new()
-            //     {
-            //         Minimum = 0.0,
-            //         Maximum = Defs.MAX_VOLUME,
-            //         Resolution = 0.05,
-            //         Value = 1.0,
-            //         BorderStyle = BorderStyle.FixedSingle,
-            //         Orientation = Orientation.Horizontal,
-            //         Location = new(xPos, yPos),
-            //         Size = new(80, SIZE),
-            //         Label = "volume"
-            //     };
-            //     sldVolume.ValueChanged += (sender, e) => BoundChannel.Config.Volume = (sender as Slider)!.Value;
-            //     Controls.Add(sldVolume);
-
-            //     xPos = sldVolume.Right + PAD;
-            // }
-
-            // if (opts.HasFlag(ChannelControlOptions.SoloMute))
-            // {
-            //     lblSolo = new()
-            //     {
-            //         Location = new(xPos, yPos),
-            //         Size = new(20, SIZE / 2),
-            //         Text = "S"
-            //     };
-            //     lblSolo.Click += SoloMute_Click;
-            //     Controls.Add(lblSolo);
-
-            //     lblMute = new()
-            //     {
-            //         Location = new(xPos, yPos + SIZE + PAD),
-            //         Size = new(20, SIZE / 2),
-            //         Text = "M"
-            //     };
-            //     lblMute.Click += SoloMute_Click;
-            //     Controls.Add(lblMute);
-
-            //     xPos = lblSolo.Right + PAD;
-            // }
-
-            // if (opts.HasFlag(ChannelControlOptions.Notes))
-            // {
-            //     btnSend = new()
-            //     {
-            //         FlatStyle = FlatStyle.Flat,
-            //         UseVisualStyleBackColor = true,
-            //         Location = new(xPos, yPos),
-            //         Size = new(SIZE, SIZE),
-            //         Text = "!",
-            //     };
-            //     btnSend.Click += Send_Click;
-            //     Controls.Add(btnSend);
-
-            //     xPos = btnSend.Right + PAD;
-
-            //     sldControllerValue = new()
-            //     {
-            //         Minimum = 0,
-            //         Maximum = MidiDefs.MAX_MIDI,
-            //         Resolution = 1,
-            //         Value = 50,
-            //         BorderStyle = BorderStyle.FixedSingle,
-            //         Orientation = Orientation.Horizontal,
-            //         Location = new(xPos, yPos),
-            //         Size = new(80, SIZE),
-            //         Label = "value"
-            //     };
-            //     sldControllerValue.ValueChanged += Controller_ValueChanged;
-            //     Controls.Add(sldControllerValue);
-
-            //     xPos = sldControllerValue.Right + PAD;
-            // }
-
-            // // Form.
-            // Size = new Size(xPos, yPos + SIZE + PAD);
-
-            // ResumeLayout(false);
-            // PerformLayout();
-
-            // toolTip = new(components);
+            //if (channel is null) // in designer
+            //{
+            //    // Dummy channel to satisfy designer.
+            //    var cfig = new OutputChannelConfig() { ChannelName = "DUMMY_CHANNEL" };
+            //    var dev = new NullOutputDevice("DUMMY_DEVICE");
+            //    BoundChannel = new OutputChannel(cfig, dev);
+            //}
+            //else // real
+            //{
+            //    BoundChannel = channel;
+            //}
         }
+
+
+
 
         /// <summary>
         /// Apply customization from system. Properties should be valid now.
@@ -254,9 +169,9 @@ namespace Ephemera.MidiLibLite
         {
             SuspendLayout();
 
-            //// Satisfy designer and initial conditions,
-            //var dev = new NullOutputDevice("DUMMY_DEVICE");
-            //BoundChannel = new OutputChannel(new() { ChannelName = "DUMMY_CHANNEL" }, dev);
+BorderStyle = BorderStyle.Fixed3D;
+return;
+
 
             // Create the controls per the config.
             var opts = BoundChannel.Config.DisplayOptions; // shorthand

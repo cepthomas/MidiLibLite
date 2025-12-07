@@ -16,15 +16,15 @@ namespace Ephemera.MidiLibLite.Test
         int _lastNote = -1;
 
         /// <summary>Normal constructor.</summary>
-        public CustomChannelControl(OutputChannel channel) : base(channel)
+        public CustomChannelControl(OutputChannel? channel = null) : base(channel)
         {
             //BoundChannel = channel;
         }
 
-        /// <summary>Constructor for the VS designer.</summary>
-        public CustomChannelControl() : base()
-        {
-        }
+        ///// <summary>Constructor for the VS designer.</summary>
+        //public CustomChannelControl() : base()
+        //{
+        //}
 
 
         /// <summary>Paint the surface.</summary>

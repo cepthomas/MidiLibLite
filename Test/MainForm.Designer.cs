@@ -18,14 +18,11 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             toolStrip1 = new System.Windows.Forms.ToolStrip();
             btnLogMidi = new System.Windows.Forms.ToolStripButton();
             btnKillMidi = new System.Windows.Forms.ToolStripButton();
             txtViewer = new Ephemera.NBagOfUis.TextViewer();
             sldVolume = new Ephemera.NBagOfUis.Slider();
-            cch1 = new CustomChannelControl();
-            cch2 = new CustomChannelControl();
             button1 = new System.Windows.Forms.Button();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -86,24 +83,6 @@ namespace Ephemera.MidiLibLite.Test
             sldVolume.TabIndex = 99;
             sldVolume.Value = 5D;
             // 
-            // cch1
-            // 
-            cch1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            cch1.Location = new System.Drawing.Point(8, 103);
-            cch1.Name = "cch1";
-            cch1.SelectedColor = System.Drawing.Color.Green;
-            cch1.Size = new System.Drawing.Size(336, 175);
-            cch1.TabIndex = 100;
-            // 
-            // cch2
-            // 
-            cch2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            cch2.Location = new System.Drawing.Point(8, 284);
-            cch2.Name = "cch2";
-            cch2.SelectedColor = System.Drawing.Color.Green;
-            cch2.Size = new System.Drawing.Size(336, 177);
-            cch2.TabIndex = 101;
-            // 
             // button1
             // 
             button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -120,8 +99,6 @@ namespace Ephemera.MidiLibLite.Test
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(926, 475);
             Controls.Add(button1);
-            Controls.Add(cch2);
-            Controls.Add(cch1);
             Controls.Add(sldVolume);
             Controls.Add(txtViewer);
             Controls.Add(toolStrip1);

@@ -206,7 +206,8 @@ namespace Ephemera.MidiLibLite.Test
 
             channels.ForEach(chan =>
             {
-                var cc = new CustomChannelControl(chan);
+                var cc = new CustomChannelControl(chan);// { BoundChannel = chan };
+                //var cc = new CustomChannelControl() { BoundChannel = chan };
                 InitControl(cc);
                 cc.Location = new(x, y);
                 cc.Size = new(320, 175);
@@ -392,22 +393,22 @@ namespace Ephemera.MidiLibLite.Test
             }
         }
 
-        /// <summary>
-        /// UI clicked something -> send some midi.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void ControllerControl_MidiSend(object? sender, BaseMidiEvent e)
-        {
-            var cc = sender as ControllerControl;
+        ///// <summary>
+        ///// UI clicked something -> send some midi.
+        ///// </summary>
+        ///// <param name="sender"></param>
+        ///// <param name="e"></param>
+        //void ControllerControl_MidiSend(object? sender, BaseMidiEvent e)
+        //{
+        //    var cc = sender as ControllerControl;
 
-            Tell(INFO, $"Controller send [{e}]");
+        //    Tell(INFO, $"Controller send [{e}]");
 
-            //if (cc.Enable)
-            {
-                cc.Device.Send(e);
-            }
-        }
+        //    //if (cc.Enable)
+        //    {
+        //        cc.Device.Send(e);
+        //    }
+        //}
 
         /// <summary>
         /// Something arrived from a midi device.

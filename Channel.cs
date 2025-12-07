@@ -21,7 +21,7 @@ namespace Ephemera.MidiLibLite
         SoloMute = 0x02,
         Controller = 0x04,
         All = 0x0F, // of above
-        OwnerDraw = 0x80
+        OwnerDraw = 0x80 //TODO1
     }
 
 
