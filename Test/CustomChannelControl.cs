@@ -15,22 +15,12 @@ namespace Ephemera.MidiLibLite.Test
         /// <summary>Tracking for note off.</summary>
         int _lastNote = -1;
 
-        /// <summary>Normal constructor.</summary>
-        public CustomChannelControl(OutputChannel? channel = null) : base(channel)
-        {
-            //BoundChannel = channel;
-        }
-
-        ///// <summary>Constructor for the VS designer.</summary>
-        //public CustomChannelControl() : base()
-        //{
-        //}
-
-
         /// <summary>Paint the surface.</summary>
         /// <param name="e"></param>
         protected override void OnPaint(PaintEventArgs e)
         {
+            //if (DesignMode) return;
+
             Graphics g = e.Graphics;
             var r = DrawRect;
 
@@ -159,11 +149,6 @@ namespace Ephemera.MidiLibLite.Test
                 return (x, y);
             }            
             return null;
-
-
-            // return (x >= 0 && x < MidiDefs.MAX_MIDI && y >= 0 && y < MidiDefs.MAX_MIDI) ?
-            //     (x, y) :
-            //     null;
         }
     }
 }

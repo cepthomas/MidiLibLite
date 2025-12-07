@@ -59,7 +59,7 @@ namespace Ephemera.MidiLibLite
         public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
     
 /////////////////////////////////////////////////////////////////////
-/////////////////////////// TODOC ///////////////////////////////////
+/////////////////////////// TODO1 ///////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
         /// <summary>Edit current controller number.</summary>
@@ -110,7 +110,7 @@ namespace Ephemera.MidiLibLite
         public IOutputDevice Device { get; init; }
 
         /// <summary>Handle for use by scripts.</summary>
-        public ChannelHandle Handle { get; init; } // from Nebulua
+        public ChannelHandle Handle { get; init; }
 
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
@@ -159,7 +159,7 @@ namespace Ephemera.MidiLibLite
     }
 
     /// <summary>Describes one midi input channel. Some properties are optional.</summary>
-    [Serializable]
+    // [Serializable]
     public class InputChannel
     {
         #region Properties
@@ -193,7 +193,7 @@ namespace Ephemera.MidiLibLite
     /// <param name="DeviceId">Index in internal list</param>
     /// <param name="ChannelNumber">Midi channel 1-based</param>
     /// <param name="Output">T or F</param>
-    public record struct ChannelHandle(int DeviceId, int ChannelNumber, bool Output) // TODO1 still pertinent?
+    public record struct ChannelHandle(int DeviceId, int ChannelNumber, bool Output) // TODO2 still pertinent?
     {
         const int OUTPUT_FLAG = 0x8000;
 

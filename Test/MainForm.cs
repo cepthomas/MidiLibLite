@@ -135,19 +135,34 @@ namespace Ephemera.MidiLibLite.Test
             ///// 1 - create all devices
             _mgr.CreateDevices();
 
-            ///// 3 - create channels
+            ///// 2 - create channels
             //var chanin11 = _mgr.OpenMidiInput(INDEV, 1, "my input");
+            List<OutputChannel> channels = [];
+
             var chanout1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);  // TODO1 patch by name => "AcousticGrandPiano"
+            channels.Add(chanout1);
             var chanout2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12); // => ???);
+            channels.Add(chanout2);
 
 
-            ///// 2 - configure controls and bind channels
-            InitControl(cch1);
-            InitControl(cch2);
-            //InitControl(cctrl1);
-            //InitControl(cctrl2);
-            cch1.BoundChannel = chanout1;
-            cch2.BoundChannel = chanout2;
+            ///// 3 - configure controls and bind channels
+
+            //channels.ForEach(chan =>
+            //{
+            //    //var cc = new CustomChannelControl(chan);// { BoundChannel = chan };
+            //    var cc = new CustomChannelControl() { BoundChannel = chan };
+            //    InitControl(cc);
+            //    cc.Location = new(x, y);
+            //    cc.Size = new(320, 175);
+            //    y += cc.Size.Height + 8;
+            //    chan.UpdatePresets();
+            //});
+
+
+            InitControl(customChannelControl1);
+            customChannelControl1.BoundChannel = chanout1;
+            InitControl(customChannelControl2);
+            customChannelControl2.BoundChannel = chanout2;
 
 
             /*
@@ -206,8 +221,9 @@ namespace Ephemera.MidiLibLite.Test
 
             channels.ForEach(chan =>
             {
-                var cc = new CustomChannelControl(chan);// { BoundChannel = chan };
+                //var cc = new CustomChannelControl(chan);// { BoundChannel = chan };
                 //var cc = new CustomChannelControl() { BoundChannel = chan };
+                var cc = new CustomChannelControl();
                 InitControl(cc);
                 cc.Location = new(x, y);
                 cc.Size = new(320, 175);

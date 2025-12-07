@@ -24,6 +24,8 @@ namespace Ephemera.MidiLibLite.Test
             txtViewer = new Ephemera.NBagOfUis.TextViewer();
             sldVolume = new Ephemera.NBagOfUis.Slider();
             button1 = new System.Windows.Forms.Button();
+            customChannelControl1 = new CustomChannelControl();
+            customChannelControl2 = new CustomChannelControl();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -93,11 +95,31 @@ namespace Ephemera.MidiLibLite.Test
             button1.Text = "test";
             button1.UseVisualStyleBackColor = true;
             // 
+            // customChannelControl1
+            // 
+            customChannelControl1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            customChannelControl1.Location = new System.Drawing.Point(8, 119);
+            customChannelControl1.Name = "customChannelControl1";
+            customChannelControl1.SelectedColor = System.Drawing.Color.Empty;
+            customChannelControl1.Size = new System.Drawing.Size(336, 40);
+            customChannelControl1.TabIndex = 105;
+            // 
+            // customChannelControl2
+            // 
+            customChannelControl2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            customChannelControl2.Location = new System.Drawing.Point(8, 294);
+            customChannelControl2.Name = "customChannelControl2";
+            customChannelControl2.SelectedColor = System.Drawing.Color.Empty;
+            customChannelControl2.Size = new System.Drawing.Size(336, 45);
+            customChannelControl2.TabIndex = 106;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(926, 475);
+            Controls.Add(customChannelControl2);
+            Controls.Add(customChannelControl1);
             Controls.Add(button1);
             Controls.Add(sldVolume);
             Controls.Add(txtViewer);
@@ -123,6 +145,8 @@ namespace Ephemera.MidiLibLite.Test
         private CustomChannelControl cch1;
         private CustomChannelControl cch2;
         private System.Windows.Forms.Button button1;
+        private CustomChannelControl customChannelControl1;
+        private CustomChannelControl customChannelControl2;
     }
 }
 

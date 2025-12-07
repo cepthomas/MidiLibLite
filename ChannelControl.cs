@@ -38,7 +38,7 @@ namespace Ephemera.MidiLibLite
         const int SIZE = 32;
 
         readonly Container components = new();
-        protected ToolTip toolTip;
+        protected ToolTip toolTip = new();
 
         TextBox txtInfo = new();
         Slider sldVolume = new();
@@ -54,7 +54,6 @@ namespace Ephemera.MidiLibLite
         /// <summary>My channel.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public OutputChannel BoundChannel { get; set; }
-        //public OutputChannel BoundChannel { get; init; }
 
         /// <summary>Drawing the active elements of a control.</summary>
         public Color ControlColor
@@ -112,54 +111,19 @@ namespace Ephemera.MidiLibLite
         protected virtual void OnSendMidi(BaseMidiEvent e) { SendMidi?.Invoke(this, e); }
         #endregion
 
-        //const string fn = @"C:\Dev\Libs\MidiLibLite\dump.txt";
-
         #region Lifecycle
-
         /// <summary>
         /// Normal constructor.
         /// </summary>
-        public ChannelControl(OutputChannel? channel = null)
-        {
-            SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
-
-            //File.AppendAllText(fn, $"ChannelControl(OutputChannel?) {DesignMode}");
-
-            if (channel is null) // in designer
-            {
-                // Dummy channel to satisfy designer.
-                var cfig = new OutputChannelConfig() { ChannelName = "DUMMY_CHANNEL" };
-                var dev = new NullOutputDevice("DUMMY_DEVICE");
-                BoundChannel = new OutputChannel(cfig, dev);
-            }
-            else // real
-            {
-                BoundChannel = channel;
-            }
-        }
-
-
         public ChannelControl()
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 
-            //File.AppendAllText(fn, $"ChannelControl(OutputChannel?) {DesignMode}");
-
-            //if (channel is null) // in designer
-            //{
-            //    // Dummy channel to satisfy designer.
-            //    var cfig = new OutputChannelConfig() { ChannelName = "DUMMY_CHANNEL" };
-            //    var dev = new NullOutputDevice("DUMMY_DEVICE");
-            //    BoundChannel = new OutputChannel(cfig, dev);
-            //}
-            //else // real
-            //{
-            //    BoundChannel = channel;
-            //}
+            // Dummy channel to satisfy designer. Will be overwritten by the real one.
+            var cfig = new OutputChannelConfig() { ChannelName = "DUMMY_CHANNEL" };
+            var dev = new NullOutputDevice("DUMMY_DEVICE");
+            BoundChannel = new OutputChannel(cfig, dev);
         }
-
-
-
 
         /// <summary>
         /// Apply customization from system. Properties should be valid now.
@@ -168,10 +132,14 @@ namespace Ephemera.MidiLibLite
         protected override void OnLoad(EventArgs e)
         {
             SuspendLayout();
-
-BorderStyle = BorderStyle.Fixed3D;
-return;
-
+            
+            //if (DesignMode) // if (BoundChannel is null) // in designer
+            //{
+            //    // Dummy channel to satisfy designer.
+            //    var cfig = new OutputChannelConfig() { ChannelName = "DUMMY_CHANNEL" };
+            //    var dev = new NullOutputDevice("DUMMY_DEVICE");
+            //    BoundChannel = new OutputChannel(cfig, dev);
+            //}
 
             // Create the controls per the config.
             var opts = BoundChannel.Config.DisplayOptions; // shorthand
@@ -228,7 +196,7 @@ return;
 
                 lblMute = new()
                 {
-                    Location = new(xPos, yPos + SIZE + PAD),
+                    Location = new(xPos, yPos + SIZE / 2 + PAD),
                     Size = new(20, SIZE / 2),
                     Text = "M"
                 };
@@ -271,21 +239,17 @@ return;
                 xPos = sldControllerValue.Right + PAD;
             }
 
-            // Form.
+            // Form itself.
             Size = new Size(xPos, yPos + SIZE + PAD);
 
             ResumeLayout(false);
             PerformLayout();
 
-
             toolTip = new(components);
-
 
             // other inits???
             sldVolume.Value = BoundChannel.Config.Volume;
             UpdateUi();
-
-
 
             base.OnLoad(e);
         }
@@ -308,7 +272,7 @@ return;
         /// <summary>Edit channel properties. Notifies client of any changes.</summary>
         void ChannelInfo_Click(object? sender, EventArgs e)
         {
-            var changes = SettingsEditor.Edit(BoundChannel, "Channel", 300);
+            var changes = SettingsEditor.Edit(BoundChannel.Config, "Channel", 300);
 
             // Notify client.
             ChannelChangeEventArgs args = new()
@@ -370,10 +334,6 @@ return;
         /// <summary>Draw mode checkboxes etc.</summary>
         void UpdateUi()
         {
-            //if (BoundChannel is not null)
-            //{
-            //}
-
             txtInfo.Text = ToString();
 
             StringBuilder sb = new();
