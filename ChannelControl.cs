@@ -55,7 +55,22 @@ namespace Ephemera.MidiLibLite
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public OutputChannel BoundChannel { get; set; }
 
+        /// <summary>My renderer.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public UserControl? UserRenderer
+        {
+            set
+            {
+                _userRenderer = value;
+                _userRenderer.Location = new(PAD, Height);
+                Height += _userRenderer.Height + PAD;
+                Controls.Add(_userRenderer);
+            }
+        }
+        UserControl? _userRenderer = null;
+
         /// <summary>Drawing the active elements of a control.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color ControlColor
         {
             set
@@ -68,19 +83,8 @@ namespace Ephemera.MidiLibLite
         }
 
         /// <summary>Drawing the control when selected.</summary>
-        public Color SelectedColor { get; set; }
-
-        /// <summary>The graphics draw area. If not used returns Empty rect.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        protected Rectangle DrawRect
-        {
-            get
-            {
-                return BoundChannel.Config.DisplayOptions.HasFlag(ChannelControlOptions.OwnerDraw) ?
-                    new Rectangle(0, txtInfo.Bottom + PAD, Width, Height - (txtInfo.Bottom + PAD)) :
-                    new Rectangle(0, 0, 0, 0);
-            }
-        }
+        public Color SelectedColor { get; set; }
 
         /// <summary>For muting/soloing.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -133,20 +137,14 @@ namespace Ephemera.MidiLibLite
         {
             SuspendLayout();
             
-            //if (DesignMode) // if (BoundChannel is null) // in designer
-            //{
-            //    // Dummy channel to satisfy designer.
-            //    var cfig = new OutputChannelConfig() { ChannelName = "DUMMY_CHANNEL" };
-            //    var dev = new NullOutputDevice("DUMMY_DEVICE");
-            //    BoundChannel = new OutputChannel(cfig, dev);
-            //}
-
             // Create the controls per the config.
             var opts = BoundChannel.Config.DisplayOptions; // shorthand
             int xPos = PAD;
+            int xMax = xPos;
             int yPos = PAD;
+            int yMax = yPos;
 
-            if (true)//opts.HasFlag(ChannelControlOptions.Info))
+            if (true) // opts.HasFlag(ChannelControlOptions.Info))
             {
                 txtInfo = new()
                 {
@@ -163,6 +161,8 @@ namespace Ephemera.MidiLibLite
                 Controls.Add(txtInfo);
 
                 xPos = txtInfo.Right + PAD;
+                xMax = xPos;
+                yMax = Math.Max(txtInfo.Bottom, yMax);
             }
 
             if (opts.HasFlag(ChannelControlOptions.Notes))
@@ -183,6 +183,8 @@ namespace Ephemera.MidiLibLite
                 Controls.Add(sldVolume);
 
                 xPos = sldVolume.Right + PAD;
+                xMax = xPos;
+                yMax = Math.Max(sldVolume.Bottom, yMax);
             }
 
             if (opts.HasFlag(ChannelControlOptions.SoloMute))
@@ -206,6 +208,8 @@ namespace Ephemera.MidiLibLite
                 Controls.Add(lblMute);
 
                 xPos = lblSolo.Right + PAD;
+                xMax = xPos;
+                yMax = Math.Max(lblMute.Bottom, yMax);
             }
 
             if (opts.HasFlag(ChannelControlOptions.Notes))
@@ -222,6 +226,7 @@ namespace Ephemera.MidiLibLite
                 Controls.Add(btnSend);
 
                 xPos = btnSend.Right + PAD;
+                yMax = Math.Max(btnSend.Bottom, yMax);
 
                 sldControllerValue = new()
                 {
@@ -239,17 +244,19 @@ namespace Ephemera.MidiLibLite
                 Controls.Add(sldControllerValue);
 
                 xPos = sldControllerValue.Right + PAD;
+                xMax = xPos;
+                yMax = Math.Max(sldControllerValue.Bottom, yMax);
             }
 
             // Form itself.
-            Size = new Size(xPos, yPos + SIZE + PAD);
+            Size = new Size(xMax + PAD, yMax + PAD);
 
             ResumeLayout(false);
             PerformLayout();
 
             toolTip = new(components);
 
-            // other inits???
+            // Other inits.
             sldVolume.Value = BoundChannel.Config.Volume;
             UpdateUi();
 

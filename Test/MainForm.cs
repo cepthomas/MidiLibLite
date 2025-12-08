@@ -9,12 +9,13 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Runtime.CompilerServices;
 using System.IO;
 using System.Diagnostics;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 using Ephemera.MidiLibLite;
-using System.Runtime.CompilerServices;
+using Ephemera.MidiLib.Test;
 
 
 namespace Ephemera.MidiLibLite.Test
@@ -129,70 +130,33 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         void DemoStandardApp()
         {
-            ///// 1 - create devices - explicit
-            //MidiOutputDevice device = new(OUTDEV1);
-
-            ///// 1 - create all devices
-           // _mgr.CreateDevices();
-
-            ///// 2 - create channels
-            //var chanin11 = _mgr.OpenMidiInput(INDEV, 1, "my input");
-            List<OutputChannel> channels = [];
-
-            var chanout1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);  // TODO1 patch by name => "AcousticGrandPiano"
-            channels.Add(chanout1);
+            /// 1 - create channels
+            var chanout1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);  // TODO_defs patch by name => "AcousticGrandPiano"
             var chanout2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12); // => ???);
-            channels.Add(chanout2);
+            chanout1.UpdatePresets();
+            chanout2.UpdatePresets();
 
-
-            ///// 3 - configure controls and bind channels
-
-            //channels.ForEach(chan =>
-            //{
-            //    //var cc = new CustomChannelControl(chan);// { BoundChannel = chan };
-            //    var cc = new CustomChannelControl() { BoundChannel = chan };
-            //    InitControl(cc);
-            //    cc.Location = new(x, y);
-            //    cc.Size = new(320, 175);
-            //    y += cc.Size.Height + 8;
-            //    chan.UpdatePresets();
-            //});
-
-
+            /// 2 - configure controls and bind channels
+            var rend = new CustomRenderer() { ChannelHandle = chanout1.Handle };
+            rend.SendMidi += Rend_SendMidi;
+            cch1.UserRenderer = rend;
             InitControl(cch1);
             cch1.BoundChannel = chanout1;
+
+            rend = new CustomRenderer() { ChannelHandle = chanout2.Handle };
+            rend.SendMidi += Rend_SendMidi;
+            cch2.UserRenderer = rend;
             InitControl(cch2);
             cch2.BoundChannel = chanout2;
 
-
-            /*
-            ///// 2 - configure controls
-            InitControl(cch1);
-            InitControl(cch2);
-            InitControl(cctrl1);
-            InitControl(cctrl2);
-
-            ///// 3 - create and bind channels
-            //var ch1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
-            var ch1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "cch1 !!!", 0);  // => "AcousticGrandPiano"
-            var ch2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "cch2 !!!", 12); // => ???);
-
-            cch1.BoundChannel = ch1;
-            cch2.BoundChannel = ch2;
-            */
-
-            ///// 3 - configure other stuff - controllers
-            //cctrl1.Info = new() { DeviceId = device.Id, ChannelNumber = 1, ControllerId = 77, ControllerValue = 50 };
-            //cctrl2.Info = new() { DeviceId = device.Id, ChannelNumber = 2, ControllerId = 88, ControllerValue = 60 };
-
-            ///// 4 - do work
+            /// 3 - do work
             // ????
         }
 
         /// <summary>
         /// App driven by a script - as Nebulua/Nebulator. Creates channels and controls dynamically.
         /// </summary>
-        void DemoScriptApp()
+        void DemoScriptApp() // TODO1
         {
             ///// 0 - pre-steps - only for this demo
             cch1.Hide();
@@ -207,12 +171,15 @@ namespace Ephemera.MidiLibLite.Test
             // local hnd_ccin = api.open_midi_input("loopMIDI Port 1", 1, "my input")
             // local hnd_keys = api.open_midi_output("loopMIDI Port 2", 1, "keys", inst.AcousticGrandPiano)
             // local hnd_synth = api.open_midi_output("loopMIDI Port 2", 3, "synth", inst.Lead1Square)
-            List<OutputChannel> channels = [];
+            //List<OutputChannel> channels = [];
             var ch1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
             var chan1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "keys", 0); // => AcousticGrandPiano);
-            channels.Add(chan1);
+            //channels.Add(chan1);
             var chan2 = _mgr.OpenMidiOutput(OUTDEV1, 10, "drums", 32); // => kit.Jazz);
-            channels.Add(chan2);
+            //channels.Add(chan2);
+
+            List<OutputChannel> channels = new() { chan1, chan2 };
+            List<ChannelControl> controls = new();// { cch1, cch2 };
 
             ///// 3 - create a control for each channel and bind object
             //DestroyControls();
@@ -221,13 +188,18 @@ namespace Ephemera.MidiLibLite.Test
 
             channels.ForEach(chan =>
             {
-                //var cc = new CustomChannelControl(chan);// { BoundChannel = chan };
-                //var cc = new CustomChannelControl() { BoundChannel = chan };
-                var cc = new CustomChannelControl();
+                //var cc = new ChannelControl(chan);// { BoundChannel = chan };
+                //var cc = new ChannelControl() { BoundChannel = chan };
+                var cc = new ChannelControl();
                 InitControl(cc);
                 cc.Location = new(x, y);
                 cc.Size = new(320, 175);
                 y += cc.Size.Height + 8;
+
+
+                Controls.Add(cc);
+                controls.Add(cc);
+
 
                 chan.UpdatePresets();
             });
@@ -273,6 +245,7 @@ namespace Ephemera.MidiLibLite.Test
                 ch.Device.Send(new NoteOn(chnd.ChannelNumber, note_num, (int)MathUtils.Constrain(volume * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI)));
             }
         }
+
         void SendMidiController(ChannelHandle chnd, int controller_id, int value)
         {
             if (controller_id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(controller_id)); }
@@ -295,39 +268,6 @@ namespace Ephemera.MidiLibLite.Test
 
 
 
-        /// <summary>
-        /// Common init control.
-        /// </summary>
-        void InitControl(CustomChannelControl cc)
-        {
-            cc.BorderStyle = BorderStyle.FixedSingle;
-            cc.ControlColor = _controlColor;
-            cc.SelectedColor = _selectedColor;
-            cc.Volume = Defs.DEFAULT_VOLUME;
-            cc.ChannelChange += ChannelControl_ChannelChange;
-            cc.SendMidi += ChannelControl_MidiSend;
-
-            if (!Controls.Contains(cc))
-            {
-                Controls.Add(cc);
-            }
-        }
-
-        ///// <summary>
-        ///// Init control.
-        ///// </summary>
-        //void InitControl(ControllerControl cc)
-        //{
-        //    cc.BorderStyle = BorderStyle.FixedSingle;
-        //    cc.ControlColor = _controlColor;
-        //    cc.SelectedColor = _selectedColor;
-        //    cc.SendMidi += ControllerControl_MidiSend;
-
-        //    if (!Controls.Contains(cc))
-        //    {
-        //        Controls.Add(cc);
-        //    }
-        //}
 
         /// <summary>
         /// Destroy controls.
@@ -347,11 +287,30 @@ namespace Ephemera.MidiLibLite.Test
 
         #region Events
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Rend_SendMidi(object? sender, BaseMidiEvent e)
+        {
+            var rend = sender as CustomRenderer;
+
+            var channel = _mgr.GetOutputChannel(rend.ChannelHandle);
+
+            Tell(INFO, $"Channel send [{e}]");
+
+            if (channel.Enable)
+            {
+                channel.Device.Send(e);
+            }
+        }
+
+        /// <summary>
         /// UI clicked something -> send some midi.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ChannelControl_MidiSend(object? sender, BaseMidiEvent e)
+        void ChannelControl_SendMidi(object? sender, BaseMidiEvent e)
         {
             var cc = sender as ChannelControl;
             var channel = cc!.BoundChannel!;
@@ -409,23 +368,6 @@ namespace Ephemera.MidiLibLite.Test
             }
         }
 
-        ///// <summary>
-        ///// UI clicked something -> send some midi.
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="e"></param>
-        //void ControllerControl_MidiSend(object? sender, BaseMidiEvent e)
-        //{
-        //    var cc = sender as ControllerControl;
-
-        //    Tell(INFO, $"Controller send [{e}]");
-
-        //    //if (cc.Enable)
-        //    {
-        //        cc.Device.Send(e);
-        //    }
-        //}
-
         /// <summary>
         /// Something arrived from a midi device.
         /// </summary>
@@ -437,7 +379,21 @@ namespace Ephemera.MidiLibLite.Test
         }
         #endregion
 
+
         #region Misc internals
+        /// <summary>
+        /// Common init control.
+        /// </summary>
+        void InitControl(ChannelControl cc)
+        {
+            cc.BorderStyle = BorderStyle.FixedSingle;
+            cc.ControlColor = _controlColor;
+            cc.SelectedColor = _selectedColor;
+            cc.Volume = Defs.DEFAULT_VOLUME;
+            cc.ChannelChange += ChannelControl_ChannelChange;
+            cc.SendMidi += ChannelControl_SendMidi
+        }
+
         /// <summary>Tell me something good.</summary>
         /// <param name="s">What</param>
         void Tell(string cat, string s, [CallerFilePath] string file = "", [CallerLineNumber] int line = -1)
@@ -446,87 +402,5 @@ namespace Ephemera.MidiLibLite.Test
             txtViewer.AppendLine($"{cat} {fn}({line}) {s}");
         }
         #endregion
-
-
-
-
-#if LEFTOVERS
-        /// <summary>
-        /// Input from internal non-midi device. Doesn't throw.
-        /// </summary>
-        void InjectMidiInEvent(string devName, int channel, int noteNum, int velocity) // TODO2
-        {
-            var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
-
-            if (input is not null)
-            {
-                velocity = MathUtils.Constrain(velocity, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
-                NoteEvent nevt = velocity > 0 ?
-                    new NAudio.Midi.NoteOnEvent(0, channel, noteNum, velocity, 0) :
-                    new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
-                Midi_ReceiveEvent(input, nevt);
-            }
-            //else do I care?
-        }
-
-        /// <summary>
-        /// Read the lua midi definitions for internal consumption.
-        /// </summary>
-        void ReadMidiDefs() // TODO_defs
-        {
-            //var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
-
-            List<string> s = [
-                "local mid = require('midi_defs')",
-                "for _,v in ipairs(mid.gen_list()) do print(v) end"
-                ];
-
-            var (ecode, sres) = ExecuteLuaChunk(s);
-
-            if (ecode == 0)
-            {
-                foreach (var line in sres.SplitByToken(Environment.NewLine))
-                {
-                    var parts = line.SplitByToken(",");
-
-                    switch (parts[0])
-                    {
-                        case "instrument": MidiDefs.Instruments.Add(int.Parse(parts[2]), parts[1]); break;
-                        case "drum": MidiDefs.Drums.Add(int.Parse(parts[2]), parts[1]); break;
-                        case "controller": MidiDefs.Controllers.Add(int.Parse(parts[2]), parts[1]); break;
-                        case "kit": MidiDefs.DrumKits.Add(int.Parse(parts[2]), parts[1]); break;
-                    }
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// Execute a chunk of lua code. Fixes up lua path and handles errors.
-        /// </summary>
-        /// <param name="scode"></param>
-        /// <returns></returns>
-        (int ecode, string sres) ExecuteLuaChunk(List<string> scode) // TODO_defs
-        {
-            var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
-            var luaPath = $"{srcDir}/LBOT/?.lua;{srcDir}/lua/?.lua;;";
-            scode.Insert(0, $"package.path = '{luaPath}' .. package.path");
-
-            var (ecode, sret) = Tools.ExecuteLuaCode(string.Join(Environment.NewLine, scode));
-
-            if (ecode != 0)
-            {
-                // Command failed. Capture everything useful.
-                List<string> lserr = [];
-                lserr.Add($"=== code: {ecode}");
-                lserr.Add($"=== stderr:");
-                lserr.Add($"{sret}");
-
-                // _loggerApp.Warn(string.Join(Environment.NewLine, lserr));
-            }
-            return (ecode, sret);
-        }
-#endif
-
     }
 }

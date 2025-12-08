@@ -71,7 +71,7 @@ namespace Ephemera.MidiLibLite
         /// <returns>The drum name or a fabricated one if unknown.</returns>
         public string GetDrumName(int which)
         {
-            if (which is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(which)); }
+            if (which is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(which)); }
             return _drums.TryGetValue(which, out string? value) ? value : $"DRUM_{which}";
         }
 
@@ -82,7 +82,7 @@ namespace Ephemera.MidiLibLite
         /// <returns>The controller name or a fabricated one if unknown.</returns>
         public string GetControllerName(int which)
         {
-            if (which is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(which)); }
+            if (which is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(which)); }
             return _controllerIds.TryGetValue(which, out string? value) ? value : $"CTLR_{which}";
         }
 
@@ -93,7 +93,7 @@ namespace Ephemera.MidiLibLite
         /// <returns>The drumkit name or a fabricated one if unknown.</returns>
         public string GetDrumKitName(int which)
         {
-            if (which is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(which)); }
+            if (which is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(which)); }
             return _drumKits.TryGetValue(which, out string? value) ? value : $"KIT_{which}";
         }
 

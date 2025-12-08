@@ -1,4 +1,23 @@
 
+cch1 ChannelControl()
+cch1 set BoundChannel
+cch2 ChannelControl()
+cch2 set BoundChannel
+
+cch1 OnLoad(EventArgs e)
+cch1 get BoundChannel - bunch
+
+//InitControl(cch1);
+cch1.BoundChannel = chanout1;
+//InitControl(cch2);
+cch2.BoundChannel = chanout2;
+
+Live
+
+
+
+
+
 
 https://stackoverflow.com/questions/39648/good-way-to-debug-visual-studio-designer-errors
 
@@ -6,19 +25,20 @@ https://stackoverflow.com/questions/39648/good-way-to-debug-visual-studio-design
 
 
 
-Nebulua
-        [Description("Overall background.")]
-        public Color BackColor { get; set; } = Color.LightYellow;
+Nebulua::
+[Description("Overall background.")]
+public Color BackColor { get; set; } = Color.LightYellow;
 
-        [Description("Button icons.")]
-        public Color IconColor { get; set; } = Color.Purple;
+[Description("Button icons.")]
+public Color IconColor { get; set; } = Color.Purple;
 
-        [Description("Active control surfaces.")]
-        public Color ActiveColor { get; set; } = Color.DodgerBlue;
-        // MLL calls this DrawColor
+[Description("Active control surfaces.")]
+public Color ActiveColor { get; set; } = Color.DodgerBlue;
+// MLL calls this DrawColor
 
-        [Description("The color used for selected controls.")]
-        public Color SelectedColor { get; set; } = Color.Moccasin;
+[Description("The color used for selected controls.")]
+public Color SelectedColor { get; set; } = Color.Moccasin;
+
 
 X PenColor - delete
 

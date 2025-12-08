@@ -24,8 +24,8 @@ namespace Ephemera.MidiLibLite.Test
             txtViewer = new Ephemera.NBagOfUis.TextViewer();
             sldVolume = new Ephemera.NBagOfUis.Slider();
             button1 = new System.Windows.Forms.Button();
-            cch1 = new CustomChannelControl();
-            cch2 = new CustomChannelControl();
+            cch1 = new ChannelControl();
+            cch2 = new ChannelControl();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -35,7 +35,7 @@ namespace Ephemera.MidiLibLite.Test
             toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, btnKillMidi });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new System.Drawing.Size(926, 26);
+            toolStrip1.Size = new System.Drawing.Size(777, 26);
             toolStrip1.TabIndex = 0;
             toolStrip1.Text = "toolStrip1";
             // 
@@ -61,12 +61,12 @@ namespace Ephemera.MidiLibLite.Test
             // txtViewer
             // 
             txtViewer.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            txtViewer.Location = new System.Drawing.Point(357, 103);
+            txtViewer.Location = new System.Drawing.Point(12, 345);
             txtViewer.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             txtViewer.MaxText = 5000;
             txtViewer.Name = "txtViewer";
             txtViewer.Prompt = "";
-            txtViewer.Size = new System.Drawing.Size(557, 358);
+            txtViewer.Size = new System.Drawing.Size(753, 242);
             txtViewer.TabIndex = 58;
             txtViewer.WordWrap = true;
             // 
@@ -88,7 +88,7 @@ namespace Ephemera.MidiLibLite.Test
             // button1
             // 
             button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            button1.Location = new System.Drawing.Point(790, 41);
+            button1.Location = new System.Drawing.Point(181, 41);
             button1.Name = "button1";
             button1.Size = new System.Drawing.Size(54, 45);
             button1.TabIndex = 104;
@@ -97,27 +97,23 @@ namespace Ephemera.MidiLibLite.Test
             // 
             // cch1
             // 
-            cch1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            cch1.Location = new System.Drawing.Point(8, 119);
+            cch1.Location = new System.Drawing.Point(8, 101);
             cch1.Name = "cch1";
-            cch1.SelectedColor = System.Drawing.Color.Empty;
-            cch1.Size = new System.Drawing.Size(336, 40);
+            cch1.Size = new System.Drawing.Size(356, 56);
             cch1.TabIndex = 105;
             // 
             // cch2
             // 
-            cch2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            cch2.Location = new System.Drawing.Point(8, 294);
+            cch2.Location = new System.Drawing.Point(409, 101);
             cch2.Name = "cch2";
-            cch2.SelectedColor = System.Drawing.Color.Empty;
-            cch2.Size = new System.Drawing.Size(336, 45);
+            cch2.Size = new System.Drawing.Size(356, 56);
             cch2.TabIndex = 106;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(926, 475);
+            ClientSize = new System.Drawing.Size(777, 600);
             Controls.Add(cch2);
             Controls.Add(cch1);
             Controls.Add(button1);
@@ -143,8 +139,8 @@ namespace Ephemera.MidiLibLite.Test
         private System.Windows.Forms.ToolStripButton btnLogMidi;
         private System.Windows.Forms.ToolStripButton btnKillMidi;
         private System.Windows.Forms.Button button1;
-        private CustomChannelControl cch1;
-        private CustomChannelControl cch2;
+        private ChannelControl cch1;
+        private ChannelControl cch2;
     }
 }
 
