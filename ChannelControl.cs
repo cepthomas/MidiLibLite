@@ -35,7 +35,7 @@ namespace Ephemera.MidiLibLite
         #region Fields
         ChannelState _state = ChannelState.Normal;
         const int PAD = 4;
-        const int SIZE = 32;
+        const int SIZE = 48;
 
         readonly Container components = new();
         protected ToolTip toolTip = new();
@@ -155,7 +155,9 @@ namespace Ephemera.MidiLibLite
                     Location = new(xPos, yPos),
                     Size = new(100, SIZE),
                     ReadOnly = true,
-                    Text = "Hello world"
+                    Multiline = true,
+                    WordWrap = false,
+                    Text = "Hello world\nWhat's up?"
                 };
                 txtInfo.Click += ChannelInfo_Click;
                 Controls.Add(txtInfo);
@@ -188,7 +190,7 @@ namespace Ephemera.MidiLibLite
                 lblSolo = new()
                 {
                     Location = new(xPos, yPos),
-                    Size = new(20, SIZE / 2),
+                    Size = new(20, 20),//SIZE / 2),
                     Text = "S"
                 };
                 lblSolo.Click += SoloMute_Click;
@@ -196,8 +198,8 @@ namespace Ephemera.MidiLibLite
 
                 lblMute = new()
                 {
-                    Location = new(xPos, yPos + SIZE / 2 + PAD),
-                    Size = new(20, SIZE / 2),
+                    Location = new(xPos, yPos + SIZE / 2),
+                    Size = new(20, 20),//SIZE / 2),
                     Text = "M"
                 };
                 lblMute.Click += SoloMute_Click;
@@ -334,11 +336,10 @@ namespace Ephemera.MidiLibLite
         /// <summary>Draw mode checkboxes etc.</summary>
         void UpdateUi()
         {
-            txtInfo.Text = ToString();
-
             StringBuilder sb = new();
             sb.AppendLine($"Channel {BoundChannel.Handle}");
             sb.AppendLine($"Patch {BoundChannel.GetPatchName(BoundChannel.Config.Patch)}({BoundChannel.Config.Patch})");
+            txtInfo.Text = sb.ToString();
             toolTip.SetToolTip(txtInfo, sb.ToString());
 
             lblSolo.BackColor = _state == ChannelState.Solo ? SelectedColor :  BackColor;

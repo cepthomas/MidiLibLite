@@ -20,7 +20,7 @@ namespace Ephemera.MidiLibLite
         public bool CaptureEnable { get; set; }
 
         /// <inheritdoc />
-        public int Id { get; }
+        public int Id { get; init; }
 
         /// <inheritdoc />
         public event EventHandler<BaseMidiEvent>? InputReceive;
@@ -32,10 +32,9 @@ namespace Ephemera.MidiLibLite
         /// <param name="deviceName">Client must supply name of device.</param>
         public NullInputDevice(string deviceName)
         {
-            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
+            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
 
             DeviceName = deviceName;
-            // Id = ind;
         }
 
         /// <summary>
@@ -56,7 +55,7 @@ namespace Ephemera.MidiLibLite
         public bool Valid { get; set; }
 
         /// <inheritdoc />
-        public int Id { get; }
+        public int Id { get; init; }
 
         #region Lifecycle
         /// <summary>
@@ -65,9 +64,8 @@ namespace Ephemera.MidiLibLite
         /// <param name="deviceName">Client must supply name of device.</param>
         public NullOutputDevice(string deviceName)
         {
-            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
+            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
             DeviceName = deviceName;
-            // Id = ind;
         }
 
         /// <summary>

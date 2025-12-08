@@ -24,7 +24,7 @@ namespace Ephemera.MidiLibLite
         public string DeviceName { get; }
 
         /// <inheritdoc />
-        public int Id { get; }
+        public int Id { get; init; }
 
         /// <inheritdoc />
         public bool CaptureEnable { get; set; }
@@ -138,7 +138,7 @@ namespace Ephemera.MidiLibLite
         public string DeviceName { get; }
 
         /// <inheritdoc />
-        public int Id { get; }
+        public int Id { get; init; }
 
         /// <inheritdoc />
         public bool Valid { get { return _midiOut is not null;} }

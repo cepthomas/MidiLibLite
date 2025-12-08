@@ -13,9 +13,6 @@ namespace Ephemera.MidiLibLite
         public static MidiDefs TheDefs { get; set; } = new();
 
         /// <summary>Midi constant.</summary>
-        //public const int MIN_MIDI = 0;
-
-        /// <summary>Midi constant.</summary>
         public const int MAX_MIDI = 127;
 
         /// <summary>Per device.</summary>
@@ -173,7 +170,7 @@ namespace Ephemera.MidiLibLite
         /// <returns>Content.</returns>
         public List<string> FormatDoc()
         {
-            List<string> docs = new();
+            List<string> docs = [];
             docs.Add("# Midi GM Instruments");
             docs.Add("Instrument          | Number");
             docs.Add("----------          | ------");

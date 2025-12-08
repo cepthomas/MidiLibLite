@@ -133,7 +133,7 @@ namespace Ephemera.MidiLibLite.Test
             //MidiOutputDevice device = new(OUTDEV1);
 
             ///// 1 - create all devices
-            _mgr.CreateDevices();
+           // _mgr.CreateDevices();
 
             ///// 2 - create channels
             //var chanin11 = _mgr.OpenMidiInput(INDEV, 1, "my input");
@@ -159,10 +159,10 @@ namespace Ephemera.MidiLibLite.Test
             //});
 
 
-            InitControl(customChannelControl1);
-            customChannelControl1.BoundChannel = chanout1;
-            InitControl(customChannelControl2);
-            customChannelControl2.BoundChannel = chanout2;
+            InitControl(cch1);
+            cch1.BoundChannel = chanout1;
+            InitControl(cch2);
+            cch2.BoundChannel = chanout2;
 
 
             /*
@@ -201,7 +201,7 @@ namespace Ephemera.MidiLibLite.Test
             //cctrl2.Hide();
 
             ///// 1 - create all devices
-            _mgr.CreateDevices();
+            //_mgr.CreateDevices();
 
             ///// 2 - create all channels - script api calls like:
             // local hnd_ccin = api.open_midi_input("loopMIDI Port 1", 1, "my input")

@@ -26,10 +26,10 @@ namespace Ephemera.MidiLibLite
         readonly List<IInputDevice> _inputDevices = [];
 
         /// <summary>All the output channels. Key is handle.</summary>
-        readonly Dictionary<int, OutputChannel> _outputChannels = new();
+        readonly Dictionary<int, OutputChannel> _outputChannels = [];
 
         /// <summary>All the input channels. Key is handle.</summary>
-        readonly Dictionary<int, InputChannel> _inputChannels = new();
+        readonly Dictionary<int, InputChannel> _inputChannels = [];
         #endregion
 
         #region Events
@@ -48,18 +48,15 @@ namespace Ephemera.MidiLibLite
         public InputChannel OpenMidiInput(string deviceName, int channelNumber, string channelName)
         {
             // Check args.
-            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
+            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
             if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channelNumber)); }
 
-            // Locate the device. TODO1 other flavors:
-            //  - OSC uses OSC:url:port for DeviceName
-            //  - NULL uses NULL for DeviceName
-            var indevs = _inputDevices.Where(o => o.DeviceName == deviceName);
-            if (!indevs.Any())
+            var indev = GetInputDevice(deviceName);
+
+            if (indev is null)
             {
-                throw new MidiLibException($"Invalid input device name [{deviceName}]");
+                throw new MidiLibException($"Invalid input device [{deviceName}]");
             }
-            var dev = indevs.ElementAt(0);
 
             var config = new InputChannelConfig()
             {
@@ -69,7 +66,7 @@ namespace Ephemera.MidiLibLite
             };
 
             // Add the channel.
-            InputChannel ch = new(config, dev)
+            InputChannel ch = new(config, indev)
             {
                 Enable = true,
             };
@@ -89,16 +86,15 @@ namespace Ephemera.MidiLibLite
         public OutputChannel OpenMidiOutput(string deviceName, int channelNumber, string channelName, int patch)
         {
             // Check args.
-            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
+            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
             if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channelNumber)); }
 
-            // Locate the device. TODO1 other flavors. See OpenMidiInput.
-            var outdevs = _outputDevices.Where(o => o.DeviceName == deviceName);
-            if (!outdevs.Any())
+            var outdev = GetOutputDevice(deviceName);
+
+            if (outdev is null)
             {
-                throw new MidiLibException($"Invalid output device name [{deviceName}]");
+                throw new MidiLibException($"Invalid output device [{deviceName}]");
             }
-            var dev = outdevs.ElementAt(0);
 
             var config = new OutputChannelConfig()
             {
@@ -111,7 +107,7 @@ namespace Ephemera.MidiLibLite
             };
 
             // Add the channel.
-            OutputChannel ch = new(config, dev)
+            OutputChannel ch = new(config, outdev)
             {
                 Enable = true,
             };
@@ -119,62 +115,199 @@ namespace Ephemera.MidiLibLite
             _outputChannels.Add(ch.Handle, ch);
 
             // Send the patch now.
-            if (patch >= 0)
-            {
-                dev.Send(new Patch(channelNumber, patch));
-            }
+            outdev.Send(new Patch(channelNumber, patch));
+
             return ch;
         }
         #endregion
 
 
-
-
-
-
-
         #region Devices
+
         /// <summary>
-        /// Create all I/O devices.
+        /// Get I/O device. Lazy creation.
         /// </summary>
-        /// <returns>Success</returns>
-        public void CreateDevices() // TODO1 also OSC, null - from script or api
+        /// <param name="deviceName"></param>
+        /// <returns>The device or null if invalid.</returns>
+        IInputDevice? GetInputDevice(string deviceName)
         {
-            // First...
-            DestroyDevices();
+            IInputDevice? dev = null;
 
-            // Set up input devices.
-            foreach (var devname in MidiInputDevice.AvailableDevices())
+            // Check for known.
+            var indevs = _inputDevices.Where(o => o.DeviceName == deviceName);
+            if (!indevs.Any())
             {
-                var indev = new MidiInputDevice(devname);
+                // Is it a new device? Try to create it.
 
-                if (!indev.Valid)
+                // Midi input device?
+                if (MidiInputDevice.AvailableDevices().Contains(deviceName))
                 {
-                    throw new MidiLibException($"Something wrong with your input device [{devname}]");
+                    dev = new MidiInputDevice(deviceName) { Id = _inputDevices.Count + 1 };
                 }
-                else
+
+                // Others?
+                var parts = deviceName.SplitByToken(":");
+                switch (parts[0].ToLower(), parts.Count)
                 {
-                    indev.CaptureEnable = true;
-                    indev.InputReceive += Midi_ReceiveEvent;
-                    _inputDevices.Add(indev);
+                    case ("oscin", 2):
+                        dev = new OscInputDevice(parts[1]) { Id = _inputDevices.Count + 1 };
+                        break;
+
+                    case ("nullin", 2):
+                        dev = new NullInputDevice(deviceName) { Id = _inputDevices.Count + 1 };
+                        break;
+                }
+
+                if (dev is not null)
+                {
+                    _inputDevices.Add(dev);
+                    dev.CaptureEnable = true;
+                    dev.InputReceive += Midi_ReceiveEvent;
                 }
             }
-
-            // Set up output devices.
-            foreach (var devname in MidiOutputDevice.AvailableDevices())
+            else
             {
-                // Try midi.
-                var outdev = new MidiOutputDevice(devname);
-                if (!outdev.Valid)
-                {
-                    throw new MidiLibException($"Something wrong with your output device [{devname}]");
-                }
-                else
-                {
-                    _outputDevices.Add(outdev);
-                }
+                dev = indevs.ElementAt(0);
             }
+
+            return dev;
         }
+
+
+        /// <summary>
+        /// Get I/O device. Lazy creation.
+        /// </summary>
+        /// <param name="deviceName"></param>
+        /// <returns>The device or null if invalid.</returns>
+        IOutputDevice? GetOutputDevice(string deviceName)
+        {
+            IOutputDevice? dev = null;
+
+            // Check for known.
+            var outdevs = _outputDevices.Where(o => o.DeviceName == deviceName);
+            if (!outdevs.Any())
+            {
+                // Is it a new device? Try to create it.
+
+                // Midi output device?
+                if (MidiOutputDevice.AvailableDevices().Contains(deviceName))
+                {
+                    dev = new MidiOutputDevice(deviceName) { Id = _outputDevices.Count + 1 };
+                }
+
+                // Others?
+                var parts = deviceName.SplitByToken(":");
+                switch (parts[0].ToLower(), parts.Count)
+                {
+                    case ("oscout", 3):
+                        dev = new OscOutputDevice(parts[1], parts[2]) { Id = _outputDevices.Count + 1 };
+                        break;
+
+                    case ("nullout", 2):
+                        dev = new NullOutputDevice(deviceName) { Id = _outputDevices.Count + 1 };
+                        break;
+                }
+
+                if (dev is not null)
+                {
+                    _outputDevices.Add(dev);
+                }
+            }
+            else
+            {
+                dev = outdevs.ElementAt(0);
+            }
+
+            return dev;
+        }
+
+
+
+
+
+        // /// <summary>
+        // /// Create all I/O devices from system midi devices + client supplied extras + null.
+        // /// </summary>
+        // /// <param name="devNames"></param>
+        // /// <returns>Success</returns>
+        // public void CreateDevices()//List<string> devNames)
+        // {
+        //     // First...
+        //     DestroyDevices();
+
+        //     // Midi input devices.
+        //     foreach (var devname in MidiInputDevice.AvailableDevices())
+        //     {
+        //         var indev = new MidiInputDevice(devname);
+
+        //         if (!indev.Valid)
+        //         {
+        //             throw new MidiLibException($"Something wrong with your input device [{devname}]");
+        //         }
+        //         else
+        //         {
+        //             indev.CaptureEnable = true;
+        //             indev.InputReceive += Midi_ReceiveEvent;
+        //             _inputDevices.Add(indev);
+        //         }
+        //     }
+
+        //     // Midi output devices.
+        //     foreach (var devname in MidiOutputDevice.AvailableDevices())
+        //     {
+        //         // Try midi.
+        //         var outdev = new MidiOutputDevice(devname);
+        //         if (!outdev.Valid)
+        //         {
+        //             throw new MidiLibException($"Something wrong with your output device [{devname}]");
+        //         }
+        //         else
+        //         {
+        //             _outputDevices.Add(outdev);
+        //         }
+        //     }
+
+        //     // Extras.
+        //     // foreach (var devname in devNames)
+        //     // {
+        //     //     var parts = devname.SplitByToken(":");
+        //     //     bool valid = false;
+
+        //     //     switch (parts[0].ToLower(), parts.Count)
+        //     //     {
+        //     //         case ("nullout", 2):
+        //     //             var outdev = new NullOutputDevice(devname);
+        //     //             if (outdev.Valid)
+        //     //             {
+        //     //                 _outputDevices.Add(outdev);
+        //     //                 valid = true;
+        //     //             }
+        //     //             break;
+
+        //     //         case ("nullin", 2):
+        //     //             var indev = new NullInputDevice(devname);
+        //     //             if (indev.Valid)
+        //     //             {
+        //     //                 _inputDevices.Add(indev);
+        //     //                 valid = true;
+        //     //             }
+        //     //             break;
+        //     //     }
+
+        //     //     // check valid
+        //     //     if (!valid)
+        //     //     {
+        //     //         throw new MidiLibException($"Something wrong with your device [{devname}]");
+        //     //     }
+
+        //     // }
+
+
+        //     // Locate the device.
+        //     //  - OSC uses oscin:host:port for DeviceName
+        //     //  - NULL uses nullout:name for DeviceName
+        // }
+
 
         //TODO1 support retry x2 from MG:
         // ///// Determine midi output device. /////

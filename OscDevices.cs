@@ -6,7 +6,7 @@ using Ephemera.NBagOfTricks;
 namespace Ephemera.MidiLibLite
 {
     /// <summary>Provides midi over OSC. Server side.</summary>
-    public sealed class OscInput : IInputDevice
+    public class OscInputDevice : IInputDevice
     {
         #region Fields
         /// <summary>OSC input device.</summary>
@@ -29,29 +29,23 @@ namespace Ephemera.MidiLibLite
         public bool Valid { get { return _oscInput is not null; } }
 
         /// <inheritdoc />
-        public int Id => throw new NotImplementedException();
+        public int Id { get; init; }
         #endregion
 
         #region Lifecycle
         /// <summary>
         /// Constructor. Throws for invalid args etc.
-        /// <param name="deviceName">Client must supply name of device.</param>
+        /// <param name="port">Client port.</param>
         /// </summary>
-        public OscInput(string deviceName)
+        public OscInputDevice(string port)
         {
-            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
-
             // Check for properly formed port.
-            List<string> parts = deviceName.SplitByToken(":");
-            if (parts.Count == 2)
+            if (int.TryParse(port, out int iport))
             {
-                if (int.TryParse(parts[1], out int port))
-                {
-                    _oscInput = new NebOsc.Input(port);
-                    DeviceName = _oscInput.DeviceName;
-                    _oscInput.InputReceived += OscInput_InputReceived;
-                    _oscInput.Notification += OscInput_Notification;
-                }
+                _oscInput = new NebOsc.Input(iport);
+                DeviceName = _oscInput.DeviceName;
+                _oscInput.InputReceived += OscInput_InputReceived;
+                _oscInput.Notification += OscInput_Notification;
             }
         }
 
@@ -111,7 +105,7 @@ namespace Ephemera.MidiLibLite
     }
 
     /// <summary>Provides midi over OSC. Client side.</summary>
-    public sealed class OscOutput : IOutputDevice
+    public class OscOutputDevice : IOutputDevice
     {
         #region Fields
         /// <summary>OSC output device.</summary>
@@ -129,29 +123,23 @@ namespace Ephemera.MidiLibLite
         public bool Valid { get { return _oscOutput is not null; } }
 
         /// <inheritdoc />
-        public int Id => throw new NotImplementedException();
+        public int Id { get; init; }
         #endregion
 
         #region Lifecycle
         /// <summary>
         /// Constructor. Throws for invalid args etc.
         /// </summary>
-        /// <param name="deviceName">Client must supply name of device.</param>
-        public OscOutput(string deviceName)
+        /// <param name="host">Client host.</param>
+        /// <param name="port">Client port.</param>
+        public OscOutputDevice(string host, string port)
         {
-            if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException(nameof(deviceName)); }
-
-            // Check for properly formed url:port.
-            List<string> parts = deviceName.SplitByToken(":");
-            if (parts.Count == 3)
+            // Check for properly formed port.
+            if (int.TryParse(port, out int iport))
             {
-                if (int.TryParse(parts[2], out int port))
-                {
-                    string ip = parts[1];
-                    _oscOutput = new NebOsc.Output(ip, port);
-                    DeviceName = _oscOutput.DeviceName;
-                    _oscOutput.Notification += OscOutput_Notification;
-                }
+                _oscOutput = new NebOsc.Output(host, iport);
+                DeviceName = _oscOutput.DeviceName;
+                _oscOutput.Notification += OscOutput_Notification;
             }
         }
 

@@ -15,7 +15,7 @@ namespace Ephemera.MidiLibLite
         string DeviceName { get; }
 
         /// <summary>Internal id.</summary>
-        int Id { get; }
+        int Id { get; init; }
 
         /// <summary>Are we ok?</summary>
         bool Valid { get; }

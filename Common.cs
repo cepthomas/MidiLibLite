@@ -14,7 +14,6 @@ namespace Ephemera.MidiLibLite
     /// <summary>Library error.</summary>
     public class MidiLibException(string message) : Exception(message) { }
 
-
     public class Defs
     {
         /// <summary>Default value.</summary>
