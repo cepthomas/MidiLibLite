@@ -14,6 +14,9 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
 
+// TODO2 support device create retry for midi devices like MidiGenerator.
+
+
 namespace Ephemera.MidiLibLite
 {
     public class Manager
@@ -121,9 +124,7 @@ namespace Ephemera.MidiLibLite
         }
         #endregion
 
-
         #region Devices
-
         /// <summary>
         /// Get I/O device. Lazy creation.
         /// </summary>
@@ -135,6 +136,7 @@ namespace Ephemera.MidiLibLite
 
             // Check for known.
             var indevs = _inputDevices.Where(o => o.DeviceName == deviceName);
+
             if (!indevs.Any())
             {
                 // Is it a new device? Try to create it.
@@ -162,7 +164,8 @@ namespace Ephemera.MidiLibLite
                 {
                     _inputDevices.Add(dev);
                     dev.CaptureEnable = true;
-                    dev.InputReceive += Midi_ReceiveEvent;
+                    // Just pass inputs up.
+                    dev.InputReceive += (object? sender, BaseMidiEvent e) => InputReceive?.Invoke((MidiInputDevice)sender!, e);
                 }
             }
             else
@@ -172,7 +175,6 @@ namespace Ephemera.MidiLibLite
 
             return dev;
         }
-
 
         /// <summary>
         /// Get I/O device. Lazy creation.
@@ -185,6 +187,7 @@ namespace Ephemera.MidiLibLite
 
             // Check for known.
             var outdevs = _outputDevices.Where(o => o.DeviceName == deviceName);
+
             if (!outdevs.Any())
             {
                 // Is it a new device? Try to create it.
@@ -221,35 +224,6 @@ namespace Ephemera.MidiLibLite
             return dev;
         }
 
-        //TODO1 support retry x2 from MG:
-        // ///// Determine midi output device. /////
-        // Text = "Midi Generator - no output device";
-        // timer1.Interval = 1000;
-        // timer1.Tick += (sender, e) => ConnectDevice();
-        // timer1.Start();
-        // /// <summary>
-        // /// Figure out which midi output device.
-        // /// </summary>
-        // void ConnectDevice()
-        // {
-        //     if (_midiOut == null)
-        //     {
-        //         // Retry.
-        //         string deviceName = _settings.OutputDevice;
-        //         for (int i = 0; i < MidiOut.NumberOfDevices; i++)
-        //         {
-        //             if (deviceName == MidiOut.DeviceInfo(i).ProductName)
-        //             {
-        //                 _midiOut = new MidiOut(i);
-        //                 Text = $"Midi Generator - {deviceName}";
-        //                 Tell($"Connect to {deviceName}");
-        //                 timer1.Stop();
-        //                 break;
-        //             }
-        //         }
-        //     }
-        // }
-
         /// <summary>
         /// Clean up.
         /// </summary>
@@ -260,37 +234,29 @@ namespace Ephemera.MidiLibLite
             _outputDevices.ForEach(d => d.Dispose());
             _outputDevices.Clear();
         }
-
-        /// <summary>
-        /// Midi input arrived from device. This is on a system thread.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Midi_ReceiveEvent(object? sender, BaseMidiEvent e)
-        {
-            var indev = (MidiInputDevice)sender!;
-
-            // Just pass up.
-            InputReceive?.Invoke(indev, e);
-        }
         #endregion
 
-
-
-
-        public IOutputDevice GetOutputDevice(int id) // TODO1 bit klunky
+        #region Misc
+        /// <summary>
+        /// Helper. TODO2 bit klunky.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>The device.</returns>
+        public IOutputDevice GetOutputDevice(int id)
         {
             return _outputDevices[id];
         }
 
+        /// <summary>
+        /// Helper. TODO2 bit klunky.
+        /// </summary>
+        /// <param name="chnd"></param>
+        /// <returns>The channel.</returns>
 
-        public OutputChannel GetOutputChannel(ChannelHandle chnd) // TODO1 bit klunky
+        public OutputChannel GetOutputChannel(ChannelHandle chnd)
         {
             return _outputChannels[chnd];
         }
-
-
-
 
         /// <summary>
         /// Stop all midi. Doesn't throw.
@@ -309,5 +275,6 @@ namespace Ephemera.MidiLibLite
                 channel.Device.Send(new Controller(channel.Config.ChannelNumber, cc, 0));
             }
         }
+        #endregion
     }
 }

@@ -17,7 +17,7 @@ namespace Ephemera.MidiLib.Test
     public class CustomRenderer : UserControl
     {
         /// <summary>Required designer variable.</summary>
-        IContainer components = null;
+        IContainer components;
 
         ToolTip toolTip;
 
@@ -187,8 +187,8 @@ namespace Ephemera.MidiLib.Test
         {
             var mp = PointToClient(MousePosition);
             // Map and check.
-            int x = MathUtils.Map(mp.X, 0, Width, 0, MidiDefs.MAX_MIDI);
-            int y = MathUtils.Map(mp.Y, Bottom, Top, 0, MidiDefs.MAX_MIDI);
+            int x = MathUtils.Map(mp.X, Left, Right, 0, MidiDefs.MAX_MIDI);
+            int y = MathUtils.Map(mp.Y, Top, Bottom, 0, MidiDefs.MAX_MIDI);
             return (x, y);
         }
     }

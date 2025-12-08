@@ -24,8 +24,8 @@ namespace Ephemera.MidiLibLite.Test
             txtViewer = new Ephemera.NBagOfUis.TextViewer();
             sldVolume = new Ephemera.NBagOfUis.Slider();
             button1 = new System.Windows.Forms.Button();
-            cch1 = new ChannelControl();
-            cch2 = new ChannelControl();
+            ch_ctrl1 = new ChannelControl();
+            ch_ctrl2 = new ChannelControl();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -95,27 +95,27 @@ namespace Ephemera.MidiLibLite.Test
             button1.Text = "test";
             button1.UseVisualStyleBackColor = true;
             // 
-            // cch1
+            // ch_ctrl1
             // 
-            cch1.Location = new System.Drawing.Point(8, 101);
-            cch1.Name = "cch1";
-            cch1.Size = new System.Drawing.Size(356, 56);
-            cch1.TabIndex = 105;
+            ch_ctrl1.Location = new System.Drawing.Point(8, 101);
+            ch_ctrl1.Name = "ch_ctrl1";
+            ch_ctrl1.Size = new System.Drawing.Size(356, 56);
+            ch_ctrl1.TabIndex = 105;
             // 
-            // cch2
+            // ch_ctrl2
             // 
-            cch2.Location = new System.Drawing.Point(409, 101);
-            cch2.Name = "cch2";
-            cch2.Size = new System.Drawing.Size(356, 56);
-            cch2.TabIndex = 106;
+            ch_ctrl2.Location = new System.Drawing.Point(409, 101);
+            ch_ctrl2.Name = "ch_ctrl2";
+            ch_ctrl2.Size = new System.Drawing.Size(356, 56);
+            ch_ctrl2.TabIndex = 106;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(777, 600);
-            Controls.Add(cch2);
-            Controls.Add(cch1);
+            Controls.Add(ch_ctrl2);
+            Controls.Add(ch_ctrl1);
             Controls.Add(button1);
             Controls.Add(sldVolume);
             Controls.Add(txtViewer);
@@ -139,8 +139,8 @@ namespace Ephemera.MidiLibLite.Test
         private System.Windows.Forms.ToolStripButton btnLogMidi;
         private System.Windows.Forms.ToolStripButton btnKillMidi;
         private System.Windows.Forms.Button button1;
-        private ChannelControl cch1;
-        private ChannelControl cch2;
+        private ChannelControl ch_ctrl1;
+        private ChannelControl ch_ctrl2;
     }
 }
 

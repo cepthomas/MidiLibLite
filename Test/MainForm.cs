@@ -130,26 +130,26 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         void DemoStandardApp()
         {
-            /// 1 - create channels
-            var chanout1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);  // TODO_defs patch by name => "AcousticGrandPiano"
-            var chanout2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12); // => ???);
-            chanout1.UpdatePresets();
-            chanout2.UpdatePresets();
+            ///// 1 - create channels
+            var ch_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);  // TODO_defs patch by name => "AcousticGrandPiano"
+            var ch_out2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12); // => ???);
+            ch_out1.UpdatePresets();
+            ch_out2.UpdatePresets();
 
-            /// 2 - configure controls and bind channels
-            var rend = new CustomRenderer() { ChannelHandle = chanout1.Handle };
+            ///// 2 - configure controls and bind channels
+            var rend = new CustomRenderer() { ChannelHandle = ch_out1.Handle };
             rend.SendMidi += Rend_SendMidi;
-            cch1.UserRenderer = rend;
-            InitControl(cch1);
-            cch1.BoundChannel = chanout1;
+            ch_ctrl1.UserRenderer = rend;
+            InitControl(ch_ctrl1);
+            ch_ctrl1.BoundChannel = ch_out1;
 
-            rend = new CustomRenderer() { ChannelHandle = chanout2.Handle };
+            rend = new CustomRenderer() { ChannelHandle = ch_out2.Handle };
             rend.SendMidi += Rend_SendMidi;
-            cch2.UserRenderer = rend;
-            InitControl(cch2);
-            cch2.BoundChannel = chanout2;
+            ch_ctrl2.UserRenderer = rend;
+            InitControl(ch_ctrl2);
+            ch_ctrl2.BoundChannel = ch_out2;
 
-            /// 3 - do work
+            ///// 3 - do work
             // ????
         }
 
@@ -159,52 +159,45 @@ namespace Ephemera.MidiLibLite.Test
         void DemoScriptApp() // TODO1
         {
             ///// 0 - pre-steps - only for this demo
-            cch1.Hide();
-            cch2.Hide();
-            //cctrl1.Hide();
-            //cctrl2.Hide();
+            ch_ctrl1.Hide();
+            ch_ctrl2.Hide();
 
-            ///// 1 - create all devices
-            //_mgr.CreateDevices();
-
-            ///// 2 - create all channels - script api calls like:
+            ///// 1 - create all channels - script api calls like:
             // local hnd_ccin = api.open_midi_input("loopMIDI Port 1", 1, "my input")
             // local hnd_keys = api.open_midi_output("loopMIDI Port 2", 1, "keys", inst.AcousticGrandPiano)
             // local hnd_synth = api.open_midi_output("loopMIDI Port 2", 3, "synth", inst.Lead1Square)
             //List<OutputChannel> channels = [];
-            var ch1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
-            var chan1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "keys", 0); // => AcousticGrandPiano);
-            //channels.Add(chan1);
-            var chan2 = _mgr.OpenMidiOutput(OUTDEV1, 10, "drums", 32); // => kit.Jazz);
-            //channels.Add(chan2);
+            var ch_in1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
+            var ch_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "keys", 0); // TODO_defs => AcousticGrandPiano);
+            var ch_out2 = _mgr.OpenMidiOutput(OUTDEV1, 10, "drums", 32); // => kit.Jazz);
 
-            List<OutputChannel> channels = new() { chan1, chan2 };
-            List<ChannelControl> controls = new();// { cch1, cch2 };
+            List<OutputChannel> channels = new() { ch_out1, ch_out2 };
+            List<ChannelControl> controls = new();
 
-            ///// 3 - create a control for each channel and bind object
-            //DestroyControls();
+            ///// 2 - create a control for each channel and bind object
             int x = sldVolume.Left;
             int y = sldVolume.Bottom + 10;
 
             channels.ForEach(chan =>
             {
-                //var cc = new ChannelControl(chan);// { BoundChannel = chan };
-                //var cc = new ChannelControl() { BoundChannel = chan };
-                var cc = new ChannelControl();
-                InitControl(cc);
-                cc.Location = new(x, y);
-                cc.Size = new(320, 175);
-                y += cc.Size.Height + 8;
+                var ch_ctrl = new ChannelControl();
+                InitControl(ch_ctrl);
+                ch_ctrl.BoundChannel = chan;
+                ch_ctrl.Location = new(x, y);
+                ch_ctrl.Size = new(320, 175);
+                y += ch_ctrl.Size.Height + 8;
 
+                var rend = new CustomRenderer() { ChannelHandle = chan.Handle };
+                rend.SendMidi += Rend_SendMidi;
+                ch_ctrl.UserRenderer = rend;
 
-                Controls.Add(cc);
-                controls.Add(cc);
-
+                Controls.Add(ch_ctrl);
+                controls.Add(ch_ctrl);
 
                 chan.UpdatePresets();
             });
 
-            ///// 4 - do work
+            ///// 3 - do work
             // call script api functions
             // api.send_midi_note(hnd_strings, note_num, volume)
             // api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
@@ -261,6 +254,7 @@ namespace Ephemera.MidiLibLite.Test
         void ReceiveMidiNote(ChannelHandle chnd, int note_num, double volume)
         {
         }
+        
         void ReceiveMidiController(ChannelHandle chnd, int controller_id, int value)
         {
         }
@@ -269,21 +263,6 @@ namespace Ephemera.MidiLibLite.Test
 
 
 
-        /// <summary>
-        /// Destroy controls.
-        /// </summary>
-        void DestroyControls()
-        {
-            _mgr.Kill();
-
-            // Clean out our current elements.
-            _channelControls.ForEach(c =>
-            {
-                Controls.Remove(c);
-                c.Dispose();
-            });
-            _channelControls.Clear();
-        }
 
         #region Events
         /// <summary>
@@ -379,8 +358,23 @@ namespace Ephemera.MidiLibLite.Test
         }
         #endregion
 
-
         #region Misc internals
+        /// <summary>
+        /// Destroy controls.
+        /// </summary>
+        void DestroyControls()
+        {
+            _mgr.Kill();
+
+            // Clean out our current elements.
+            _channelControls.ForEach(c =>
+            {
+                Controls.Remove(c);
+                c.Dispose();
+            });
+            _channelControls.Clear();
+        }
+
         /// <summary>
         /// Common init control.
         /// </summary>
@@ -391,7 +385,7 @@ namespace Ephemera.MidiLibLite.Test
             cc.SelectedColor = _selectedColor;
             cc.Volume = Defs.DEFAULT_VOLUME;
             cc.ChannelChange += ChannelControl_ChannelChange;
-            cc.SendMidi += ChannelControl_SendMidi
+            cc.SendMidi += ChannelControl_SendMidi;
         }
 
         /// <summary>Tell me something good.</summary>
