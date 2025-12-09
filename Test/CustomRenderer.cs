@@ -96,7 +96,7 @@ namespace Ephemera.MidiLib.Test
 
             if (res is not null)
             {
-                toolTip.SetToolTip(this, $"X:{res.Value.ux} Y:{res.Value.uy}");//TODO2 better info
+                toolTip.SetToolTip(this, $"X:{res.Value.ux} Y:{res.Value.uy}"); // TODO1 better info
 
                 // Also gen click?
                 if (e.Button == MouseButtons.Left)

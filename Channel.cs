@@ -57,10 +57,6 @@ namespace Ephemera.MidiLibLite
         [Range(0.0, Defs.MAX_VOLUME)]
         public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
     
-/////////////////////////////////////////////////////////////////////
-/////////////////////////// TODO2 ///////////////////////////////////
-/////////////////////////////////////////////////////////////////////
-
         /// <summary>Edit current controller number.</summary>
         [Editor(typeof(ControllerIdTypeEditor), typeof(UITypeEditor))]
         [TypeConverter(typeof(ControllerIdConverter))]
@@ -192,7 +188,7 @@ namespace Ephemera.MidiLibLite
     /// <param name="DeviceId">Index in internal list</param>
     /// <param name="ChannelNumber">Midi channel 1-based</param>
     /// <param name="Output">T or F</param>
-    public record struct ChannelHandle(int DeviceId, int ChannelNumber, bool Output) // TODO2 still pertinent?
+    public record struct ChannelHandle(int DeviceId, int ChannelNumber, bool Output)
     {
         const int OUTPUT_FLAG = 0x8000;
 

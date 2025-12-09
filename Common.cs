@@ -23,7 +23,7 @@ namespace Ephemera.MidiLibLite
         public const double MAX_VOLUME = 2.0;
     }
 
-    #region Internal event definitions TODO2 different home?
+    #region Internal event definitions TODO1 different home?
     public class BaseMidiEvent
     {
         /// <summary>Channel 1-NUM_CHANNELS.</summary>
@@ -170,7 +170,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>
         /// Input from internal non-midi device. Doesn't throw.
         /// </summary>
-        void InjectMidiInEvent(string devName, int channel, int noteNum, int velocity) // TODO2
+        void InjectMidiInEvent(string devName, int channel, int noteNum, int velocity) // TODO1
         {
             //var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
 

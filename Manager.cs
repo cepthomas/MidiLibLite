@@ -14,7 +14,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
 
-// TODO2 support device create retry for midi devices like MidiGenerator.
+// TODO1 ? support device create retry for midi devices like MidiGenerator.
 
 
 namespace Ephemera.MidiLibLite
@@ -238,7 +238,7 @@ namespace Ephemera.MidiLibLite
 
         #region Misc
         /// <summary>
-        /// Helper. TODO2 bit klunky.
+        /// Helper. TODO1 bit klunky.
         /// </summary>
         /// <param name="id"></param>
         /// <returns>The device.</returns>
@@ -248,7 +248,7 @@ namespace Ephemera.MidiLibLite
         }
 
         /// <summary>
-        /// Helper. TODO2 bit klunky.
+        /// Helper. TODO1 bit klunky.
         /// </summary>
         /// <param name="chnd"></param>
         /// <returns>The channel.</returns>
