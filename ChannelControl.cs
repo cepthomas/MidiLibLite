@@ -42,14 +42,17 @@ namespace Ephemera.MidiLibLite
         readonly Container components = new();
         protected ToolTip toolTip = new();
 
-        TextBox txtInfo = new();
-        Slider sldVolume = new();
+        readonly TextBox txtInfo = new();
+        readonly Slider sldVolume = new();
         // optional:
-        Label lblSolo = new();
-        Label lblMute = new();
+        readonly Label lblSolo = new();
+        readonly Label lblMute = new();
         // optional:
-        Slider sldControllerValue = new();
-        Button btnSend = new();
+        readonly Slider sldControllerValue = new();
+        readonly Button btnSend = new();
+        //// optional:
+        //readonly UserControl? ctlUserRenderer = new();
+
         #endregion
 
         #region Properties
@@ -63,6 +66,10 @@ namespace Ephemera.MidiLibLite
         [EditorBrowsable(EditorBrowsableState.Never)]
         public UserControl? UserRenderer
         {
+            get
+            {
+                return _userRenderer;
+            }
             set
             {
                 _userRenderer = value;
@@ -240,6 +247,14 @@ namespace Ephemera.MidiLibLite
                 xPos = sldControllerValue.Right + PAD;
                 xMax = xPos;
                 yMax = Math.Max(sldControllerValue.Bottom, yMax);
+            }
+
+            if (_userRenderer is not null)
+            {
+                _userRenderer.Location = new(PAD, yMax + PAD);
+                xMax = Math.Max(_userRenderer.Right, xPos);
+                yMax = Math.Max(_userRenderer.Bottom, yMax);
+                Controls.Add(_userRenderer);
             }
 
             // Form itself.

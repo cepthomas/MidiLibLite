@@ -89,6 +89,7 @@ namespace Ephemera.MidiLibLite.Test
             try
             {
                 DemoScriptApp();
+
                 //DemoStandardApp();
             }
             catch (MidiLibException ex)
@@ -130,22 +131,52 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         void DemoStandardApp()
         {
-            // create channels and controls
+            // Create channels and initialize controls.
             var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);  // TODO_defs patch by name => "AcousticGrandPiano"
-            chan_out1.UpdatePresets();
-            ch_ctrl1.BoundChannel = chan_out1;
-            var rend = new CustomRenderer() { ChannelHandle = chan_out1.Handle };
-            rend.SendMidi += Rend_SendMidi;
-            ch_ctrl1.UserRenderer = rend;
-            InitControl(ch_ctrl1);
-
             var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12); // => ???);
-            chan_out2.UpdatePresets();
-            ch_ctrl2.BoundChannel = chan_out2;
-            rend = new CustomRenderer() { ChannelHandle = chan_out2.Handle };
-            rend.SendMidi += Rend_SendMidi;
-            ch_ctrl2.UserRenderer = rend;
-            InitControl(ch_ctrl2);
+
+            List<(OutputChannel, ChannelControl)> channels = [(chan_out1, ch_ctrl1), (chan_out2, ch_ctrl2)];
+            channels.ForEach(ch =>
+            {
+                ch.Item1.UpdatePresets();
+
+                ch.Item2.BorderStyle = BorderStyle.FixedSingle;
+                ch.Item2.ControlColor = _controlColor;
+                ch.Item2.SelectedColor = _selectedColor;
+                ch.Item2.Volume = Defs.DEFAULT_VOLUME;
+                ch.Item2.ChannelChange += ChannelControl_ChannelChange;
+                ch.Item2.SendMidi += ChannelControl_SendMidi;
+                ch.Item2.BoundChannel = ch.Item1;
+
+                var rend = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
+                rend.SendMidi += Rend_SendMidi;
+                ch.Item2.UserRenderer = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
+            });
+
+
+            //chan_out1.UpdatePresets();
+            //ch_ctrl1.BorderStyle = BorderStyle.FixedSingle;
+            //ch_ctrl1.ControlColor = _controlColor;
+            //ch_ctrl1.SelectedColor = _selectedColor;
+            //ch_ctrl1.Volume = Defs.DEFAULT_VOLUME;
+            //ch_ctrl1.ChannelChange += ChannelControl_ChannelChange;
+            //ch_ctrl1.SendMidi += ChannelControl_SendMidi;
+            //ch_ctrl1.BoundChannel = chan_out1;
+            //var rend = new CustomRenderer() { ChannelHandle = chan_out1.Handle };
+            //rend.SendMidi += Rend_SendMidi;
+            //ch_ctrl1.UserRenderer = new CustomRenderer() { ChannelHandle = chan_out1.Handle };;
+           
+            //chan_out2.UpdatePresets();
+            //ch_ctrl2.BorderStyle = BorderStyle.FixedSingle;
+            //ch_ctrl2.ControlColor = _controlColor;
+            //ch_ctrl2.SelectedColor = _selectedColor;
+            //ch_ctrl2.Volume = Defs.DEFAULT_VOLUME;
+            //ch_ctrl2.ChannelChange += ChannelControl_ChannelChange;
+            //ch_ctrl2.SendMidi += ChannelControl_SendMidi;
+            //ch_ctrl2.BoundChannel = chan_out2;
+            //rend = new CustomRenderer() { ChannelHandle = chan_out2.Handle };
+            //rend.SendMidi += Rend_SendMidi;
+            //ch_ctrl2.UserRenderer = rend;
 
             ///// 3 - do work
             // ????
@@ -154,51 +185,48 @@ namespace Ephemera.MidiLibLite.Test
         /// <summary>
         /// App driven by a script - as Nebulua/Nebulator. Creates channels and controls dynamically.
         /// </summary>
-        void DemoScriptApp() // TODO1
+        void DemoScriptApp()
         {
             ///// 0 - pre-steps - only for this demo
             ch_ctrl1.Hide();
             ch_ctrl2.Hide();
-
-            // Standard:
-            //var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);  // TODO_defs patch by name => "AcousticGrandPiano"
-            //chan_out1.UpdatePresets();
-            //ch_ctrl1.BoundChannel = chan_out1;
-            //var rend = new CustomRenderer() { ChannelHandle = chan_out1.Handle };
-            //rend.SendMidi += Rend_SendMidi;
-            //ch_ctrl1.UserRenderer = rend;
-            //InitControl(ch_ctrl1);
-
 
             ///// 1 - create all channels
             var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "keys", 0); // TODO_defs => AcousticGrandPiano);
             var chan_out2= _mgr.OpenMidiOutput(OUTDEV1, 10, "drums", 32); // => kit.Jazz);
             var chan_in1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
 
-            List<OutputChannel> channels = [chan_out1, chan_out2];
-            //List<ChannelControl> controls = [];
-
             ///// 2 - create a control for each channel and bind object
             int x = sldMasterVolume.Left;
             int y = sldMasterVolume.Bottom + 10;
 
+            List<OutputChannel> channels = [chan_out1, chan_out2];
             channels.ForEach(chan =>
             {
-                var ctrl = new ChannelControl() { Name = $"Control for {chan.Config.ChannelName}" };
                 chan.UpdatePresets();
-                ctrl.BoundChannel = chan;
+
                 var rend = new CustomRenderer() { ChannelHandle = chan.Handle };
                 rend.SendMidi += Rend_SendMidi;
-                ctrl.UserRenderer = rend;
-                InitControl(ctrl);
-                ctrl.Location = new(x, y);
-                //y += ctrl.Size.Height + 8;
-                x += ctrl.Width + 4; //TODO1 width is not valid yet
+
+                var ctrl = new ChannelControl()
+                {
+                    Name = $"Control for {chan.Config.ChannelName}",
+                    BoundChannel = chan,
+                    UserRenderer = rend,
+                    Location = new(x, y),
+                    BorderStyle = BorderStyle.FixedSingle,
+                    ControlColor = _controlColor,
+                    SelectedColor = _selectedColor,
+                    Volume = Defs.DEFAULT_VOLUME,
+                };
+                ctrl.ChannelChange += ChannelControl_ChannelChange;
+                ctrl.SendMidi += ChannelControl_SendMidi;
+
                 Controls.Add(ctrl);
+                x += ctrl.Width + 4; // Width is not valid until after previous statement.
             });
 
             ///// 3 - do work
-
 
             // create all channels - script api calls like:
             // local hnd_keys = api.open_midi_output("loopMIDI Port 2", 1, "keys", inst.AcousticGrandPiano)
@@ -208,29 +236,20 @@ namespace Ephemera.MidiLibLite.Test
             // call script api functions
             // api.send_midi_note(hnd_strings, note_num, volume)
             // api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
-            //void SendMidiNote(ChannelHandle ch, int note_num, double volume)
-            //{
-            //}
-            //void SendMidiController(ChannelHandle ch, int controller_id, int value)
-            //{
-            //}
 
             // callbacks from script
             // function receive_midi_note(chan_hnd, note_num, volume)
             // function receive_midi_controller(chan_hnd, controller, value)
-            //void ReceiveMidiNote(ChannelHandle ch, int note_num, double volume)
-            //{
-            //}
-            //void ReceiveMidiController(ChannelHandle ch, int controller_id, int value)
-            //{
-            //}
         }
 
-
-
-        //////////////////////////////// script api functions //////////////////////////////////
-        // api.send_midi_note(hnd_strings, note_num, volume)
-        // api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
+        #region script api functions
+        /// <summary>
+        /// api.send_midi_note(hnd_strings, note_num, volume)
+        /// </summary>
+        /// <param name="chnd"></param>
+        /// <param name="note_num"></param>
+        /// <param name="volume"></param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         void SendMidiNote(ChannelHandle chnd, int note_num, double volume)
         {
             if (note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note_num)); }
@@ -246,6 +265,13 @@ namespace Ephemera.MidiLibLite.Test
             }
         }
 
+        /// <summary>
+        /// api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
+        /// </summary>
+        /// <param name="chnd"></param>
+        /// <param name="controller_id"></param>
+        /// <param name="value"></param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         void SendMidiController(ChannelHandle chnd, int controller_id, int value)
         {
             if (controller_id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(controller_id)); }
@@ -255,21 +281,26 @@ namespace Ephemera.MidiLibLite.Test
             ch.Device.Send(new Controller(chnd.ChannelNumber, controller_id, value));
         }
 
-        // TODO1 callbacks from script
-        // function receive_midi_note(chan_hnd, note_num, volume)
-        // function receive_midi_controller(chan_hnd, controller, value)
+        /// <summary>
+        /// Callback from script: function receive_midi_note(chan_hnd, note_num, volume)
+        /// </summary>
+        /// <param name="chnd"></param>
+        /// <param name="note_num"></param>
+        /// <param name="volume"></param>
         void ReceiveMidiNote(ChannelHandle chnd, int note_num, double volume)
         {
         }
-        
+
+        /// <summary>
+        /// Callback from script: function receive_midi_controller(chan_hnd, controller, value)
+        /// </summary>
+        /// <param name="chnd"></param>
+        /// <param name="controller_id"></param>
+        /// <param name="value"></param>
         void ReceiveMidiController(ChannelHandle chnd, int controller_id, int value)
         {
         }
-
-
-
-
-
+        #endregion
 
         #region Events
         /// <summary>
@@ -380,19 +411,6 @@ namespace Ephemera.MidiLibLite.Test
                 c.Dispose();
             });
             _channelControls.Clear();
-        }
-
-        /// <summary>
-        /// Common init control.
-        /// </summary>
-        void InitControl(ChannelControl cc)
-        {
-            cc.BorderStyle = BorderStyle.FixedSingle;
-            cc.ControlColor = _controlColor;
-            cc.SelectedColor = _selectedColor;
-            cc.Volume = Defs.DEFAULT_VOLUME;
-            cc.ChannelChange += ChannelControl_ChannelChange;
-            cc.SendMidi += ChannelControl_SendMidi;
         }
 
         /// <summary>Tell me something good.</summary>
