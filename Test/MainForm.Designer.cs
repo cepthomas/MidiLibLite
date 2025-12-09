@@ -22,7 +22,7 @@ namespace Ephemera.MidiLibLite.Test
             btnLogMidi = new System.Windows.Forms.ToolStripButton();
             btnKillMidi = new System.Windows.Forms.ToolStripButton();
             txtViewer = new Ephemera.NBagOfUis.TextViewer();
-            sldVolume = new Ephemera.NBagOfUis.Slider();
+            sldMasterVolume = new Ephemera.NBagOfUis.Slider();
             button1 = new System.Windows.Forms.Button();
             ch_ctrl1 = new ChannelControl();
             ch_ctrl2 = new ChannelControl();
@@ -70,24 +70,23 @@ namespace Ephemera.MidiLibLite.Test
             txtViewer.TabIndex = 58;
             txtViewer.WordWrap = true;
             // 
-            // sldVolume
+            // sldMasterVolume
             // 
-            sldVolume.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            sldVolume.DrawColor = System.Drawing.Color.Red;
-            sldVolume.Label = "";
-            sldVolume.Location = new System.Drawing.Point(8, 38);
-            sldVolume.Maximum = 10D;
-            sldVolume.Minimum = 0D;
-            sldVolume.Name = "sldVolume";
-            sldVolume.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            sldVolume.Resolution = 0.1D;
-            sldVolume.Size = new System.Drawing.Size(138, 48);
-            sldVolume.TabIndex = 99;
-            sldVolume.Value = 5D;
+            sldMasterVolume.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            sldMasterVolume.DrawColor = System.Drawing.Color.Red;
+            sldMasterVolume.Label = "";
+            sldMasterVolume.Location = new System.Drawing.Point(8, 38);
+            sldMasterVolume.Maximum = 10D;
+            sldMasterVolume.Minimum = 0D;
+            sldMasterVolume.Name = "sldMasterVolume";
+            sldMasterVolume.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            sldMasterVolume.Resolution = 0.1D;
+            sldMasterVolume.Size = new System.Drawing.Size(138, 48);
+            sldMasterVolume.TabIndex = 99;
+            sldMasterVolume.Value = 5D;
             // 
             // button1
             // 
-            button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             button1.Location = new System.Drawing.Point(181, 41);
             button1.Name = "button1";
             button1.Size = new System.Drawing.Size(54, 45);
@@ -117,7 +116,7 @@ namespace Ephemera.MidiLibLite.Test
             Controls.Add(ch_ctrl2);
             Controls.Add(ch_ctrl1);
             Controls.Add(button1);
-            Controls.Add(sldVolume);
+            Controls.Add(sldMasterVolume);
             Controls.Add(txtViewer);
             Controls.Add(toolStrip1);
             Location = new System.Drawing.Point(300, 50);
@@ -134,7 +133,7 @@ namespace Ephemera.MidiLibLite.Test
         #endregion
 
         private System.Windows.Forms.ToolStrip toolStrip1;
-        private NBagOfUis.Slider sldVolume;
+        private NBagOfUis.Slider sldMasterVolume;
         private NBagOfUis.TextViewer txtViewer;
         private System.Windows.Forms.ToolStripButton btnLogMidi;
         private System.Windows.Forms.ToolStripButton btnKillMidi;

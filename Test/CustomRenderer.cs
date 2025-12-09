@@ -16,43 +16,36 @@ namespace Ephemera.MidiLib.Test
 {
     public class CustomRenderer : UserControl
     {
+        #region Fields
         /// <summary>Required designer variable.</summary>
-        IContainer components;
+        readonly Container components = new();
 
-        ToolTip toolTip;
+        /// <summary>Cosmetics.</summary>
+        readonly ToolTip toolTip;
+
+        /// <summary>Cosmetics.</summary>
+        readonly Pen _pen = new(Color.Black, 3);
 
         /// <summary>Tracking for note off.</summary>
         int _lastNote = -1;
+        #endregion
 
+        #region Properties
         /// <summary>Context.</summary>
         public ChannelHandle ChannelHandle { get; init; }
+        #endregion
 
+        #region Events
         /// <summary>UI midi send.</summary>
         public event EventHandler<BaseMidiEvent>? SendMidi;
+        #endregion
 
         /// <summary>Constructor.</summary>
         public CustomRenderer()
         {
-            InitializeComponent();
-        }
-
-        /// <summary> 
-        /// Required method for Designer support - do not modify 
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
-            components = new System.ComponentModel.Container();
-            toolTip = new System.Windows.Forms.ToolTip(components);
-            SuspendLayout();
-
-            // CustomRenderer
-            AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
-            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            Name = "CustomRenderer";
-            Size = new System.Drawing.Size(231, 174);
-            ResumeLayout(false);
-            PerformLayout();
+            //InitializeComponent();
+            toolTip = new(components);
+            Size = new(231, 174);
         }
 
         /// <summary> 
@@ -61,7 +54,7 @@ namespace Ephemera.MidiLib.Test
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
                 components.Dispose();
             }
@@ -77,20 +70,17 @@ namespace Ephemera.MidiLib.Test
             g.FillRectangle(Brushes.LightCoral, ClientRectangle);
 
             // Border.
-            g.DrawLine(Pens.Black, Left, Top, Right, Top);
-            g.DrawLine(Pens.Black, Left, Bottom, Right, Bottom);
-            g.DrawLine(Pens.Black, Left, Top, Left, Bottom);
-            g.DrawLine(Pens.Black, Right, Top, Right, Bottom);
+            g.DrawRectangle(_pen, ClientRectangle);
 
             // Grid.
-            for (int x = Left; x < Right; x += 25)
+            for (int x = ClientRectangle.Left; x < ClientRectangle.Right; x += 25)
             {
-                g.DrawLine(Pens.Black, x, Top, x, Bottom);
+                g.DrawLine(Pens.Black, x, ClientRectangle.Top, x, ClientRectangle.Bottom);
             }
 
-            for (int y = Bottom; y > Top; y -= 25)
+            for (int y = ClientRectangle.Bottom; y > ClientRectangle.Top; y -= 25)
             {
-                g.DrawLine(Pens.Black, Left, y, Right, y);
+                g.DrawLine(Pens.Black, ClientRectangle.Left, y, ClientRectangle.Right, y);
             }
 
             base.OnPaint(e);
@@ -106,7 +96,7 @@ namespace Ephemera.MidiLib.Test
 
             if (res is not null)
             {
-                toolTip.SetToolTip(this, $"X:{res.Value.ux} Y:{res.Value.uy}");
+                toolTip.SetToolTip(this, $"X:{res.Value.ux} Y:{res.Value.uy}");//TODO2 better info
 
                 // Also gen click?
                 if (e.Button == MouseButtons.Left)
@@ -180,15 +170,15 @@ namespace Ephemera.MidiLib.Test
         }
 
         /// <summary>
-        /// Get mouse x and y mapped to user coordinates.
+        /// Get mouse x and y mapped to useful coordinates.
         /// </summary>
         /// <returns>Tuple of x and y.</returns>
         (int ux, int uy)? MouseToUser()
         {
-            var mp = PointToClient(MousePosition);
             // Map and check.
-            int x = MathUtils.Map(mp.X, Left, Right, 0, MidiDefs.MAX_MIDI);
-            int y = MathUtils.Map(mp.Y, Top, Bottom, 0, MidiDefs.MAX_MIDI);
+            var mp = PointToClient(MousePosition);
+            int x = MathUtils.Map(mp.X, ClientRectangle.Left, ClientRectangle.Right, 0, MidiDefs.MAX_MIDI);
+            int y = MathUtils.Map(mp.Y, ClientRectangle.Bottom, ClientRectangle.Top, 0, MidiDefs.MAX_MIDI);
             return (x, y);
         }
     }

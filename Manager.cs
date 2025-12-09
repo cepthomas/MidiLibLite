@@ -42,7 +42,7 @@ namespace Ephemera.MidiLibLite
 
         #region Script => Host API
         /// <summary>
-        /// 
+        /// Open an input channel. Lazy inits the device. Throws if anything is invalid.
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>
@@ -79,7 +79,7 @@ namespace Ephemera.MidiLibLite
         }
 
         /// <summary>
-        /// 
+        /// Open an output channel. Lazy inits the device. Throws if anything is invalid.
         /// </summary>
         /// <param name="deviceName"></param>
         /// <param name="channelNumber"></param>

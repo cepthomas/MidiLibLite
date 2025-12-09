@@ -16,6 +16,8 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLibLite
 {
+    [DesignTimeVisible(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class ChannelControl : UserControl
     {
         #region Types
@@ -53,10 +55,12 @@ namespace Ephemera.MidiLibLite
         #region Properties
         /// <summary>My channel.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public OutputChannel BoundChannel { get; set; }
 
         /// <summary>My renderer.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public UserControl? UserRenderer
         {
             set
@@ -71,8 +75,13 @@ namespace Ephemera.MidiLibLite
 
         /// <summary>Drawing the active elements of a control.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public Color ControlColor
         {
+            get
+            {
+                return txtInfo.BackColor;
+            }
             set
             {
                 txtInfo.BackColor = value;
@@ -84,10 +93,12 @@ namespace Ephemera.MidiLibLite
 
         /// <summary>Drawing the control when selected.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public Color SelectedColor { get; set; }
 
         /// <summary>For muting/soloing.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public ChannelState State
         {
             get { return _state; }
@@ -96,6 +107,7 @@ namespace Ephemera.MidiLibLite
 
         /// <summary>Current volume.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         [Range(0.0, Defs.MAX_VOLUME)]
         public double Volume
         {
@@ -146,17 +158,14 @@ namespace Ephemera.MidiLibLite
 
             if (true) // opts.HasFlag(ChannelControlOptions.Info))
             {
-                txtInfo = new()
-                {
-                    Anchor = AnchorStyles.Top | AnchorStyles.Left,
-                    BorderStyle = BorderStyle.FixedSingle,
-                    Location = new(xPos, yPos),
-                    Size = new(100, SIZE),
-                    ReadOnly = true,
-                    Multiline = true,
-                    WordWrap = false,
-                    Text = "Hello world\nWhat's up?"
-                };
+                txtInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+                txtInfo.BorderStyle = BorderStyle.FixedSingle;
+                txtInfo.Location = new(xPos, yPos);
+                txtInfo.Size = new(100, SIZE);
+                txtInfo.ReadOnly = true;
+                txtInfo.Multiline = true;
+                txtInfo.WordWrap = false;
+                txtInfo.Text = "Hello world\nWhat's up?";
                 txtInfo.Click += ChannelInfo_Click;
                 Controls.Add(txtInfo);
 
@@ -167,18 +176,15 @@ namespace Ephemera.MidiLibLite
 
             if (opts.HasFlag(ChannelControlOptions.Notes))
             {
-                sldVolume = new()
-                {
-                    Minimum = 0.0,
-                    Maximum = Defs.MAX_VOLUME,
-                    Resolution = 0.05,
-                    Value = 1.0,
-                    BorderStyle = BorderStyle.FixedSingle,
-                    Orientation = Orientation.Horizontal,
-                    Location = new(xPos, yPos),
-                    Size = new(80, SIZE),
-                    Label = "volume"
-                };
+                sldVolume.Minimum = 0.0;
+                sldVolume.Maximum = Defs.MAX_VOLUME;
+                sldVolume.Resolution = 0.05;
+                sldVolume.Value = 1.0;
+                sldVolume.BorderStyle = BorderStyle.FixedSingle;
+                sldVolume.Orientation = Orientation.Horizontal;
+                sldVolume.Location = new(xPos, yPos);
+                sldVolume.Size = new(80, SIZE);
+                sldVolume.Label = "volume";
                 sldVolume.ValueChanged += (sender, e) => BoundChannel.Config.Volume = (sender as Slider)!.Value;
                 Controls.Add(sldVolume);
 
@@ -189,21 +195,15 @@ namespace Ephemera.MidiLibLite
 
             if (opts.HasFlag(ChannelControlOptions.SoloMute))
             {
-                lblSolo = new()
-                {
-                    Location = new(xPos, yPos),
-                    Size = new(20, 20),//SIZE / 2),
-                    Text = "S"
-                };
+                lblSolo.Location = new(xPos, yPos);
+                lblSolo.Size = new(20, 20);//SIZE / 2),
+                lblSolo.Text = "S";
                 lblSolo.Click += SoloMute_Click;
                 Controls.Add(lblSolo);
 
-                lblMute = new()
-                {
-                    Location = new(xPos, yPos + SIZE / 2),
-                    Size = new(20, 20),//SIZE / 2),
-                    Text = "M"
-                };
+                lblMute.Location = new(xPos, yPos + SIZE / 2);
+                lblMute.Size = new(20, 20); //SIZE / 2);
+                lblMute.Text = "M";
                 lblMute.Click += SoloMute_Click;
                 Controls.Add(lblMute);
 
@@ -212,34 +212,28 @@ namespace Ephemera.MidiLibLite
                 yMax = Math.Max(lblMute.Bottom, yMax);
             }
 
-            if (opts.HasFlag(ChannelControlOptions.Notes))
+            if (opts.HasFlag(ChannelControlOptions.Controller))
             {
-                btnSend = new()
-                {
-                    FlatStyle = FlatStyle.Flat,
-                    UseVisualStyleBackColor = true,
-                    Location = new(xPos, yPos),
-                    Size = new(SIZE, SIZE),
-                    Text = "!",
-                };
+                btnSend.FlatStyle = FlatStyle.Flat;
+                btnSend.UseVisualStyleBackColor = true;
+                btnSend.Location = new(xPos, yPos);
+                btnSend.Size = new(SIZE, SIZE);
+                btnSend.Text = "!";
                 btnSend.Click += Send_Click;
                 Controls.Add(btnSend);
 
                 xPos = btnSend.Right + PAD;
                 yMax = Math.Max(btnSend.Bottom, yMax);
 
-                sldControllerValue = new()
-                {
-                    Minimum = 0,
-                    Maximum = MidiDefs.MAX_MIDI,
-                    Resolution = 1,
-                    Value = 50,
-                    BorderStyle = BorderStyle.FixedSingle,
-                    Orientation = Orientation.Horizontal,
-                    Location = new(xPos, yPos),
-                    Size = new(80, SIZE),
-                    Label = "value"
-                };
+                sldControllerValue.Minimum = 0;
+                sldControllerValue.Maximum = MidiDefs.MAX_MIDI;
+                sldControllerValue.Resolution = 1;
+                sldControllerValue.Value = 50;
+                sldControllerValue.BorderStyle = BorderStyle.FixedSingle;
+                sldControllerValue.Orientation = Orientation.Horizontal;
+                sldControllerValue.Location = new(xPos, yPos);
+                sldControllerValue.Size = new(80, SIZE);
+                sldControllerValue.Label = "value";
                 sldControllerValue.ValueChanged += Controller_ValueChanged;
                 Controls.Add(sldControllerValue);
 

@@ -66,12 +66,12 @@ namespace Ephemera.MidiLibLite.Test
             txtViewer.MatchText.Add(WARN, Color.Plum);
 
             // Master volume.
-            sldVolume.DrawColor = _controlColor;
-            sldVolume.Minimum = 0.0;
-            sldVolume.Maximum = Defs.MAX_VOLUME;
-            sldVolume.Resolution = Defs.MAX_VOLUME / 50;
-            sldVolume.Value = Defs.DEFAULT_VOLUME;
-            sldVolume.Label = "master volume";
+            sldMasterVolume.DrawColor = _controlColor;
+            sldMasterVolume.Minimum = 0.0;
+            sldMasterVolume.Maximum = Defs.MAX_VOLUME;
+            sldMasterVolume.Resolution = Defs.MAX_VOLUME / 50;
+            sldMasterVolume.Value = Defs.DEFAULT_VOLUME;
+            sldMasterVolume.Label = "master volume";
 
             // Hook up some simple UI handlers.
             btnKillMidi.Click += (_, __) => { _mgr.Kill(); };
@@ -88,8 +88,8 @@ namespace Ephemera.MidiLibLite.Test
         {
             try
             {
-                //DemoScriptApp();
-                DemoStandardApp();
+                DemoScriptApp();
+                //DemoStandardApp();
             }
             catch (MidiLibException ex)
             {
@@ -130,24 +130,22 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         void DemoStandardApp()
         {
-            ///// 1 - create channels
-            var ch_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);  // TODO_defs patch by name => "AcousticGrandPiano"
-            var ch_out2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12); // => ???);
-            ch_out1.UpdatePresets();
-            ch_out2.UpdatePresets();
-
-            ///// 2 - configure controls and bind channels
-            var rend = new CustomRenderer() { ChannelHandle = ch_out1.Handle };
+            // create channels and controls
+            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);  // TODO_defs patch by name => "AcousticGrandPiano"
+            chan_out1.UpdatePresets();
+            ch_ctrl1.BoundChannel = chan_out1;
+            var rend = new CustomRenderer() { ChannelHandle = chan_out1.Handle };
             rend.SendMidi += Rend_SendMidi;
             ch_ctrl1.UserRenderer = rend;
             InitControl(ch_ctrl1);
-            ch_ctrl1.BoundChannel = ch_out1;
 
-            rend = new CustomRenderer() { ChannelHandle = ch_out2.Handle };
+            var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12); // => ???);
+            chan_out2.UpdatePresets();
+            ch_ctrl2.BoundChannel = chan_out2;
+            rend = new CustomRenderer() { ChannelHandle = chan_out2.Handle };
             rend.SendMidi += Rend_SendMidi;
             ch_ctrl2.UserRenderer = rend;
             InitControl(ch_ctrl2);
-            ch_ctrl2.BoundChannel = ch_out2;
 
             ///// 3 - do work
             // ????
@@ -162,42 +160,51 @@ namespace Ephemera.MidiLibLite.Test
             ch_ctrl1.Hide();
             ch_ctrl2.Hide();
 
-            ///// 1 - create all channels - script api calls like:
-            // local hnd_ccin = api.open_midi_input("loopMIDI Port 1", 1, "my input")
-            // local hnd_keys = api.open_midi_output("loopMIDI Port 2", 1, "keys", inst.AcousticGrandPiano)
-            // local hnd_synth = api.open_midi_output("loopMIDI Port 2", 3, "synth", inst.Lead1Square)
-            //List<OutputChannel> channels = [];
-            var ch_in1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
-            var ch_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "keys", 0); // TODO_defs => AcousticGrandPiano);
-            var ch_out2 = _mgr.OpenMidiOutput(OUTDEV1, 10, "drums", 32); // => kit.Jazz);
+            // Standard:
+            //var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);  // TODO_defs patch by name => "AcousticGrandPiano"
+            //chan_out1.UpdatePresets();
+            //ch_ctrl1.BoundChannel = chan_out1;
+            //var rend = new CustomRenderer() { ChannelHandle = chan_out1.Handle };
+            //rend.SendMidi += Rend_SendMidi;
+            //ch_ctrl1.UserRenderer = rend;
+            //InitControl(ch_ctrl1);
 
-            List<OutputChannel> channels = new() { ch_out1, ch_out2 };
-            List<ChannelControl> controls = new();
+
+            ///// 1 - create all channels
+            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "keys", 0); // TODO_defs => AcousticGrandPiano);
+            var chan_out2= _mgr.OpenMidiOutput(OUTDEV1, 10, "drums", 32); // => kit.Jazz);
+            var chan_in1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
+
+            List<OutputChannel> channels = [chan_out1, chan_out2];
+            //List<ChannelControl> controls = [];
 
             ///// 2 - create a control for each channel and bind object
-            int x = sldVolume.Left;
-            int y = sldVolume.Bottom + 10;
+            int x = sldMasterVolume.Left;
+            int y = sldMasterVolume.Bottom + 10;
 
             channels.ForEach(chan =>
             {
-                var ch_ctrl = new ChannelControl();
-                InitControl(ch_ctrl);
-                ch_ctrl.BoundChannel = chan;
-                ch_ctrl.Location = new(x, y);
-                ch_ctrl.Size = new(320, 175);
-                y += ch_ctrl.Size.Height + 8;
-
+                var ctrl = new ChannelControl() { Name = $"Control for {chan.Config.ChannelName}" };
+                chan.UpdatePresets();
+                ctrl.BoundChannel = chan;
                 var rend = new CustomRenderer() { ChannelHandle = chan.Handle };
                 rend.SendMidi += Rend_SendMidi;
-                ch_ctrl.UserRenderer = rend;
-
-                Controls.Add(ch_ctrl);
-                controls.Add(ch_ctrl);
-
-                chan.UpdatePresets();
+                ctrl.UserRenderer = rend;
+                InitControl(ctrl);
+                ctrl.Location = new(x, y);
+                //y += ctrl.Size.Height + 8;
+                x += ctrl.Width + 4; //TODO1 width is not valid yet
+                Controls.Add(ctrl);
             });
 
             ///// 3 - do work
+
+
+            // create all channels - script api calls like:
+            // local hnd_keys = api.open_midi_output("loopMIDI Port 2", 1, "keys", inst.AcousticGrandPiano)
+            // local hnd_synth = api.open_midi_output("loopMIDI Port 2", 3, "synth", inst.Lead1Square)
+            // local hnd_ccin = api.open_midi_input("loopMIDI Port 1", 1, "my input")
+
             // call script api functions
             // api.send_midi_note(hnd_strings, note_num, volume)
             // api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
