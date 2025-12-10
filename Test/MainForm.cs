@@ -160,7 +160,7 @@ namespace Ephemera.MidiLibLite.Test
             List<(OutputChannel, ChannelControl)> channels = [(chan_out1, ch_ctrl1), (chan_out2, ch_ctrl2)];
             channels.ForEach(ch =>
             {
-                ch.Item1.UpdatePresets();
+                ch.Item1.UpdatePresetsTODO1();
 
                 ch.Item2.BorderStyle = BorderStyle.FixedSingle;
                 ch.Item2.ControlColor = _controlColor;
@@ -225,7 +225,7 @@ namespace Ephemera.MidiLibLite.Test
             List<OutputChannel> channels = [chan_out1, chan_out2];
             channels.ForEach(chan =>
             {
-                chan.UpdatePresets();
+                chan.UpdatePresetsTODO1();
 
                 var rend = new CustomRenderer() { ChannelHandle = chan.Handle };
                 rend.SendMidi += Rend_SendMidi;
@@ -400,10 +400,10 @@ namespace Ephemera.MidiLibLite.Test
                 channel.Device.Send(new Patch(channel.Config.ChannelNumber, channel.Config.Patch));
             }
 
-            if (e.PresetFileChange)
+            if (e.AliasFileChange)
             {
-                Tell(INFO, $"PresetFileChange [{channel.Config.PresetFile}]");
-                channel.UpdatePresets();
+                Tell(INFO, $"AliasFileChange [{channel.Config.AliasFile}]");
+                channel.UpdatePresetsTODO1();
             }
         }
 

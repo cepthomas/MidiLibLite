@@ -14,9 +14,6 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
 
-// TODO1 ? support device create retry for midi devices like MidiGenerator.
-
-
 namespace Ephemera.MidiLibLite
 {
     public class Manager
@@ -105,7 +102,7 @@ namespace Ephemera.MidiLibLite
                 DeviceName = deviceName,
                 ChannelName = channelName,
                 ChannelNumber = channelNumber,
-                PresetFile = "",
+                AliasFile = "",
                 Patch = patch,
                 Volume = Defs.DEFAULT_VOLUME
             };
@@ -254,7 +251,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="channel"></param>
         public void Kill(OutputChannel? channel = null)
         {
-            int cc = MidiDefs.GetControllerNumber("AllNotesOff");
+            int cc = 120; // TODO1 fix magical knowledge MidiDefs.GetControllerNumber("AllNotesOff");
 
             if (channel is null)
             {

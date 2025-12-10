@@ -30,7 +30,7 @@ namespace Ephemera.MidiLibLite
             public bool PatchChange { get; set; } = false;
             public bool ChannelNumberChange { get; set; } = false;
             public bool StateChange { get; set; } = false;
-            public bool PresetFileChange { get; set; } = false;
+            public bool AliasFileChange { get; set; } = false;
         }
         #endregion
 
@@ -294,7 +294,7 @@ namespace Ephemera.MidiLibLite
             {
                 ChannelNumberChange = changes.Any(ch => ch.name == "ChannelNumber"),
                 PatchChange = changes.Any(ch => ch.name == "Patch"),
-                PresetFileChange = changes.Any(ch => ch.name == "PresetFile"),
+                AliasFileChange = changes.Any(ch => ch.name == "AliasFile"),
                 StateChange = false
             };
 

@@ -43,7 +43,7 @@ namespace Ephemera.MidiLibLite
 
         /// <summary>Override default instrument presets.</summary>
         [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
-        public string PresetFile { get; set; } = "";
+        public string AliasFile { get; set; } = "";
 
         /// <summary>Current instrument/patch number.</summary>
         [Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]
@@ -70,6 +70,10 @@ namespace Ephemera.MidiLibLite
         [JsonConverter(typeof(JsonStringEnumConverter))]
         [Browsable(false)]
         public ChannelControlOptions DisplayOptions { get; set; } = ChannelControlOptions.All;
+
+        /// <summary>Convenience property.</summary>
+        public Dictionary<int, string> Instruments { get { return _instruments; } }
+        Dictionary<int, string> _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
     }
 
     //----------------------------------------------------------------
@@ -106,10 +110,6 @@ namespace Ephemera.MidiLibLite
 
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
-
-        /// <summary>Convenience property.</summary>
-        public Dictionary<int, string> Instruments { get { return _instruments; } }
-        Dictionary<int, string> _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
         #endregion
 
         /// <summary>
@@ -125,19 +125,33 @@ namespace Ephemera.MidiLibLite
         }
 
         /// <summary>Use default or custom presets.</summary>
-        public void UpdatePresets()
+        public void UpdatePresetsTODO1()
         {
             try
             {
-                //_instruments = Config.PresetFile != "" ?
-                //    Utils.LoadDefs(Config.PresetFile) :
-                //    MidiDefs.TheDefs.GetDefaultInstrumentDefs();
+                _instruments = Config.AliasFile != "" ?
+                   LoadDefs(Config.AliasFile) : // TODO1 fix this
+                   MidiDefs.TheDefs.GetDefaultInstrumentDefs();
             }
             catch (Exception ex)
             {
-                throw new MidiLibException($"Failed to load defs file {Config.PresetFile}: {ex.Message}");
+                throw new MidiLibException($"Failed to load alias file {Config.AliasFile}: {ex.Message}");
             }
         }
+        Dictionary<int, string> LoadDefs(string fn)
+        {
+            Dictionary<int, string> res = [];
+            var ir = new IniReader(fn);
+            var defs = ir.Contents["instruments"];
+            defs.Values.ForEach(kv =>
+            {
+                int index = int.Parse(kv.Key); // can throw
+                if (index < 0 || index > MidiDefs.MAX_MIDI) { throw new InvalidOperationException($"Invalid def file {fn}"); }
+                res[index] = kv.Value.Length > 0 ? kv.Value : "";
+            });
+            return res;
+        }
+
 
         /// <summary>
         /// Get patch name.
