@@ -25,7 +25,6 @@ namespace Ephemera.MidiLibLite
 
 
     //----------------------------------------------------------------
-
     /// <summary>One output channel config. Can be edited in a property grid and/or persisted.</summary>
     [Serializable]
     public class OutputChannelConfig
@@ -74,7 +73,6 @@ namespace Ephemera.MidiLibLite
     }
 
     //----------------------------------------------------------------
-
     /// <summary>One input channel config. Can be edited in a property grid and/or persisted.</summary>
     [Serializable]
     public class InputChannelConfig
@@ -93,7 +91,6 @@ namespace Ephemera.MidiLibLite
     }
 
     //----------------------------------------------------------------
-
     /// <summary>Describes one midi output channel. Some properties are optional.</summary>
     public class OutputChannel
     {
@@ -132,9 +129,9 @@ namespace Ephemera.MidiLibLite
         {
             try
             {
-                _instruments = Config.PresetFile != "" ?
-                    Utils.LoadDefs(Config.PresetFile) :
-                    MidiDefs.TheDefs.GetDefaultInstrumentDefs();
+                //_instruments = Config.PresetFile != "" ?
+                //    Utils.LoadDefs(Config.PresetFile) :
+                //    MidiDefs.TheDefs.GetDefaultInstrumentDefs();
             }
             catch (Exception ex)
             {
@@ -153,6 +150,7 @@ namespace Ephemera.MidiLibLite
         }
     }
 
+    //----------------------------------------------------------------
     /// <summary>Describes one midi input channel. Some properties are optional.</summary>
     // [Serializable]
     public class InputChannel
@@ -184,6 +182,7 @@ namespace Ephemera.MidiLibLite
         }
     }
 
+    //----------------------------------------------------------------
     /// <summary>References one channel. Supports translation to/from script unique int handle.</summary>
     /// <param name="DeviceId">Index in internal list</param>
     /// <param name="ChannelNumber">Midi channel 1-based</param>

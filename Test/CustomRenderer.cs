@@ -177,8 +177,8 @@ namespace Ephemera.MidiLib.Test
         {
             // Map and check.
             var mp = PointToClient(MousePosition);
-            int x = MathUtils.Map(mp.X, ClientRectangle.Left, ClientRectangle.Right, 0, MidiDefs.MAX_MIDI);
-            int y = MathUtils.Map(mp.Y, ClientRectangle.Bottom, ClientRectangle.Top, 0, MidiDefs.MAX_MIDI);
+            int x = NBagOfTricks.MathUtils.Map(mp.X, ClientRectangle.Left, ClientRectangle.Right, 0, MidiDefs.MAX_MIDI);
+            int y = NBagOfTricks.MathUtils.Map(mp.Y, ClientRectangle.Bottom, ClientRectangle.Top, 0, MidiDefs.MAX_MIDI);
             return (x, y);
         }
     }

@@ -23,9 +23,10 @@ namespace Ephemera.MidiLibLite.Test
             btnKillMidi = new System.Windows.Forms.ToolStripButton();
             txtViewer = new Ephemera.NBagOfUis.TextViewer();
             sldMasterVolume = new Ephemera.NBagOfUis.Slider();
-            button1 = new System.Windows.Forms.Button();
+            btnTestDefs = new System.Windows.Forms.Button();
             ch_ctrl1 = new ChannelControl();
             ch_ctrl2 = new ChannelControl();
+            btnDynamic = new System.Windows.Forms.Button();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -85,14 +86,15 @@ namespace Ephemera.MidiLibLite.Test
             sldMasterVolume.TabIndex = 99;
             sldMasterVolume.Value = 5D;
             // 
-            // button1
+            // btnTestDefs
             // 
-            button1.Location = new System.Drawing.Point(181, 41);
-            button1.Name = "button1";
-            button1.Size = new System.Drawing.Size(54, 45);
-            button1.TabIndex = 104;
-            button1.Text = "test";
-            button1.UseVisualStyleBackColor = true;
+            btnTestDefs.Location = new System.Drawing.Point(181, 41);
+            btnTestDefs.Name = "btnTestDefs";
+            btnTestDefs.Size = new System.Drawing.Size(89, 45);
+            btnTestDefs.TabIndex = 104;
+            btnTestDefs.Text = "test defs";
+            btnTestDefs.UseVisualStyleBackColor = true;
+            btnTestDefs.Click += TestDefs_Click;
             // 
             // ch_ctrl1
             // 
@@ -108,14 +110,25 @@ namespace Ephemera.MidiLibLite.Test
             ch_ctrl2.Size = new System.Drawing.Size(356, 56);
             ch_ctrl2.TabIndex = 106;
             // 
+            // btnDynamic
+            // 
+            btnDynamic.Location = new System.Drawing.Point(289, 41);
+            btnDynamic.Name = "btnDynamic";
+            btnDynamic.Size = new System.Drawing.Size(89, 45);
+            btnDynamic.TabIndex = 107;
+            btnDynamic.Text = "dynamic";
+            btnDynamic.UseVisualStyleBackColor = true;
+            btnDynamic.Click += Dynamic_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(777, 600);
+            Controls.Add(btnDynamic);
             Controls.Add(ch_ctrl2);
             Controls.Add(ch_ctrl1);
-            Controls.Add(button1);
+            Controls.Add(btnTestDefs);
             Controls.Add(sldMasterVolume);
             Controls.Add(txtViewer);
             Controls.Add(toolStrip1);
@@ -137,9 +150,10 @@ namespace Ephemera.MidiLibLite.Test
         private NBagOfUis.TextViewer txtViewer;
         private System.Windows.Forms.ToolStripButton btnLogMidi;
         private System.Windows.Forms.ToolStripButton btnKillMidi;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnTestDefs;
         private ChannelControl ch_ctrl1;
         private ChannelControl ch_ctrl2;
+        private System.Windows.Forms.Button btnDynamic;
     }
 }
 

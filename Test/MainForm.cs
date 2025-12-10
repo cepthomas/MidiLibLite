@@ -88,7 +88,7 @@ namespace Ephemera.MidiLibLite.Test
         {
             try
             {
-                DemoScriptApp();
+                //DemoScriptApp();
 
                 //DemoStandardApp();
             }
@@ -126,13 +126,35 @@ namespace Ephemera.MidiLibLite.Test
         }
         #endregion
 
+
+
+        void TestDefs_Click(object sender, EventArgs e)
+        {
+            string fn = @"C:\Dev\Libs\MidiLibLite\_def_files\gm_defs.ini";
+
+            // key is section name, value is line
+            Dictionary<string, List<string>> res = [];
+            var ir = new IniReader(fn);
+
+            ir.Contents.ForEach(ic =>
+            {
+                Tell(INFO, $"section:{ic.Key} => {ic.Value.Values.Count}");
+            });
+        }
+
+        void Dynamic_Click(object sender, EventArgs e)
+        {
+            DemoScriptApp();
+        }
+
+
         /// <summary>
         /// A standard app where controls are defined in VS designer.
         /// </summary>
         void DemoStandardApp()
         {
             // Create channels and initialize controls.
-            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);  // TODO_defs patch by name => "AcousticGrandPiano"
+            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);  // TODO1 patch by name => "AcousticGrandPiano"
             var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12); // => ???);
 
             List<(OutputChannel, ChannelControl)> channels = [(chan_out1, ch_ctrl1), (chan_out2, ch_ctrl2)];
@@ -165,7 +187,7 @@ namespace Ephemera.MidiLibLite.Test
             //var rend = new CustomRenderer() { ChannelHandle = chan_out1.Handle };
             //rend.SendMidi += Rend_SendMidi;
             //ch_ctrl1.UserRenderer = new CustomRenderer() { ChannelHandle = chan_out1.Handle };;
-           
+
             //chan_out2.UpdatePresets();
             //ch_ctrl2.BorderStyle = BorderStyle.FixedSingle;
             //ch_ctrl2.ControlColor = _controlColor;
@@ -192,8 +214,8 @@ namespace Ephemera.MidiLibLite.Test
             ch_ctrl2.Hide();
 
             ///// 1 - create all channels
-            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "keys", 0); // TODO_defs => AcousticGrandPiano);
-            var chan_out2= _mgr.OpenMidiOutput(OUTDEV1, 10, "drums", 32); // => kit.Jazz);
+            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "keys", 0); // TODO1 => AcousticGrandPiano);
+            var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 10, "drums", 32); // => kit.Jazz);
             var chan_in1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
 
             ///// 2 - create a control for each channel and bind object
@@ -366,7 +388,7 @@ namespace Ephemera.MidiLibLite.Test
                     channel.Enable = enable;
                     if (!enable)
                     {
-                       // Kill just in case.
+                        // Kill just in case.
                         _mgr.Kill(channel);
                     }
                 }
