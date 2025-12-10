@@ -91,7 +91,7 @@ namespace Ephemera.MidiLibLite
                     new NoteOff(offevt.Channel, offevt.NoteNumber) :
                     new NoteOn(offevt.Channel, offevt.NoteNumber, offevt.Velocity),
                 ControlChangeEvent ctlevt => new Controller(ctlevt.Channel, (int)ctlevt.Controller, ctlevt.ControllerValue),
-                _ => new BaseMidiEvent() // TODO1 just ignore? or ErrorInfo = $"Invalid message: {m}"
+                _ => new BaseMidiEvent() // Just ignore? or ErrorInfo = $"Invalid message: {m}"
             };
 
             InputReceive?.Invoke(this, evt);
@@ -102,8 +102,7 @@ namespace Ephemera.MidiLibLite
         /// </summary>
         void MidiIn_ErrorReceived(object? sender, MidiInMessageEventArgs e)
         {
-            // TODO1 just ignore?
-            // string ErrorInfo = $"Message:0x{e.RawMessage:X8}";
+            // Just ignore? or ErrorInfo = $"Message:0x{e.RawMessage:X8}";
         }
 
         /// <summary>

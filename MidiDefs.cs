@@ -34,6 +34,10 @@ namespace Ephemera.MidiLibLite
         #region Fields
         /// <summary>All the GM instruments - default.</summary>
         readonly Dictionary<int, string> _instruments = [];
+
+        /// <summary>Standard set plus unnamed ones.</summary>
+        readonly Dictionary<int, string> _controllerIdsAll = [];
+
         #endregion
 
         #region Lifecycle
@@ -42,10 +46,10 @@ namespace Ephemera.MidiLibLite
         /// </summary>
         public MidiDefs()
         {
-            for (int i = 0; i < _instrumentsList.Count; i++)
-            {
-                _instruments[i] = _instrumentsList[i];
-            }
+            Enumerable.Range(0, _instrumentsList.Count).ForEach(i => _instruments[i] = _instrumentsList[i] );
+
+            Enumerable.Range(0, MAX_MIDI).ForEach(c => _controllerIdsAll.Add(c, $"CTLR_{c}") );
+            _controllerIds.ForEach(c => { _controllerIdsAll[c.Key] = c.Value; } );
         }
         #endregion
 
@@ -58,10 +62,11 @@ namespace Ephemera.MidiLibLite
         }
 
         /// <summary>All controllers.</summary>
+        /// <param name="includeUnnamed"></param>
         /// <returns></returns>
-        public Dictionary<int, string> GetControllerIdDefs()
+        public Dictionary<int, string> GetControllerIdDefs(bool includeUnnamed)
         {
-            return _controllerIds;
+            return includeUnnamed ? _controllerIdsAll : _controllerIds;
         }
 
         /// <summary>
@@ -71,7 +76,8 @@ namespace Ephemera.MidiLibLite
         /// <returns>The drum name or a fabricated one if unknown.</returns>
         public string GetDrumName(int which)
         {
-            if (which is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(which)); }
+            if (which is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(which)); }
+
             return _drums.TryGetValue(which, out string? value) ? value : $"DRUM_{which}";
         }
 
@@ -82,7 +88,8 @@ namespace Ephemera.MidiLibLite
         /// <returns>The controller name or a fabricated one if unknown.</returns>
         public string GetControllerName(int which)
         {
-            if (which is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(which)); }
+            if (which is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(which)); }
+
             return _controllerIds.TryGetValue(which, out string? value) ? value : $"CTLR_{which}";
         }
 
@@ -93,7 +100,8 @@ namespace Ephemera.MidiLibLite
         /// <returns>The drumkit name or a fabricated one if unknown.</returns>
         public string GetDrumKitName(int which)
         {
-            if (which is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(which)); }
+            if (which is < 0 or > MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(which)); }
+
             return _drumKits.TryGetValue(which, out string? value) ? value : $"KIT_{which}";
         }
 
@@ -130,6 +138,17 @@ namespace Ephemera.MidiLibLite
             "Helicopter", "Applause", "Gunshot"
         ];
 
+        /// <summary>The midi controller definitions.</summary>
+        readonly Dictionary<int, string> _controllerIds = new()
+        {
+            { 000, "BankSelect" }, { 001, "Modulation" }, { 002, "BreathController" }, { 004, "FootController" }, { 005, "PortamentoTime" },
+            { 007, "Volume" }, { 008, "Balance" }, { 010, "Pan" }, { 011, "Expression" }, { 032, "BankSelectLSB" }, { 033, "ModulationLSB" },
+            { 034, "BreathControllerLSB" }, { 036, "FootControllerLSB" }, { 037, "PortamentoTimeLSB" }, { 039, "VolumeLSB" },
+            { 040, "BalanceLSB" }, { 042, "PanLSB" }, { 043, "ExpressionLSB" }, { 064, "Sustain" }, { 065, "Portamento" }, { 066, "Sostenuto" },
+            { 067, "SoftPedal" }, { 068, "Legato" }, { 069, "Sustain2" }, { 084, "PortamentoControl" }, { 120, "AllSoundOff" },
+            { 121, "ResetAllControllers" }, { 122, "LocalKeyboard" }, { 123, "AllNotesOff" }
+        };
+
         /// <summary>The GM midi drum kit definitions.</summary>
         readonly Dictionary<int, string> _drumKits = new()
         {
@@ -150,17 +169,6 @@ namespace Ephemera.MidiLibLite
             { 070, "Maracas" }, { 071, "ShortWhistle" }, { 072, "LongWhistle" }, { 073, "ShortGuiro" }, { 074, "LongGuiro" },
             { 075, "Claves" }, { 076, "HiWoodBlock" }, { 077, "LowWoodBlock" }, { 078, "MuteCuica" }, { 079, "OpenCuica" },
             { 080, "MuteTriangle" }, { 081, "OpenTriangle" }
-        };
-
-        /// <summary>The midi controller definitions.</summary>
-        readonly Dictionary<int, string> _controllerIds = new()
-        {
-            { 000, "BankSelect" }, { 001, "Modulation" }, { 002, "BreathController" }, { 004, "FootController" }, { 005, "PortamentoTime" },
-            { 007, "Volume" }, { 008, "Balance" }, { 010, "Pan" }, { 011, "Expression" }, { 032, "BankSelectLSB" }, { 033, "ModulationLSB" },
-            { 034, "BreathControllerLSB" }, { 036, "FootControllerLSB" }, { 037, "PortamentoTimeLSB" }, { 039, "VolumeLSB" },
-            { 040, "BalanceLSB" }, { 042, "PanLSB" }, { 043, "ExpressionLSB" }, { 064, "Sustain" }, { 065, "Portamento" }, { 066, "Sostenuto" },
-            { 067, "SoftPedal" }, { 068, "Legato" }, { 069, "Sustain2" }, { 084, "PortamentoControl" }, { 120, "AllSoundOff" },
-            { 121, "ResetAllControllers" }, { 122, "LocalKeyboard" }, { 123, "AllNotesOff" }
         };
         #endregion
 

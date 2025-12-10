@@ -26,7 +26,7 @@ namespace Ephemera.MidiLibLite
 
     //----------------------------------------------------------------
 
-    /// <summary>One channel config. Host can persist these.</summary>
+    /// <summary>One output channel config. Can be edited in a property grid and/or persisted.</summary>
     [Serializable]
     public class OutputChannelConfig
     {
@@ -53,7 +53,6 @@ namespace Ephemera.MidiLibLite
         public int Patch { get; set; } = 0;
 
         /// <summary>Current volume.</summary>
-        // [Browsable(true)]
         [Range(0.0, Defs.MAX_VOLUME)]
         public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
     
@@ -70,12 +69,13 @@ namespace Ephemera.MidiLibLite
 
         /// <summary>Display options.</summary>
         [JsonConverter(typeof(JsonStringEnumConverter))]
+        [Browsable(false)]
         public ChannelControlOptions DisplayOptions { get; set; } = ChannelControlOptions.All;
     }
 
     //----------------------------------------------------------------
 
-    /// <summary>One channel config. Host can persist these.</summary>
+    /// <summary>One input channel config. Can be edited in a property grid and/or persisted.</summary>
     [Serializable]
     public class InputChannelConfig
     {

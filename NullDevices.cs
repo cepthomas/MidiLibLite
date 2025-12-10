@@ -3,27 +3,28 @@ using System.Collections.Generic;
 using Ephemera.NBagOfTricks;
 
 
-// TODO1 add scaffolding.
-
-
 namespace Ephemera.MidiLibLite
 {
+    /// <summary>Used as default of for testing/mock.</summary>
     public class NullInputDevice : IInputDevice
     {
         /// <inheritdoc />
         public string DeviceName { get; }
 
         /// <inheritdoc />
-        public bool Valid { get; set; }
+        public bool Valid { get; set; } = true;
 
         /// <inheritdoc />
-        public bool CaptureEnable { get; set; }
+        public bool CaptureEnable { get; set; } = true;
 
         /// <inheritdoc />
         public int Id { get; init; }
 
         /// <inheritdoc />
         public event EventHandler<BaseMidiEvent>? InputReceive;
+
+        /// <summary>For test use.</summary>
+        public List<BaseMidiEvent> EventsToSend = [];
 
         #region Lifecycle
         /// <summary>
@@ -52,10 +53,13 @@ namespace Ephemera.MidiLibLite
         public string DeviceName { get; }
 
         /// <inheritdoc />
-        public bool Valid { get; set; }
+        public bool Valid { get; set; } = true;
 
         /// <inheritdoc />
         public int Id { get; init; }
+
+        /// <summary>For test use.</summary>
+        public List<BaseMidiEvent> CollectedEvents = [];
 
         #region Lifecycle
         /// <summary>
@@ -65,6 +69,7 @@ namespace Ephemera.MidiLibLite
         public NullOutputDevice(string deviceName)
         {
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
+
             DeviceName = deviceName;
         }
 
@@ -73,14 +78,13 @@ namespace Ephemera.MidiLibLite
         /// </summary>
         public void Dispose()
         {
-            // Resources.
         }
         #endregion
 
         /// <inheritdoc />
         public void Send(BaseMidiEvent evt)
         {
-        
+            CollectedEvents.Add(evt);        
         }
     }
 }

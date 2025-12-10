@@ -75,6 +75,7 @@ namespace Ephemera.MidiLibLite
             };
 
             _inputChannels.Add(ch.Handle, ch);
+
             return ch;
         }
 
@@ -238,21 +239,10 @@ namespace Ephemera.MidiLibLite
 
         #region Misc
         /// <summary>
-        /// Helper. TODO1 bit klunky.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns>The device.</returns>
-        public IOutputDevice GetOutputDevice(int id)
-        {
-            return _outputDevices[id];
-        }
-
-        /// <summary>
-        /// Helper. TODO1 bit klunky.
+        /// Helper. A bit klunky?
         /// </summary>
         /// <param name="chnd"></param>
         /// <returns>The channel.</returns>
-
         public OutputChannel GetOutputChannel(ChannelHandle chnd)
         {
             return _outputChannels[chnd];

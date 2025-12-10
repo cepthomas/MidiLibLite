@@ -50,9 +50,6 @@ namespace Ephemera.MidiLibLite
         // optional:
         readonly Slider sldControllerValue = new();
         readonly Button btnSend = new();
-        //// optional:
-        //readonly UserControl? ctlUserRenderer = new();
-
         #endregion
 
         #region Properties
@@ -61,7 +58,7 @@ namespace Ephemera.MidiLibLite
         [EditorBrowsable(EditorBrowsableState.Never)]
         public OutputChannel BoundChannel { get; set; }
 
-        /// <summary>My renderer.</summary>
+        /// <summary>My custom renderer - optional.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public UserControl? UserRenderer

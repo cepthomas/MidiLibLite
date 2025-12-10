@@ -96,7 +96,7 @@ namespace Ephemera.MidiLib.Test
 
             if (res is not null)
             {
-                toolTip.SetToolTip(this, $"X:{res.Value.ux} Y:{res.Value.uy}"); // TODO1 better info
+                toolTip.SetToolTip(this, $"{MusicDefinitions.NoteNumberToName(res.Value.ux)}({res.Value.ux}):{res.Value.uy}");
 
                 // Also gen click?
                 if (e.Button == MouseButtons.Left)
