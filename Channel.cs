@@ -198,7 +198,7 @@ namespace Ephemera.MidiLibLite
 
     //----------------------------------------------------------------
     /// <summary>References one channel. Supports translation to/from script unique int handle.</summary>
-    /// <param name="DeviceId">Index in internal list</param>
+    /// <param name="DeviceId">Unique number</param>
     /// <param name="ChannelNumber">Midi channel 1-based</param>
     /// <param name="Output">T or F</param>
     public record struct ChannelHandle(int DeviceId, int ChannelNumber, bool Output)

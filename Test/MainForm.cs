@@ -127,7 +127,8 @@ namespace Ephemera.MidiLibLite.Test
         #endregion
 
 
-
+        #region Do some work
+        /// <summary>Test def file loading.</summary>
         void TestDefs_Click(object sender, EventArgs e)
         {
             string fn = @"C:\Dev\Libs\MidiLibLite\_def_files\gm_defs.ini";
@@ -142,15 +143,13 @@ namespace Ephemera.MidiLibLite.Test
             });
         }
 
+        /// <summary>Test dynamic UI creation.</summary>
         void Dynamic_Click(object sender, EventArgs e)
         {
             DemoScriptApp();
         }
 
-
-        /// <summary>
-        /// A standard app where controls are defined in VS designer.
-        /// </summary>
+        /// <summary>A standard app where controls are defined in VS designer.</summary>
         void DemoStandardApp()
         {
             // Create channels and initialize controls.
@@ -174,31 +173,6 @@ namespace Ephemera.MidiLibLite.Test
                 rend.SendMidi += Rend_SendMidi;
                 ch.Item2.UserRenderer = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
             });
-
-
-            //chan_out1.UpdatePresets();
-            //ch_ctrl1.BorderStyle = BorderStyle.FixedSingle;
-            //ch_ctrl1.ControlColor = _controlColor;
-            //ch_ctrl1.SelectedColor = _selectedColor;
-            //ch_ctrl1.Volume = Defs.DEFAULT_VOLUME;
-            //ch_ctrl1.ChannelChange += ChannelControl_ChannelChange;
-            //ch_ctrl1.SendMidi += ChannelControl_SendMidi;
-            //ch_ctrl1.BoundChannel = chan_out1;
-            //var rend = new CustomRenderer() { ChannelHandle = chan_out1.Handle };
-            //rend.SendMidi += Rend_SendMidi;
-            //ch_ctrl1.UserRenderer = new CustomRenderer() { ChannelHandle = chan_out1.Handle };;
-
-            //chan_out2.UpdatePresets();
-            //ch_ctrl2.BorderStyle = BorderStyle.FixedSingle;
-            //ch_ctrl2.ControlColor = _controlColor;
-            //ch_ctrl2.SelectedColor = _selectedColor;
-            //ch_ctrl2.Volume = Defs.DEFAULT_VOLUME;
-            //ch_ctrl2.ChannelChange += ChannelControl_ChannelChange;
-            //ch_ctrl2.SendMidi += ChannelControl_SendMidi;
-            //ch_ctrl2.BoundChannel = chan_out2;
-            //rend = new CustomRenderer() { ChannelHandle = chan_out2.Handle };
-            //rend.SendMidi += Rend_SendMidi;
-            //ch_ctrl2.UserRenderer = rend;
 
             ///// 3 - do work
             // ????
@@ -263,6 +237,7 @@ namespace Ephemera.MidiLibLite.Test
             // function receive_midi_note(chan_hnd, note_num, volume)
             // function receive_midi_controller(chan_hnd, controller, value)
         }
+        #endregion
 
         #region script api functions
         /// <summary>
