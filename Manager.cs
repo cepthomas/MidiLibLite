@@ -58,16 +58,10 @@ namespace Ephemera.MidiLibLite
                 throw new MidiLibException($"Invalid input device [{deviceName}]");
             }
 
-            var config = new InputChannelConfig()
-            {
-                DeviceName = deviceName,
-                ChannelName = channelName,
-                ChannelNumber = channelNumber
-            };
-
             // Add the channel.
-            InputChannel ch = new(config, indev)
+            InputChannel ch = new(indev, channelNumber)
             {
+                ChannelName = channelName,
                 Enable = true,
             };
 
@@ -97,26 +91,35 @@ namespace Ephemera.MidiLibLite
                 throw new MidiLibException($"Invalid output device [{deviceName}]");
             }
 
-            var config = new OutputChannelConfig()
-            {
-                DeviceName = deviceName,
-                ChannelName = channelName,
-                ChannelNumber = channelNumber,
-                AliasFile = "",
-                Patch = patch,
-                Volume = Defs.DEFAULT_VOLUME
-            };
+            //var config = new OutputChannelConfig()
+            //{
+            //    DeviceName = deviceName,
+            //    ChannelName = channelName,
+            //    ChannelNumber = channelNumber,
+            //    AliasFile = "",
+            //    Patch = patch,
+            //    Volume = Defs.DEFAULT_VOLUME
+            //};
+
+            //// Add the channel.
+            //OutputChannel ch = new(config, outdev)
+            //{
+            //    Enable = true,
+            //};
 
             // Add the channel.
-            OutputChannel ch = new(config, outdev)
+            OutputChannel ch = new(outdev, channelNumber)
             {
+                ChannelName = channelName,
+                Patch = patch,
                 Enable = true,
+                Volume = Defs.DEFAULT_VOLUME
             };
 
             _outputChannels.Add(ch.Handle, ch);
 
             // Send the patch now.
-            outdev.Send(new Patch(channelNumber, patch));
+            // outdev.Send(new Patch(channelNumber, patch));
 
             return ch;
         }
@@ -255,11 +258,11 @@ namespace Ephemera.MidiLibLite
 
             if (channel is null)
             {
-                _outputChannels.ForEach(ch => ch.Value.Device.Send(new Controller(ch.Value.Config.ChannelNumber, cc, 0)));
+                _outputChannels.ForEach(ch => ch.Value.Device.Send(new Controller(ch.Value.ChannelNumber, cc, 0)));
             }
             else
             {
-                channel.Device.Send(new Controller(channel.Config.ChannelNumber, cc, 0));
+                channel.Device.Send(new Controller(channel.ChannelNumber, cc, 0));
             }
         }
         #endregion

@@ -12,6 +12,9 @@ using System.Windows.Forms;
 using System.Runtime.CompilerServices;
 using System.IO;
 using System.Diagnostics;
+using System.ComponentModel.DataAnnotations;
+using System.Drawing.Design;
+using System.Windows.Forms.Design;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 using Ephemera.MidiLibLite;
@@ -89,17 +92,16 @@ namespace Ephemera.MidiLibLite.Test
             try
             {
                 //DemoScriptApp();
-
                 //DemoStandardApp();
             }
-            catch (MidiLibException ex)
-            {
-                Tell(ERROR, ex.Message);
-            }
-            catch (AppException ex)
-            {
-                Tell(ERROR, ex.Message);
-            }
+            // catch (MidiLibException ex)
+            // {
+            //     Tell(ERROR, ex.Message);
+            // }
+            // catch (AppException ex)
+            // {
+            //     Tell(ERROR, ex.Message);
+            // }
             catch (Exception ex)
             {
                 Tell(ERROR, ex.Message);
@@ -128,10 +130,67 @@ namespace Ephemera.MidiLibLite.Test
 
 
         #region Do some work
+
+        /// <summary>Test class</summary>
+        [Serializable]
+        public class XXXTest
+        {
+            /// <summary>Device name.</summary>
+            [Editor(typeof(XXXTypeEditor), typeof(UITypeEditor))]
+            public string XXXDeviceName { get; set; } = "";
+
+            /// <summary>Channel name - optional.</summary>
+            public string ChannelName { get; set; } = "";
+
+            /// <summary>Actual 1-based midi channel number.</summary>
+            [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
+            [Range(1, MidiDefs.NUM_CHANNELS)]
+            public int ChannelNumber { get; set; } = 1;
+
+            /// <summary>Override default instrument presets.</summary>
+            [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
+            public string AliasFile { get; set; } = "";
+
+            /// <summary>Current instrument/patch number.</summary>
+            [Editor(typeof(XXXTypeEditor), typeof(UITypeEditor))]
+            [TypeConverter(typeof(XXXConverter))]
+            [Range(0, MidiDefs.MAX_MIDI)]
+            public int XXXPatch { get; set; } = 0;
+
+            [Browsable(false)]
+            public List<string> XXXDeviceNameOptions { get; set; } = ["dev0", "dev1", "dev2", "dev3", "dev4"];
+
+            [Browsable(false)]
+            public List<string> XXXPatchOptions { get; set; } = ["pat0", "pat1", "pat2", "pat3", "pat4"];
+
+            /// <summary>Convenience property.</summary>
+            public Dictionary<int, string> Instruments { get { return _instruments; } }
+            Dictionary<int, string> _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
+        }
+
+
+        /// <summary>Test property editing.</summary>
+        void Edit_Click(object sender, EventArgs e)
+        {
+            XXXTest ttt = new()
+            {
+                XXXPatch = 2,
+                ChannelName = "booga-booga",
+                ChannelNumber = 5,
+                AliasFile = "somewhere.ini",
+                XXXDeviceName = "dev1",
+                //Instruments =
+            };
+
+            //TODO1:
+            var changes = SettingsEditor.Edit(ttt, "TESTOMATIC", 300);
+
+        }
+
         /// <summary>Test def file loading.</summary>
         void TestDefs_Click(object sender, EventArgs e)
         {
-            string fn = @"C:\Dev\Libs\MidiLibLite\_def_files\gm_defs.ini";
+            string fn = @"C:\Dev\Libs\MidiLibLite\_def_files\gm_defs.ini"; // TODO1 these files locations
 
             // key is section name, value is line
             Dictionary<string, List<string>> res = [];
@@ -144,9 +203,17 @@ namespace Ephemera.MidiLibLite.Test
         }
 
         /// <summary>Test dynamic UI creation.</summary>
-        void Dynamic_Click(object sender, EventArgs e)
+        void Demo_Click(object sender, EventArgs e)
         {
-            DemoScriptApp();
+            try
+            {
+                DemoScriptApp();
+            }
+            catch (Exception ex)
+            {
+                Tell(ERROR, ex.Message);
+            }
+
         }
 
         /// <summary>A standard app where controls are defined in VS designer.</summary>
@@ -159,7 +226,7 @@ namespace Ephemera.MidiLibLite.Test
             List<(OutputChannel, ChannelControl)> channels = [(chan_out1, ch_ctrl1), (chan_out2, ch_ctrl2)];
             channels.ForEach(ch =>
             {
-                ch.Item1.UpdatePresetsTODO1();
+                //                ch.Item1.UpdatePresetsTODO1();
 
                 ch.Item2.BorderStyle = BorderStyle.FixedSingle;
                 ch.Item2.ControlColor = _controlColor;
@@ -199,14 +266,14 @@ namespace Ephemera.MidiLibLite.Test
             List<OutputChannel> channels = [chan_out1, chan_out2];
             channels.ForEach(chan =>
             {
-                chan.UpdatePresetsTODO1();
+                //                chan.UpdatePresetsTODO1();
 
                 var rend = new CustomRenderer() { ChannelHandle = chan.Handle };
                 rend.SendMidi += Rend_SendMidi;
 
                 var ctrl = new ChannelControl()
                 {
-                    Name = $"Control for {chan.Config.ChannelName}",
+                    //                    Name = $"Control for {chan.Config.ChannelName}",
                     BoundChannel = chan,
                     UserRenderer = rend,
                     Location = new(x, y),
@@ -371,14 +438,14 @@ namespace Ephemera.MidiLibLite.Test
 
             if (e.PatchChange)
             {
-                Tell(INFO, $"PatchChange [{channel.Config.Patch}]");
-                channel.Device.Send(new Patch(channel.Config.ChannelNumber, channel.Config.Patch));
+                Tell(INFO, $"PatchChange [{channel.Patch}]");
+                channel.Device.Send(new Patch(channel.ChannelNumber, channel.Patch));
             }
 
             if (e.AliasFileChange)
             {
-                Tell(INFO, $"AliasFileChange [{channel.Config.AliasFile}]");
-                channel.UpdatePresetsTODO1();
+                Tell(INFO, $"AliasFileChange [{channel.AliasFile}]");
+                //channel.UpdatePresetsTODO1();
             }
         }
 

@@ -140,9 +140,10 @@ namespace Ephemera.MidiLibLite
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 
             // Dummy channel to satisfy designer. Will be overwritten by the real one.
-            var cfig = new OutputChannelConfig() { ChannelName = "DUMMY_CHANNEL" };
+            //var cfig = new OutputChannelConfig() { ChannelName = "DUMMY_CHANNEL" };
             var dev = new NullOutputDevice("DUMMY_DEVICE");
-            BoundChannel = new OutputChannel(cfig, dev);
+            //BoundChannel = new OutputChannel(cfig, dev);
+            BoundChannel = new OutputChannel(dev, 9);
         }
 
         /// <summary>
@@ -154,7 +155,7 @@ namespace Ephemera.MidiLibLite
             SuspendLayout();
             
             // Create the controls per the config.
-            var opts = BoundChannel.Config.DisplayOptions; // shorthand
+            var opts = BoundChannel.DisplayOptions; // shorthand
             int xPos = PAD;
             int xMax = xPos;
             int yPos = PAD;
@@ -170,7 +171,7 @@ namespace Ephemera.MidiLibLite
                 txtInfo.Multiline = true;
                 txtInfo.WordWrap = false;
                 txtInfo.Text = "Hello world\nWhat's up?";
-                txtInfo.Click += ChannelInfo_Click;
+//                txtInfo.Click += ChannelInfo_Click;
                 Controls.Add(txtInfo);
 
                 xPos = txtInfo.Right + PAD;
@@ -189,7 +190,7 @@ namespace Ephemera.MidiLibLite
                 sldVolume.Location = new(xPos, yPos);
                 sldVolume.Size = new(80, SIZE);
                 sldVolume.Label = "volume";
-                sldVolume.ValueChanged += (sender, e) => BoundChannel.Config.Volume = (sender as Slider)!.Value;
+                sldVolume.ValueChanged += (sender, e) => BoundChannel.Volume = (sender as Slider)!.Value;
                 Controls.Add(sldVolume);
 
                 xPos = sldVolume.Right + PAD;
@@ -263,7 +264,7 @@ namespace Ephemera.MidiLibLite
             toolTip = new(components);
 
             // Other inits.
-            sldVolume.Value = BoundChannel.Config.Volume;
+            sldVolume.Value = BoundChannel.Volume;
             UpdateUi();
 
             base.OnLoad(e);
@@ -284,24 +285,25 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Handlers for user selections
-        /// <summary>Edit channel properties. Notifies client of any changes.</summary>
-        void ChannelInfo_Click(object? sender, EventArgs e)
-        {
-            var changes = SettingsEditor.Edit(BoundChannel.Config, "Channel", 300);
+        // /// <summary>Edit channel properties. Notifies client of any changes.</summary>
+        // void ChannelInfo_Click(object? sender, EventArgs e)
+        // {
+        //     //TODO1:
+        //     var changes = SettingsEditor.Edit(BoundChannel.Config, "Channel", 300);
 
-            // Notify client.
-            ChannelChangeEventArgs args = new()
-            {
-                ChannelNumberChange = changes.Any(ch => ch.name == "ChannelNumber"),
-                PatchChange = changes.Any(ch => ch.name == "Patch"),
-                AliasFileChange = changes.Any(ch => ch.name == "AliasFile"),
-                StateChange = false
-            };
+        //     // Notify client.
+        //     ChannelChangeEventArgs args = new()
+        //     {
+        //        ChannelNumberChange = changes.Any(ch => ch.name == "ChannelNumber"),
+        //        PatchChange = changes.Any(ch => ch.name == "Patch"),
+        //        AliasFileChange = changes.Any(ch => ch.name == "AliasFile"),
+        //        StateChange = false
+        //     };
 
-            ChannelChange?.Invoke(this, new() { ChannelNumberChange = true });
+        //     ChannelChange?.Invoke(this, new() { ChannelNumberChange = true });
 
-            UpdateUi();
-        }
+        //     UpdateUi();
+        // }
 
         /// <summary>Handles solo and mute.</summary>
         void SoloMute_Click(object? sender, EventArgs e)
@@ -330,7 +332,7 @@ namespace Ephemera.MidiLibLite
         void Controller_ValueChanged(object? sender, EventArgs e)
         {
             // No need to check limits.
-            BoundChannel.Config.ControllerValue = (int)(sender as Slider)!.Value;
+            BoundChannel.ControllerValue = (int)(sender as Slider)!.Value;
         }
 
         /// <summary>
@@ -341,7 +343,7 @@ namespace Ephemera.MidiLibLite
         void Send_Click(object? sender, EventArgs e)
         {
             // No need to check limits.
-            OnSendMidi(new Controller(BoundChannel.Config.ChannelNumber, BoundChannel.Config.ControllerId, BoundChannel.Config.ControllerValue));
+            OnSendMidi(new Controller(BoundChannel.ChannelNumber, BoundChannel.ControllerId, BoundChannel.ControllerValue));
         }
         #endregion
 
@@ -351,7 +353,7 @@ namespace Ephemera.MidiLibLite
         {
             StringBuilder sb = new();
             sb.AppendLine($"Channel {BoundChannel.Handle}");
-            sb.AppendLine($"Patch {BoundChannel.GetPatchName(BoundChannel.Config.Patch)}({BoundChannel.Config.Patch})");
+            sb.AppendLine($"Patch {BoundChannel.GetPatchName(BoundChannel.Patch)}({BoundChannel.Patch})");
             txtInfo.Text = sb.ToString();
             toolTip.SetToolTip(txtInfo, sb.ToString());
 
@@ -362,7 +364,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"{BoundChannel.Handle} P:{BoundChannel.Config.Patch}";
+            return $"{BoundChannel.Handle} P:{BoundChannel.Patch}";
         }
         #endregion
     }

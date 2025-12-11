@@ -23,179 +23,6 @@ namespace Ephemera.MidiLibLite
         All = 0x0F, // of above
     }
 
-
-    //----------------------------------------------------------------
-    /// <summary>One output channel config. Can be edited in a property grid and/or persisted.</summary>
-    [Serializable]
-    public class OutputChannelConfig
-    {
-        /// <summary>Device name.</summary>
-        [Editor(typeof(DeviceTypeEditor), typeof(UITypeEditor))]
-        public string DeviceName { get; set; } = "";
-
-        /// <summary>Channel name - optional.</summary>
-        public string ChannelName { get; set; } = "";
-
-        /// <summary>Actual 1-based midi channel number.</summary>
-        [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-        [Range(1, MidiDefs.NUM_CHANNELS)]
-        public int ChannelNumber { get; set; } = 1;
-
-        /// <summary>Override default instrument presets.</summary>
-        [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
-        public string AliasFile { get; set; } = "";
-
-        /// <summary>Current instrument/patch number.</summary>
-        [Editor(typeof(PatchTypeEditor), typeof(UITypeEditor))]
-        [TypeConverter(typeof(PatchConverter))]
-        [Range(0, MidiDefs.MAX_MIDI)]
-        public int Patch { get; set; } = 0;
-
-        /// <summary>Current volume.</summary>
-        [Range(0.0, Defs.MAX_VOLUME)]
-        public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
-    
-        /// <summary>Edit current controller number.</summary>
-        [Editor(typeof(ControllerIdTypeEditor), typeof(UITypeEditor))]
-        [TypeConverter(typeof(ControllerIdConverter))]
-        [Range(0, MidiDefs.MAX_MIDI)]
-        public int ControllerId { get; set; } = 0;
-
-        /// <summary>Controller payload.</summary>
-        [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-        [Range(0, MidiDefs.MAX_MIDI)]
-        public int ControllerValue { get; set; } = 50;
-
-        /// <summary>Display options.</summary>
-        [JsonConverter(typeof(JsonStringEnumConverter))]
-        [Browsable(false)]
-        public ChannelControlOptions DisplayOptions { get; set; } = ChannelControlOptions.All;
-
-        /// <summary>Convenience property.</summary>
-        public Dictionary<int, string> Instruments { get { return _instruments; } }
-        Dictionary<int, string> _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
-    }
-
-    //----------------------------------------------------------------
-    /// <summary>One input channel config. Can be edited in a property grid and/or persisted.</summary>
-    [Serializable]
-    public class InputChannelConfig
-    {
-        /// <summary>Device name.</summary>
-        [Editor(typeof(DeviceTypeEditor), typeof(UITypeEditor))]
-        public string DeviceName { get; set; } = "";
-
-        /// <summary>Channel name - optional.</summary>
-        public string ChannelName { get; set; } = "";
-
-        /// <summary>Actual 1-based midi channel number.</summary>
-        [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-        [Range(1, MidiDefs.NUM_CHANNELS)]
-        public int ChannelNumber { get; set; } = 1;
-    }
-
-    //----------------------------------------------------------------
-    /// <summary>Describes one midi output channel. Some properties are optional.</summary>
-    public class OutputChannel
-    {
-        /// <summary>My config.</summary>
-        public OutputChannelConfig Config { get; init; }
-
-        #region Properties
-        /// <summary>Associated device.</summary>
-        public IOutputDevice Device { get; init; }
-
-        /// <summary>Handle for use by scripts.</summary>
-        public ChannelHandle Handle { get; init; }
-
-        /// <summary>True if channel is active.</summary>
-        public bool Enable { get; set; } = true;
-        #endregion
-
-        /// <summary>
-        /// Constructor with required args.
-        /// </summary>
-        /// <param name="config"></param>
-        /// <param name="device"></param>
-        public OutputChannel(OutputChannelConfig config, IOutputDevice device)
-        {
-            Device = device;
-            Config = config;
-            Handle = new(device.Id, Config.ChannelNumber, true);
-        }
-
-        /// <summary>Use default or custom presets.</summary>
-        public void UpdatePresetsTODO1()
-        {
-            try
-            {
-                _instruments = Config.AliasFile != "" ?
-                   LoadDefs(Config.AliasFile) : // TODO1 fix this
-                   MidiDefs.TheDefs.GetDefaultInstrumentDefs();
-            }
-            catch (Exception ex)
-            {
-                throw new MidiLibException($"Failed to load alias file {Config.AliasFile}: {ex.Message}");
-            }
-        }
-        Dictionary<int, string> LoadDefs(string fn)
-        {
-            Dictionary<int, string> res = [];
-            var ir = new IniReader(fn);
-            var defs = ir.Contents["instruments"];
-            defs.Values.ForEach(kv =>
-            {
-                int index = int.Parse(kv.Key); // can throw
-                if (index < 0 || index > MidiDefs.MAX_MIDI) { throw new InvalidOperationException($"Invalid def file {fn}"); }
-                res[index] = kv.Value.Length > 0 ? kv.Value : "";
-            });
-            return res;
-        }
-
-
-        /// <summary>
-        /// Get patch name.
-        /// </summary>
-        /// <param name="which"></param>
-        /// <returns>The name or a fabricated one if unknown.</returns>
-        public string GetPatchName(int which)
-        {
-            return _instruments.TryGetValue(which, out string? value) ? value : $"PATCH_{which}";
-        }
-    }
-
-    //----------------------------------------------------------------
-    /// <summary>Describes one midi input channel. Some properties are optional.</summary>
-    // [Serializable]
-    public class InputChannel
-    {
-        #region Properties
-        /// <summary>My config.</summary>
-        public InputChannelConfig Config { get; init; }
-
-        /// <summary>Associated device.</summary>
-        public IInputDevice Device { get; init; }
-
-        /// <summary>True if channel is active.</summary>
-        public bool Enable { get; set; } = true;
-
-        /// <summary>Handle for use by scripts.</summary>
-        public ChannelHandle Handle { get; init; }
-        #endregion
-
-        /// <summary>
-        /// Constructor with required args.
-        /// </summary>
-        /// <param name="config"></param>
-        /// <param name="device"></param>
-        public InputChannel(InputChannelConfig config, IInputDevice device)
-        {
-            Device = device;
-            Config = config;
-            Handle = new(device.Id, Config.ChannelNumber, false);
-        }
-    }
-
     //----------------------------------------------------------------
     /// <summary>References one channel. Supports translation to/from script unique int handle.</summary>
     /// <param name="DeviceId">Unique number</param>
@@ -225,6 +52,164 @@ namespace Ephemera.MidiLibLite
         public override readonly string ToString()
         {
             return $"{(Output ? "OUT" : "IN")}  {DeviceId}:{ChannelNumber}";
+        }
+    }
+
+
+
+
+
+    //----------------------------------------------------------------
+    /// <summary>Describes one midi output channel.</summary>
+    public class OutputChannel
+    {
+        #region Properties
+        ///// <summary>Device name.</summary>
+    //    public string DeviceName { get; set; } = "";
+
+        /// <summary>Channel name - optional.</summary>
+        public string ChannelName { get; set; } = "";
+
+        /// <summary>Actual 1-based midi channel number.</summary>
+        [Range(1, MidiDefs.NUM_CHANNELS)]
+        public int ChannelNumber { get; set; } = 1;
+
+        /// <summary>Override default instrument presets.</summary>
+        public string AliasFile
+        {
+            get { return _aliasFile; }
+            set
+            {
+                _aliasFile = value;
+
+                // Alternate instrument names?
+                if (_aliasFile != "")
+                {
+                    try
+                    {
+                        var ir = new IniReader(_aliasFile);
+                        var defs = ir.Contents["instruments"];
+                        defs.Values.ForEach(kv =>
+                        {
+                            int i = int.Parse(kv.Key); // can throw
+                            i = MathUtils.Constrain(i, 0, MidiDefs.MAX_MIDI);
+                            _instruments[i] = kv.Value.Length > 0 ? kv.Value : "";
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new MidiLibException($"Failed to load alias file {_aliasFile}: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
+                }
+            }
+        }
+        string _aliasFile = "";
+
+        /// <summary>Current instrument/patch number.</summary>
+        [Range(0, MidiDefs.MAX_MIDI)]
+        public int Patch
+        {
+            get {  return _patch; }
+            set
+            {
+                _patch = value;
+                Device.Send(new Patch(ChannelNumber, _patch));
+            }
+        }
+        int _patch = 0;
+
+        /// <summary>Current volume.</summary>
+        [Range(0.0, Defs.MAX_VOLUME)]
+        public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
+    
+        /// <summary>Edit current controller number.</summary>
+        [Range(0, MidiDefs.MAX_MIDI)]
+        public int ControllerId { get; set; } = 0;
+
+        /// <summary>Controller payload.</summary>
+        [Range(0, MidiDefs.MAX_MIDI)]
+        public int ControllerValue { get; set; } = 50;
+
+        /// <summary>ChannelControl options.</summary>
+        public ChannelControlOptions DisplayOptions { get; set; } = ChannelControlOptions.All;
+
+        /// <summary>Associated device.</summary>
+        public IOutputDevice Device { get; init; }
+
+        /// <summary>Handle for use by scripts.</summary>
+        public ChannelHandle Handle { get; init; }
+
+        /// <summary>True if channel is active.</summary>
+        public bool Enable { get; set; } = true;
+
+        /// <summary>Convenience property for type editors etc.</summary>
+        public Dictionary<int, string> Instruments { get { return _instruments; } }
+        Dictionary<int, string> _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
+        #endregion
+
+        /// <summary>
+        /// Constructor with required args.
+        /// </summary>
+        /// <param name="device"></param>
+        /// <param name="channelNumber"></param>
+        public OutputChannel(IOutputDevice device, int channelNumber)
+        {
+            Device = device;
+            ChannelNumber = channelNumber;
+            Volume = Defs.DEFAULT_VOLUME;
+            Handle = new(device.Id, ChannelNumber, true);
+        }
+
+        /// <summary>
+        /// Get patch name.
+        /// </summary>
+        /// <param name="which"></param>
+        /// <returns>The name or a fabricated one if unknown.</returns>
+        public string GetPatchName(int which)
+        {
+            return _instruments.TryGetValue(which, out string? value) ? value : $"PATCH_{which}";
+        }
+    }
+
+    //----------------------------------------------------------------
+    /// <summary>Describes one midi input channel.</summary>
+    public class InputChannel
+    {
+        #region Properties
+        ///// <summary>Device name.</summary>
+        //public string DeviceName { get; set; } = "";
+
+        /// <summary>Channel name - optional.</summary>
+        public string ChannelName { get; set; } = "";
+
+        /// <summary>Actual 1-based midi channel number.</summary>
+        [Range(1, MidiDefs.NUM_CHANNELS)]
+        public int ChannelNumber { get; set; } = 1;
+
+        /// <summary>Associated device.</summary>
+        public IInputDevice Device { get; init; }
+
+        /// <summary>True if channel is active.</summary>
+        public bool Enable { get; set; } = true;
+
+        /// <summary>Handle for use by scripts.</summary>
+        public ChannelHandle Handle { get; init; }
+        #endregion
+
+        /// <summary>
+        /// Constructor with required args.
+        /// </summary>
+        /// <param name="device"></param>
+        /// <param name="channelNumber"></param>
+        public InputChannel(IInputDevice device, int channelNumber)
+        {
+            Device = device;
+            ChannelNumber = channelNumber;
+            Handle = new(device.Id, ChannelNumber, false);
         }
     }
 }

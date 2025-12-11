@@ -26,7 +26,9 @@ namespace Ephemera.MidiLibLite.Test
             btnTestDefs = new System.Windows.Forms.Button();
             ch_ctrl1 = new ChannelControl();
             ch_ctrl2 = new ChannelControl();
-            btnDynamic = new System.Windows.Forms.Button();
+            btnDemo = new System.Windows.Forms.Button();
+            btnEdit = new System.Windows.Forms.Button();
+            propGrid = new System.Windows.Forms.PropertyGrid();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -36,7 +38,7 @@ namespace Ephemera.MidiLibLite.Test
             toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, btnKillMidi });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new System.Drawing.Size(777, 26);
+            toolStrip1.Size = new System.Drawing.Size(1092, 26);
             toolStrip1.TabIndex = 0;
             toolStrip1.Text = "toolStrip1";
             // 
@@ -88,7 +90,7 @@ namespace Ephemera.MidiLibLite.Test
             // 
             // btnTestDefs
             // 
-            btnTestDefs.Location = new System.Drawing.Point(181, 41);
+            btnTestDefs.Location = new System.Drawing.Point(398, 41);
             btnTestDefs.Name = "btnTestDefs";
             btnTestDefs.Size = new System.Drawing.Size(89, 45);
             btnTestDefs.TabIndex = 104;
@@ -110,22 +112,41 @@ namespace Ephemera.MidiLibLite.Test
             ch_ctrl2.Size = new System.Drawing.Size(356, 56);
             ch_ctrl2.TabIndex = 106;
             // 
-            // btnDynamic
+            // btnDemo
             // 
-            btnDynamic.Location = new System.Drawing.Point(289, 41);
-            btnDynamic.Name = "btnDynamic";
-            btnDynamic.Size = new System.Drawing.Size(89, 45);
-            btnDynamic.TabIndex = 107;
-            btnDynamic.Text = "dynamic";
-            btnDynamic.UseVisualStyleBackColor = true;
-            btnDynamic.Click += Dynamic_Click;
+            btnDemo.Location = new System.Drawing.Point(161, 41);
+            btnDemo.Name = "btnDemo";
+            btnDemo.Size = new System.Drawing.Size(89, 45);
+            btnDemo.TabIndex = 107;
+            btnDemo.Text = "demo";
+            btnDemo.UseVisualStyleBackColor = true;
+            btnDemo.Click += Demo_Click;
+            // 
+            // btnEdit
+            // 
+            btnEdit.Location = new System.Drawing.Point(266, 41);
+            btnEdit.Name = "btnEdit";
+            btnEdit.Size = new System.Drawing.Size(89, 45);
+            btnEdit.TabIndex = 108;
+            btnEdit.Text = "edit";
+            btnEdit.UseVisualStyleBackColor = true;
+            btnEdit.Click += Edit_Click;
+            // 
+            // propGrid
+            // 
+            propGrid.Location = new System.Drawing.Point(813, 74);
+            propGrid.Name = "propGrid";
+            propGrid.Size = new System.Drawing.Size(251, 396);
+            propGrid.TabIndex = 109;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(777, 600);
-            Controls.Add(btnDynamic);
+            ClientSize = new System.Drawing.Size(1092, 600);
+            Controls.Add(propGrid);
+            Controls.Add(btnEdit);
+            Controls.Add(btnDemo);
             Controls.Add(ch_ctrl2);
             Controls.Add(ch_ctrl1);
             Controls.Add(btnTestDefs);
@@ -150,10 +171,12 @@ namespace Ephemera.MidiLibLite.Test
         private NBagOfUis.TextViewer txtViewer;
         private System.Windows.Forms.ToolStripButton btnLogMidi;
         private System.Windows.Forms.ToolStripButton btnKillMidi;
-        private System.Windows.Forms.Button btnTestDefs;
         private ChannelControl ch_ctrl1;
         private ChannelControl ch_ctrl2;
-        private System.Windows.Forms.Button btnDynamic;
+        private System.Windows.Forms.Button btnTestDefs;
+        private System.Windows.Forms.Button btnDemo;
+        private System.Windows.Forms.Button btnEdit;
+        private System.Windows.Forms.PropertyGrid propGrid;
     }
 }
 

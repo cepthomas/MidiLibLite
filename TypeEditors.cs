@@ -6,6 +6,7 @@ using System.Drawing.Design;
 using System.ComponentModel;
 using System.Windows.Forms.Design;
 using Ephemera.NBagOfTricks;
+using System.Reflection;
 
 
 // Shut up warnings in this file. Using manual checking where needed.
@@ -13,6 +14,101 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLibLite
 {
+    /// <summary>Select a XXX from list. Borrowed from IDAS_1_0_4\Source\CommonUi\ColumnSelector.cs</summary>
+    public class XXXTypeEditor : UITypeEditor
+    {
+        public override object? EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
+        {
+            if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service ||
+                context is null || context.Instance is null) { return null; }
+
+            var options = CommonXXX.GetOptions(context);
+
+            if (options is null)
+            {
+                //TODO1 error - missing options list - throw?
+                return value;
+            }
+
+            var lb = new ListBox
+            {
+                Width = 150,
+                SelectionMode = SelectionMode.One
+            };
+            lb.Click += (_, __) => _service.CloseDropDown();
+            options.ForEach(v => lb.Items.Add(v));
+            _service.DropDownControl(lb);
+
+            return lb.SelectedItem is null ? value : lb.SelectedIndex; // TODO1 SelectedIndex(int) or Selection(str)
+        }
+
+        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) { return UITypeEditorEditStyle.DropDown; }
+    }
+
+
+    /// <summary>Convert between int and string.</summary>
+    public class XXXConverter : Int64Converter
+    {
+        public override object? ConvertTo(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, Type destinationType)
+        {
+            if (context is null || context.Instance is null || value is not int) { return base.ConvertTo(context, culture, value, destinationType); }
+
+            var options = CommonXXX.GetOptions(context);
+
+            if (options is null)
+            {
+                //TODO1 error - missing options list - throw?
+                return value;
+            }
+
+            return options[(int)value];
+        }
+
+        public override object? ConvertFrom(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
+        {
+            if (context is null || context.Instance is null || value is not int) { return base.ConvertFrom(context, culture, value); }
+
+            var options = CommonXXX.GetOptions(context);
+
+            if (options is null)
+            {
+                //TODO1 error - missing options list - throw?
+                return null;// ?? value;
+            }
+
+            var res = options.FirstOrDefault(o => o == (string)value);
+
+            return res;
+        }
+    }
+
+    class CommonXXX
+    {
+        public static List<string>? GetOptions(ITypeDescriptorContext? context)
+        {
+            var propertyName = context.PropertyDescriptor.Name; // "XXXPatch"
+            // Get corresponding option collection.
+            List<string>? options = null;
+            var t = context.Instance.GetType();
+            var prop = t.GetProperty($"{propertyName}Options"); // is PropertyInfo
+            if (prop != null)
+            {
+                var opts = prop.GetValue(context.Instance, null);
+                if (opts != null && opts is List<string>)
+                {
+                    options = opts as List<string>;
+                }
+            }
+
+            return options;
+        }
+    }
+
+
+
+
+
+
     #region Patch editing
     /// <summary>Select a patch from list.</summary>
     public class PatchTypeEditor : UITypeEditor
@@ -22,7 +118,6 @@ namespace Ephemera.MidiLibLite
             if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service || context is null || context.Instance is null) { return null; }
 
             var instList = (context.Instance as OutputChannel).Instruments;
-            // TODO1 var instList = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
             var lb = new ListBox
             {
                 Width = 150,
@@ -46,7 +141,6 @@ namespace Ephemera.MidiLibLite
             if (context is null || context.Instance is null || value is not int) { return base.ConvertTo(context, culture, value, destinationType); }
 
             var instList = (context.Instance as OutputChannel).Instruments;
-            // TODO1 var instList = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
             return instList[(int)value];
         }
 
@@ -54,7 +148,6 @@ namespace Ephemera.MidiLibLite
         {
             if (context is null || context.Instance is null || value is not int) { return base.ConvertFrom(context, culture, value); }
             var instList = (context.Instance as OutputChannel).Instruments;
-            // TODO1 var instList = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
             var res = instList.FirstOrDefault(ch => ch.Value == (string)value);
             return res.Value;
         }
