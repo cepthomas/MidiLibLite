@@ -141,10 +141,8 @@ namespace Ephemera.MidiLibLite
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
 
-        /// <summary>Convenience property for testing. TODO1 ??</summary>
-        public Dictionary<int, string> Instruments { get { return _instruments; } }
-
-        Dictionary<int, string> _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
+        /// <summary>Current list for this channel.</summary>
+        public Dictionary<int, string> Instruments { get; private set; } = [];
         #endregion
 
         /// <summary>
@@ -167,7 +165,7 @@ namespace Ephemera.MidiLibLite
         /// <returns>The name or a fabricated one if unknown.</returns>
         public string GetPatchName(int which)
         {
-            return _instruments.TryGetValue(which, out string? value) ? value : $"PATCH_{which}";
+            return Instruments.TryGetValue(which, out string? value) ? value : $"PATCH_{which}";
         }
     }
 

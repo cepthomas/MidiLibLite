@@ -124,6 +124,7 @@ namespace Ephemera.MidiLibLite.Test
         }
         #endregion
 
+        #region Do some work
         //-------------------------------------------------------------------------------//
         /// <summary>Test property editing.</summary>
         void Edit_Click(object sender, EventArgs e)
@@ -132,8 +133,6 @@ namespace Ephemera.MidiLibLite.Test
 
             ChannelEdit();
         }
-
-        #region Do some work
 
         /// <summary>TypeEditor test class</summary>
         [Serializable]
