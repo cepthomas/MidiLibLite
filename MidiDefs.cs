@@ -42,7 +42,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>Initialize some collections.</summary>
         public MidiDefs()
         {
-            string fn = @"C:\Dev\Libs\MidiLibLite\_def_files\gm_defs.ini";
+            string fn = @".\gm_defs.ini";
 
             // key is section name, value is line
             Dictionary<string, List<string>> res = [];
@@ -53,9 +53,9 @@ namespace Ephemera.MidiLibLite
             DoSection("controllers", _controllerIds);
             DoSection("drums", _drums);
             DoSection("drumkits", _drumKits);
-            // Special case. TODO2 useful?
-            Enumerable.Range(0, MAX_MIDI).ForEach(c => _controllerIdsAll.Add(c, $"CTLR_{c}"));
-            DoSection("controllers", _controllerIdsAll);
+            // // Special case - useful?
+            // Enumerable.Range(0, MAX_MIDI).ForEach(c => _controllerIdsAll.Add(c, $"CTLR_{c}"));
+            // DoSection("controllers", _controllerIdsAll);
 
             void DoSection(string section, Dictionary<int, string> target)
             {

@@ -25,14 +25,13 @@ namespace Ephemera.MidiLibLite
         public enum ChannelState { Normal, Solo, Mute }
 
         /// <summary>Notify host of UI changes.</summary>
-        public class ChannelChangeEventArgs : EventArgs // TODO2 clean up
+        public class ChannelChangeEventArgs : EventArgs
         {
             public bool InfoChange { get; set; } = false;
             public bool StateChange { get; set; } = false;
-
-            public bool PatchChange { get; set; } = false;
-            public bool ChannelNumberChange { get; set; } = false;
-            public bool AliasFileChange { get; set; } = false;
+            // public bool PatchChange { get; set; } = false;
+            // public bool ChannelNumberChange { get; set; } = false;
+            // public bool AliasFileChange { get; set; } = false;
         }
         #endregion
 
@@ -72,9 +71,12 @@ namespace Ephemera.MidiLibLite
             set
             {
                 _userRenderer = value;
-                _userRenderer.Location = new(PAD, Height);
-                Height += _userRenderer.Height + PAD;
-                Controls.Add(_userRenderer);
+                if (_userRenderer is not null)
+                {
+                    _userRenderer.Location = new(PAD, Height);
+                    Height += _userRenderer.Height + PAD;
+                    Controls.Add(_userRenderer);
+                }
             }
         }
         UserControl? _userRenderer = null;

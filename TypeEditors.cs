@@ -15,7 +15,7 @@ using System.Reflection;
 namespace Ephemera.MidiLibLite
 {
     /// <summary>Select from list supplied to cache. Value can be int or string.</summary>
-    public class GenericListTypeEditor : UITypeEditor // TODO2 put in NBUI
+    public class GenericListTypeEditor : UITypeEditor // TODO1 put in NBUI
     {
         #region Store global property options here.
         static readonly Dictionary<string, List<string>> _options = [];
@@ -39,7 +39,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>Standard property editor.</summary>
         public override object? EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
         {
-            IWindowsFormsEditorService _service = provider.GetService(typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
+            IWindowsFormsEditorService? _service = provider.GetService(typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
 
             var propName = context.PropertyDescriptor.Name;
             var propType = context.PropertyDescriptor.PropertyType;
@@ -50,9 +50,9 @@ namespace Ephemera.MidiLibLite
                 Width = 150,
                 SelectionMode = SelectionMode.One
             };
-            lb.Click += (_, __) => _service.CloseDropDown();
+            lb.Click += (_, __) => _service!.CloseDropDown();
             options.ForEach(v => lb.Items.Add(v));
-            _service.DropDownControl(lb);
+            _service!.DropDownControl(lb);
 
             var ret = propType switch
             {
@@ -92,7 +92,7 @@ namespace Ephemera.MidiLibLite
 
     #region Midi value editing
     /// <summary>Select a midi value from a range. Handles special case of channel number.</summary>
-    public class MidiValueTypeEditor : UITypeEditor // TODO2 use generic?
+    public class MidiValueTypeEditor : UITypeEditor
     {
         public override object? EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
         {

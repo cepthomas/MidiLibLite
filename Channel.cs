@@ -81,14 +81,15 @@ namespace Ephemera.MidiLibLite
                 {
                     try
                     {
-                        _instruments.Clear();
+                        Instruments.Clear();
                         var ir = new IniReader(_aliasFile);
                         var defs = ir.Contents["instruments"];
+
                         defs.Values.ForEach(kv =>
                         {
                             int i = int.Parse(kv.Key); // can throw
                             i = MathUtils.Constrain(i, 0, MidiDefs.MAX_MIDI);
-                            _instruments.Add(i, kv.Value.Length > 0 ? kv.Value : "");
+                            Instruments.Add(i, kv.Value.Length > 0 ? kv.Value : "");
                         });
                     }
                     catch (Exception ex)
@@ -98,7 +99,7 @@ namespace Ephemera.MidiLibLite
                 }
                 else
                 {
-                    _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
+                    Instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
                 }
             }
         }
@@ -142,7 +143,7 @@ namespace Ephemera.MidiLibLite
         public bool Enable { get; set; } = true;
 
         /// <summary>Current list for this channel.</summary>
-        public Dictionary<int, string> Instruments { get; private set; } = [];
+        public Dictionary<int, string> Instruments { get; private set; } = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
         #endregion
 
         /// <summary>

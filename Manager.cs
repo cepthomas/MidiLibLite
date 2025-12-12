@@ -80,8 +80,6 @@ namespace Ephemera.MidiLibLite
         /// <returns></returns>
         public OutputChannel OpenMidiOutput(string deviceName, int channelNumber, string channelName, int patch)
         {
-            // TODO2 ?? patch by name => "AcousticGrandPiano"
-
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
             if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channelNumber)); }
@@ -237,7 +235,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="channel"></param>
         public void Kill(OutputChannel? channel = null)
         {
-            int cc = 120; // TODO2 fix magical knowledge MidiDefs.GetControllerNumber("AllNotesOff");
+            int cc = 120; // fix magical knowledge => "AllNotesOff"
 
             if (channel is null)
             {

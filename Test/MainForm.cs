@@ -20,7 +20,7 @@ using Ephemera.NBagOfUis;
 using Ephemera.MidiLibLite;
 
 
-//?? TODO2 generate lua versions of mididefs and musicdefs from ini files?
+// ?? TODO1 generate lua versions of mididefs and musicdefs from ini files?
 
 
 namespace Ephemera.MidiLibLite.Test
@@ -31,8 +31,8 @@ namespace Ephemera.MidiLibLite.Test
         /// <summary>All the channel controls.</summary>
         readonly List<ChannelControl> _channelControls = [];
 
-        /// <summary>Where to put things.</summary>
-        readonly string _outPath = @"..\..\out";
+        ///// <summary>Where to put things.</summary>
+        //readonly string _outPath = @"..\..\out";
 
         /// <summary>Cosmetics.</summ ary>
         readonly Color _controlColor = Color.Aquamarine;
@@ -60,9 +60,9 @@ namespace Ephemera.MidiLibLite.Test
         {
             InitializeComponent();
 
-            // Make sure out path exists.
-            DirectoryInfo di = new(_outPath);
-            di.Create();
+            //// Make sure out path exists.
+            //DirectoryInfo di = new(_outPath);
+            //di.Create();
 
             // The text output.
             txtViewer.Font = Font;
@@ -182,18 +182,18 @@ namespace Ephemera.MidiLibLite.Test
                 ControllerValue = 60
             };
 
-            // should send midi
-            ch.Patch = 77;
-            if (dev.CollectedEvents.Count != 1) Tell(ERROR, "FAIL");
-
             // should change the instruments list
             var inst1 = ch.Instruments;
             if (inst1.Count != 128) Tell(ERROR, "FAIL");
 
-            ch.AliasFile = @"C:\Dev\Libs\MidiLibLite\_def_files\exp_defs.ini";
+            ch.AliasFile = Path.Combine(Environment.CurrentDirectory, "exp_defs.ini");
 
             var inst2 = ch.Instruments;
             if (inst2.Count != 66) Tell(ERROR, "FAIL");
+
+            // should send midi
+            ch.Patch = 77;
+            if (dev.CollectedEvents.Count != 1) Tell(ERROR, "FAIL");
 
             Tell(INFO, "DONE");
         }
@@ -207,7 +207,7 @@ namespace Ephemera.MidiLibLite.Test
                 Patch = 77,
                 ChannelName = "booga-booga",
                 ChannelNumber = 5,
-                AliasFile = @"C:\Dev\Libs\MidiLibLite\_def_files\exp_defs.ini",
+                //AliasFile = @"..\???.ini",
                 DeviceName = "pdev1",
                 SomeOtherMidi = 88
             };
@@ -228,7 +228,7 @@ namespace Ephemera.MidiLibLite.Test
         /// <summary>Test def file loading.</summary>
         void TestDefs_Click(object sender, EventArgs e)
         {
-            string fn = @"C:\Dev\Libs\MidiLibLite\_def_files\gm_defs.ini"; // TODO1 these files locations
+            string fn = Path.Combine(Environment.CurrentDirectory, "..", "gm_defs.ini");
 
             // key is section name, value is line
             Dictionary<string, List<string>> res = [];
@@ -454,16 +454,16 @@ namespace Ephemera.MidiLibLite.Test
                 }
             }
 
-            if (e.PatchChange)
-            {
-                Tell(INFO, $"PatchChange [{channel.Patch}]");
-                channel.Device.Send(new Patch(channel.ChannelNumber, channel.Patch));
-            }
+            //if (e.PatchChange)
+            //{
+            //    Tell(INFO, $"PatchChange [{channel.Patch}]");
+            //    channel.Device.Send(new Patch(channel.ChannelNumber, channel.Patch));
+            //}
 
-            if (e.AliasFileChange)
-            {
-                Tell(INFO, $"AliasFileChange [{channel.AliasFile}]");
-            }
+            //if (e.AliasFileChange)
+            //{
+            //    Tell(INFO, $"AliasFileChange [{channel.AliasFile}]");
+            //}
         }
 
         /// <summary>
