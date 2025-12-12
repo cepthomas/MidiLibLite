@@ -94,18 +94,12 @@ namespace Ephemera.MidiLibLite.Test
                 //DemoScriptApp();
                 //DemoStandardApp();
             }
-            // catch (MidiLibException ex)
-            // {
-            //     Tell(ERROR, ex.Message);
-            // }
-            // catch (AppException ex)
-            // {
-            //     Tell(ERROR, ex.Message);
-            // }
             catch (Exception ex)
             {
                 Tell(ERROR, ex.Message);
             }
+            // catch (MidiLibException ex)
+            // catch (AppException ex)
 
             base.OnLoad(e);
         }
@@ -133,11 +127,11 @@ namespace Ephemera.MidiLibLite.Test
 
         /// <summary>Test class</summary>
         [Serializable]
-        public class XXXTest
+        public class TypeEditorTestData
         {
             /// <summary>Device name.</summary>
-            [Editor(typeof(XXXTypeEditor), typeof(UITypeEditor))]
-            public string XXXDeviceName { get; set; } = "";
+            [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
+            public string DeviceName { get; set; } = "";
 
             /// <summary>Channel name - optional.</summary>
             public string ChannelName { get; set; } = "";
@@ -152,38 +146,53 @@ namespace Ephemera.MidiLibLite.Test
             public string AliasFile { get; set; } = "";
 
             /// <summary>Current instrument/patch number.</summary>
-            [Editor(typeof(XXXTypeEditor), typeof(UITypeEditor))]
-            [TypeConverter(typeof(XXXConverter))]
+            [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
+            // [TypeConverter(typeof(XXXConverter))]
             [Range(0, MidiDefs.MAX_MIDI)]
-            public int XXXPatch { get; set; } = 0;
+            public int Patch { get; set; } = 0;
 
-            [Browsable(false)]
-            public List<string> XXXDeviceNameOptions { get; set; } = ["dev0", "dev1", "dev2", "dev3", "dev4"];
+            //[Browsable(false)]
+            //public List<string> DeviceNameOptions { get; set; } = [];// ["pdev0", "pdev1", "pdev2", "pdev3", "pdev4"];
 
-            [Browsable(false)]
-            public List<string> XXXPatchOptions { get; set; } = ["pat0", "pat1", "pat2", "pat3", "pat4"];
+            //[Browsable(false)]
+            //public List<string> PatchOptions { get; set; } = [];// ["ppat0", "ppat1", "ppat2", "ppat3", "ppat4"];
 
-            /// <summary>Convenience property.</summary>
-            public Dictionary<int, string> Instruments { get { return _instruments; } }
-            Dictionary<int, string> _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
+            ///// <summary>Convenience property.</summary>
+            //[Browsable(false)]
+            //public Dictionary<int, string> Instruments { get { return _instruments; } }
+            //Dictionary<int, string> _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
         }
 
 
         /// <summary>Test property editing.</summary>
         void Edit_Click(object sender, EventArgs e)
         {
-            XXXTest ttt = new()
+            TypeEditorTestData td = new()
             {
-                XXXPatch = 2,
+                Patch = 2,
                 ChannelName = "booga-booga",
                 ChannelNumber = 5,
                 AliasFile = "somewhere.ini",
-                XXXDeviceName = "dev1",
+                DeviceName = "pdev1",
                 //Instruments =
             };
 
+            // Set up options.
+            List<string> names1 = [];
+            List<string> names2 = [];
+            for (int i = 0; i < 10; i++)
+            {
+                //td.DeviceNameOptions.Add($"dev_{i}_X");
+                //td.PatchOptions.Add($"pat_{i}_X");
+                names1.Add($"dev_{i}_Z");
+                names2.Add($"pat_{i}_Z");
+            }
+
+            GenericListTypeEditor.SetOptions("DeviceName", names1);
+            GenericListTypeEditor.SetOptions("Patch", MidiDefs.TheDefs.GetDefaultInstrumentDefs());
+
             //TODO1:
-            var changes = SettingsEditor.Edit(ttt, "TESTOMATIC", 300);
+            var changes = SettingsEditor.Edit(td, "TESTOMATIC", 300);
 
         }
 

@@ -14,20 +14,51 @@ using System.Reflection;
 
 namespace Ephemera.MidiLibLite
 {
+
+
     /// <summary>Select a XXX from list. Borrowed from IDAS_1_0_4\Source\CommonUi\ColumnSelector.cs</summary>
-    public class XXXTypeEditor : UITypeEditor
+    public class GenericListTypeEditor : UITypeEditor // TODO1 put in NBUI
     {
+
+        // <summary>
+        // This gets set by the client.
+        // </summary>
+
+
+        /// <summary>
+        /// This gets set by the client.
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <param name="options"></param>
+        public static void SetOptions(string propertyName, List<string> options)
+        {
+            _options[propertyName] = options;
+        }
+        static readonly Dictionary<string, List<string>> _options = [];
+
+
         public override object? EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
         {
-            if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service ||
-                context is null || context.Instance is null) { return null; }
+            // test:
+            //return null; // clears UI, can't re-select
+            //return value; // disables dropdown, UI unchanged
+            //throw new Exception("----------------------------"); // message box
 
-            var options = CommonXXX.GetOptions(context);
+            IWindowsFormsEditorService _service = provider.GetService(typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
 
-            if (options is null)
+
+            //if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service ||
+            //    context is null || context.Instance is null) { return null; }
+
+            //var options = CommonXXX.GetOptions(context);
+
+            var propertyName = context.PropertyDescriptor.Name; // "XXXPatch"
+
+            if (!_options.TryGetValue(propertyName, out List<string>? options))
             {
                 //TODO1 error - missing options list - throw?
-                return value;
+                throw new InvalidOperationException($"No options provided for property {propertyName}");
+                //return value;
             }
 
             var lb = new ListBox
@@ -39,76 +70,48 @@ namespace Ephemera.MidiLibLite
             options.ForEach(v => lb.Items.Add(v));
             _service.DropDownControl(lb);
 
-            return lb.SelectedItem is null ? value : lb.SelectedIndex; // TODO1 SelectedIndex(int) or Selection(str)
+
+            switch (value)
+            {
+                case string s: return lb.SelectedItem;
+                case int i: return lb.SelectedIndex;
+                _: throw new InvalidOperationException($"Property {propertyName} type must in or string");
+            }
+
+            return null;
         }
 
         public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) { return UITypeEditorEditStyle.DropDown; }
     }
 
 
-    /// <summary>Convert between int and string.</summary>
-    public class XXXConverter : Int64Converter
+
+    #region Midi value editing
+    /// <summary>Select a midi value from a range. Handles special case of channel number.</summary>
+    public class MidiValueTypeEditor : UITypeEditor // TODO1 use generic?
     {
-        public override object? ConvertTo(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, Type destinationType)
+        public override object? EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
         {
-            if (context is null || context.Instance is null || value is not int) { return base.ConvertTo(context, culture, value, destinationType); }
+            if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service || context is null || context.Instance is null) { return null; }
 
-            var options = CommonXXX.GetOptions(context);
+            var isChan = context.PropertyDescriptor.Name == "ChannelNumber";
+            int start = isChan ? 1 : 0;
+            int end = isChan ? MidiDefs.NUM_CHANNELS : MidiDefs.MAX_MIDI;
 
-            if (options is null)
-            {
-                //TODO1 error - missing options list - throw?
-                return value;
-            }
+            var lb = new ListBox(); // {Width = 50,SelectionMode = SelectionMode.One};
+            Enumerable.Range(start, end).ForEach(v => lb.Items.Add(v.ToString()));
+            lb.Click += (_, __) => _service.CloseDropDown();
+            _service.DropDownControl(lb);
 
-            return options[(int)value];
+            return lb.SelectedItem is null ? value : int.Parse((string)lb.SelectedItem);
         }
 
-        public override object? ConvertFrom(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
-        {
-            if (context is null || context.Instance is null || value is not int) { return base.ConvertFrom(context, culture, value); }
-
-            var options = CommonXXX.GetOptions(context);
-
-            if (options is null)
-            {
-                //TODO1 error - missing options list - throw?
-                return null;// ?? value;
-            }
-
-            var res = options.FirstOrDefault(o => o == (string)value);
-
-            return res;
-        }
+        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) { return UITypeEditorEditStyle.DropDown; }
     }
-
-    class CommonXXX
-    {
-        public static List<string>? GetOptions(ITypeDescriptorContext? context)
-        {
-            var propertyName = context.PropertyDescriptor.Name; // "XXXPatch"
-            // Get corresponding option collection.
-            List<string>? options = null;
-            var t = context.Instance.GetType();
-            var prop = t.GetProperty($"{propertyName}Options"); // is PropertyInfo
-            if (prop != null)
-            {
-                var opts = prop.GetValue(context.Instance, null);
-                if (opts != null && opts is List<string>)
-                {
-                    options = opts as List<string>;
-                }
-            }
-
-            return options;
-        }
-    }
+    #endregion
 
 
-
-
-
-
+#if OLD_EDS
     #region Patch editing
     /// <summary>Select a patch from list.</summary>
     public class PatchTypeEditor : UITypeEditor
@@ -198,31 +201,6 @@ namespace Ephemera.MidiLibLite
     }
     #endregion
 
-
-    #region Midi value editing
-    /// <summary>Select a midi value from a range. Handles special case of channel number.</summary>
-    public class MidiValueTypeEditor : UITypeEditor
-    {
-        public override object? EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
-        {
-            if (provider.GetService(typeof(IWindowsFormsEditorService)) is not IWindowsFormsEditorService _service || context is null || context.Instance is null) { return null; }
-
-            var isChan = context.PropertyDescriptor.Name == "ChannelNumber";
-            int start = isChan ? 1 : 0;
-            int end = isChan ? MidiDefs.NUM_CHANNELS : MidiDefs.MAX_MIDI;
-
-            var lb = new ListBox(); // {Width = 50,SelectionMode = SelectionMode.One};
-            Enumerable.Range(start, end).ForEach(v => lb.Items.Add(v.ToString()));
-            lb.Click += (_, __) => _service.CloseDropDown();
-            _service.DropDownControl(lb);
-
-            return lb.SelectedItem is null ? value : int.Parse((string)lb.SelectedItem);
-        }
-
-        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) { return UITypeEditorEditStyle.DropDown; }
-    }
-    #endregion
-
     #region Device editing
     /// <summary>Select a device from list.</summary>
     public class DeviceTypeEditor : UITypeEditor
@@ -246,4 +224,5 @@ namespace Ephemera.MidiLibLite
         public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) { return UITypeEditorEditStyle.DropDown; }
     }
     #endregion
+#endif
 }

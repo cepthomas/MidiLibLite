@@ -24,6 +24,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="Temp.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="Temp.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="NAudio" Version="2.1.0" />
         <PackageReference Include="NAudio.Midi" Version="2.1.0" />
         <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
