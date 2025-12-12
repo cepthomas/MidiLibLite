@@ -14,9 +14,9 @@ namespace Ephemera.MidiLibLite
     #region Event definitions
     public class BaseMidiEvent
     {
-        /// <summary>Channel 1-NUM_CHANNELS.</summary>
+        /// <summary>Channel number.</summary>
         [Range(1, MidiDefs.NUM_CHANNELS)]
-        public int Channel { get; init; }
+        public int ChannelNumber { get; init; }
 
         /// <summary>Something to tell the client.</summary>
         public string ErrorInfo { get; set; } = "";
@@ -24,7 +24,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"BaseMidiEvent:{Channel} {ErrorInfo}";
+            return $"BaseMidiEvent:{ChannelNumber} {ErrorInfo}";
         }
     }
 
@@ -44,7 +44,7 @@ namespace Ephemera.MidiLibLite
             if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note)); }
             if (velocity is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(velocity)); }
 
-            Channel = channel;
+            ChannelNumber = channel;
             Note  = note;
             Velocity = velocity;
         }
@@ -67,7 +67,7 @@ namespace Ephemera.MidiLibLite
             if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (note is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note)); }
 
-            Channel = channel;
+            ChannelNumber = channel;
             Note  = note;
         }
 
@@ -94,7 +94,7 @@ namespace Ephemera.MidiLibLite
             if (controllerId is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(controllerId)); }
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
 
-            Channel = channel;
+            ChannelNumber = channel;
             ControllerId = controllerId;
             Value = value;
         }
@@ -117,14 +117,14 @@ namespace Ephemera.MidiLibLite
             if (channel is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channel)); }
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
 
-            Channel = channel;
+            ChannelNumber = channel;
             Value = value;
         }
 
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"Channel:{Channel} Patch:{Value}"; // TODO1 get patch name from channel
+            return $"Channel:{ChannelNumber} Patch:{Value}"; // TODO1 get patch name from channel
         }
     }
     #endregion

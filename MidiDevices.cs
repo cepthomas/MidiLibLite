@@ -9,9 +9,7 @@ using NAudio.CoreAudioApi;
 
 namespace Ephemera.MidiLibLite
 {
-    /// <summary>
-    /// A midi input device.
-    /// </summary>
+    /// <summary>A midi input device.</summary>
     public class MidiInputDevice : IInputDevice
     {
         #region Fields
@@ -46,7 +44,7 @@ namespace Ephemera.MidiLibLite
         public MidiInputDevice(string deviceName)
         {
             // Figure out which midi output device.
-            var devs = AvailableDevices();
+            var devs = GetAvailableDevices();
             var ind = devs.IndexOf(deviceName);
             if (ind >= 0)
             {
@@ -64,9 +62,7 @@ namespace Ephemera.MidiLibLite
             }
         }
 
-        /// <summary>
-        /// Resource clean up.
-        /// </summary>
+        /// <summary>Resource clean up.</summary>
         public void Dispose()
         {
             _midiIn?.Stop();
@@ -109,7 +105,7 @@ namespace Ephemera.MidiLibLite
         /// Get a list of available device names.
         /// </summary>
         /// <returns></returns>
-        public static List<string> AvailableDevices()
+        public static List<string> GetAvailableDevices()
         {
             List<string> devs = [];
 
@@ -122,9 +118,7 @@ namespace Ephemera.MidiLibLite
         }
     }
 
-    /// <summary>
-    /// A midi output device.
-    /// </summary>
+    /// <summary>A midi output device.</summary>
     public class MidiOutputDevice : IOutputDevice
     {
         #region Fields
@@ -151,7 +145,7 @@ namespace Ephemera.MidiLibLite
         public MidiOutputDevice(string deviceName)
         {
             // Figure out which midi output device.
-            var devs = AvailableDevices();
+            var devs = GetAvailableDevices();
             var ind = devs.IndexOf(deviceName);
             if (ind >= 0)
             {
@@ -183,10 +177,10 @@ namespace Ephemera.MidiLibLite
         {
             MidiEvent mevt = evt switch
             {
-                NoteOn onevt => new NoteOnEvent(0, onevt.Channel, onevt.Note, onevt.Velocity, 0),
-                NoteOff onevt => new NoteEvent(0, onevt.Channel, MidiCommandCode.NoteOff, onevt.Note, 0),
-                Controller ctlevt => new ControlChangeEvent(0, ctlevt.Channel, (MidiController)ctlevt.ControllerId, ctlevt.Value),
-                Patch pevt => new PatchChangeEvent(0, pevt.Channel, pevt.Value),
+                NoteOn onevt => new NoteOnEvent(0, onevt.ChannelNumber, onevt.Note, onevt.Velocity, 0),
+                NoteOff onevt => new NoteEvent(0, onevt.ChannelNumber, MidiCommandCode.NoteOff, onevt.Note, 0),
+                Controller ctlevt => new ControlChangeEvent(0, ctlevt.ChannelNumber, (MidiController)ctlevt.ControllerId, ctlevt.Value),
+                Patch pevt => new PatchChangeEvent(0, pevt.ChannelNumber, pevt.Value),
                 _ => throw new MidiLibException($"Invalid event: {evt}")
             };
 
@@ -197,7 +191,7 @@ namespace Ephemera.MidiLibLite
         /// Get a list of available device names.
         /// </summary>
         /// <returns></returns>
-        public static List<string> AvailableDevices()
+        public static List<string> GetAvailableDevices()
         {
             List<string> devs = [];
 

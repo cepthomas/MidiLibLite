@@ -9,10 +9,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.ComponentModel.DataAnnotations;
 using Ephemera.NBagOfTricks;
-using Ephemera.MidiLibLite;
 
 
-namespace Ephemera.MidiLib.Test
+namespace Ephemera.MidiLibLite.Test
 {
     public class CustomRenderer : UserControl
     {

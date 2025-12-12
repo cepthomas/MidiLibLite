@@ -80,6 +80,8 @@ namespace Ephemera.MidiLibLite
         /// <returns></returns>
         public OutputChannel OpenMidiOutput(string deviceName, int channelNumber, string channelName, int patch)
         {
+            // TODO2 ?? patch by name => "AcousticGrandPiano"
+
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
             if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channelNumber)); }
@@ -91,22 +93,6 @@ namespace Ephemera.MidiLibLite
                 throw new MidiLibException($"Invalid output device [{deviceName}]");
             }
 
-            //var config = new OutputChannelConfig()
-            //{
-            //    DeviceName = deviceName,
-            //    ChannelName = channelName,
-            //    ChannelNumber = channelNumber,
-            //    AliasFile = "",
-            //    Patch = patch,
-            //    Volume = Defs.DEFAULT_VOLUME
-            //};
-
-            //// Add the channel.
-            //OutputChannel ch = new(config, outdev)
-            //{
-            //    Enable = true,
-            //};
-
             // Add the channel.
             OutputChannel ch = new(outdev, channelNumber)
             {
@@ -117,9 +103,6 @@ namespace Ephemera.MidiLibLite
             };
 
             _outputChannels.Add(ch.Handle, ch);
-
-            // Send the patch now.
-            // outdev.Send(new Patch(channelNumber, patch));
 
             return ch;
         }
@@ -143,7 +126,7 @@ namespace Ephemera.MidiLibLite
                 // Is it a new device? Try to create it.
 
                 // Midi input device?
-                if (MidiInputDevice.AvailableDevices().Contains(deviceName))
+                if (MidiInputDevice.GetAvailableDevices().Contains(deviceName))
                 {
                     dev = new MidiInputDevice(deviceName) { Id = _inputDevices.Count + 1 };
                 }
@@ -194,7 +177,7 @@ namespace Ephemera.MidiLibLite
                 // Is it a new device? Try to create it.
 
                 // Midi output device?
-                if (MidiOutputDevice.AvailableDevices().Contains(deviceName))
+                if (MidiOutputDevice.GetAvailableDevices().Contains(deviceName))
                 {
                     dev = new MidiOutputDevice(deviceName) { Id = _outputDevices.Count + 1 };
                 }
@@ -254,7 +237,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="channel"></param>
         public void Kill(OutputChannel? channel = null)
         {
-            int cc = 120; // TODO1 fix magical knowledge MidiDefs.GetControllerNumber("AllNotesOff");
+            int cc = 120; // TODO2 fix magical knowledge MidiDefs.GetControllerNumber("AllNotesOff");
 
             if (channel is null)
             {

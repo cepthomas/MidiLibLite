@@ -18,7 +18,9 @@ using System.Windows.Forms.Design;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 using Ephemera.MidiLibLite;
-using Ephemera.MidiLib.Test;
+
+
+//?? TODO2 generate lua versions of mididefs and musicdefs from ini files?
 
 
 namespace Ephemera.MidiLibLite.Test
@@ -32,7 +34,7 @@ namespace Ephemera.MidiLibLite.Test
         /// <summary>Where to put things.</summary>
         readonly string _outPath = @"..\..\out";
 
-        /// <summary>Cosmetics.</summary>
+        /// <summary>Cosmetics.</summ ary>
         readonly Color _controlColor = Color.Aquamarine;
 
         /// <summary>Cosmetics.</summary>
@@ -122,10 +124,18 @@ namespace Ephemera.MidiLibLite.Test
         }
         #endregion
 
+        //-------------------------------------------------------------------------------//
+        /// <summary>Test property editing.</summary>
+        void Edit_Click(object sender, EventArgs e)
+        {
+            //PropertyEdit();
+
+            ChannelEdit();
+        }
 
         #region Do some work
 
-        /// <summary>Test class</summary>
+        /// <summary>TypeEditor test class</summary>
         [Serializable]
         public class TypeEditorTestData
         {
@@ -141,61 +151,81 @@ namespace Ephemera.MidiLibLite.Test
             [Range(1, MidiDefs.NUM_CHANNELS)]
             public int ChannelNumber { get; set; } = 1;
 
+            /// <summary>Actual 1-based midi channel number.</summary>
+            [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
+            [Range(0, MidiDefs.MAX_MIDI)]
+            public int SomeOtherMidi { get; set; } = 0;
+
             /// <summary>Override default instrument presets.</summary>
             [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
             public string AliasFile { get; set; } = "";
 
             /// <summary>Current instrument/patch number.</summary>
             [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
-            // [TypeConverter(typeof(XXXConverter))]
+            [TypeConverter(typeof(GenericConverter))]
             [Range(0, MidiDefs.MAX_MIDI)]
             public int Patch { get; set; } = 0;
-
-            //[Browsable(false)]
-            //public List<string> DeviceNameOptions { get; set; } = [];// ["pdev0", "pdev1", "pdev2", "pdev3", "pdev4"];
-
-            //[Browsable(false)]
-            //public List<string> PatchOptions { get; set; } = [];// ["ppat0", "ppat1", "ppat2", "ppat3", "ppat4"];
-
-            ///// <summary>Convenience property.</summary>
-            //[Browsable(false)]
-            //public Dictionary<int, string> Instruments { get { return _instruments; } }
-            //Dictionary<int, string> _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
         }
 
 
+        //-------------------------------------------------------------------------------//
         /// <summary>Test property editing.</summary>
-        void Edit_Click(object sender, EventArgs e)
+        void ChannelEdit()
+        {
+            // Dummy channel to satisfy designer. Will be overwritten by the real one.
+            var dev = new NullOutputDevice("DUMMY_DEVICE");
+            //BoundChannel = new OutputChannel(dev, 9);
+
+            OutputChannel ch = new(dev, 3)
+            {
+                ChannelName = "booga-booga",
+                ControllerId = 45,
+                ControllerValue = 60
+            };
+
+            // should send midi
+            ch.Patch = 77;
+            if (dev.CollectedEvents.Count != 1) Tell(ERROR, "FAIL");
+
+            // should change the instruments list
+            var inst1 = ch.Instruments;
+            if (inst1.Count != 128) Tell(ERROR, "FAIL");
+
+            ch.AliasFile = @"C:\Dev\Libs\MidiLibLite\_def_files\exp_defs.ini";
+
+            var inst2 = ch.Instruments;
+            if (inst2.Count != 66) Tell(ERROR, "FAIL");
+
+            Tell(INFO, "DONE");
+        }
+
+        //-------------------------------------------------------------------------------//
+        /// <summary>Test property editing.</summary>
+        void PropertyEdit()
         {
             TypeEditorTestData td = new()
             {
-                Patch = 2,
+                Patch = 77,
                 ChannelName = "booga-booga",
                 ChannelNumber = 5,
-                AliasFile = "somewhere.ini",
+                AliasFile = @"C:\Dev\Libs\MidiLibLite\_def_files\exp_defs.ini",
                 DeviceName = "pdev1",
-                //Instruments =
+                SomeOtherMidi = 88
             };
 
             // Set up options.
-            List<string> names1 = [];
-            List<string> names2 = [];
-            for (int i = 0; i < 10; i++)
-            {
-                //td.DeviceNameOptions.Add($"dev_{i}_X");
-                //td.PatchOptions.Add($"pat_{i}_X");
-                names1.Add($"dev_{i}_Z");
-                names2.Add($"pat_{i}_Z");
-            }
+            var insts = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
+            IEnumerable<string> orderedValues = insts.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
+            var instsList = orderedValues.ToList();
 
-            GenericListTypeEditor.SetOptions("DeviceName", names1);
-            GenericListTypeEditor.SetOptions("Patch", MidiDefs.TheDefs.GetDefaultInstrumentDefs());
+            GenericListTypeEditor.SetOptions("DeviceName", MidiOutputDevice.GetAvailableDevices());
+            GenericListTypeEditor.SetOptions("Patch", instsList);
 
-            //TODO1:
             var changes = SettingsEditor.Edit(td, "TESTOMATIC", 300);
-
+            changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
         }
 
+        //-------------------------------------------------------------------------------//
         /// <summary>Test def file loading.</summary>
         void TestDefs_Click(object sender, EventArgs e)
         {
@@ -211,6 +241,7 @@ namespace Ephemera.MidiLibLite.Test
             });
         }
 
+        //-------------------------------------------------------------------------------//
         /// <summary>Test dynamic UI creation.</summary>
         void Demo_Click(object sender, EventArgs e)
         {
@@ -222,21 +253,19 @@ namespace Ephemera.MidiLibLite.Test
             {
                 Tell(ERROR, ex.Message);
             }
-
         }
 
+        //-------------------------------------------------------------------------------//
         /// <summary>A standard app where controls are defined in VS designer.</summary>
         void DemoStandardApp()
         {
             // Create channels and initialize controls.
-            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);  // TODO1 patch by name => "AcousticGrandPiano"
-            var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12); // => ???);
+            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);
+            var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12);
 
             List<(OutputChannel, ChannelControl)> channels = [(chan_out1, ch_ctrl1), (chan_out2, ch_ctrl2)];
             channels.ForEach(ch =>
             {
-                //                ch.Item1.UpdatePresetsTODO1();
-
                 ch.Item2.BorderStyle = BorderStyle.FixedSingle;
                 ch.Item2.ControlColor = _controlColor;
                 ch.Item2.SelectedColor = _selectedColor;
@@ -246,7 +275,7 @@ namespace Ephemera.MidiLibLite.Test
                 ch.Item2.BoundChannel = ch.Item1;
 
                 var rend = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
-                rend.SendMidi += Rend_SendMidi;
+                rend.SendMidi += ChannelControl_SendMidi;
                 ch.Item2.UserRenderer = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
             });
 
@@ -254,9 +283,8 @@ namespace Ephemera.MidiLibLite.Test
             // ????
         }
 
-        /// <summary>
-        /// App driven by a script - as Nebulua/Nebulator. Creates channels and controls dynamically.
-        /// </summary>
+        //-------------------------------------------------------------------------------//
+        /// <summary>App driven by a script - as Nebulua/Nebulator. Creates channels and controls dynamically.</summary>
         void DemoScriptApp()
         {
             ///// 0 - pre-steps - only for this demo
@@ -264,8 +292,8 @@ namespace Ephemera.MidiLibLite.Test
             ch_ctrl2.Hide();
 
             ///// 1 - create all channels
-            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "keys", 0); // TODO1 => AcousticGrandPiano);
-            var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 10, "drums", 32); // => kit.Jazz);
+            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "keys", 0);
+            var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 10, "drums", 32);
             var chan_in1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
 
             ///// 2 - create a control for each channel and bind object
@@ -275,10 +303,8 @@ namespace Ephemera.MidiLibLite.Test
             List<OutputChannel> channels = [chan_out1, chan_out2];
             channels.ForEach(chan =>
             {
-                //                chan.UpdatePresetsTODO1();
-
                 var rend = new CustomRenderer() { ChannelHandle = chan.Handle };
-                rend.SendMidi += Rend_SendMidi;
+                rend.SendMidi += ChannelControl_SendMidi;
 
                 var ctrl = new ChannelControl()
                 {
@@ -315,7 +341,7 @@ namespace Ephemera.MidiLibLite.Test
         }
         #endregion
 
-        #region script api functions
+        #region Script api functions
         /// <summary>
         /// api.send_midi_note(hnd_strings, note_num, volume)
         /// </summary>
@@ -377,38 +403,22 @@ namespace Ephemera.MidiLibLite.Test
 
         #region Events
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Rend_SendMidi(object? sender, BaseMidiEvent e)
-        {
-            var rend = sender as CustomRenderer;
-
-            var channel = _mgr.GetOutputChannel(rend.ChannelHandle);
-
-            Tell(INFO, $"Channel send [{e}]");
-
-            if (channel.Enable)
-            {
-                channel.Device.Send(e);
-            }
-        }
-
-        /// <summary>
-        /// UI clicked something -> send some midi.
+        /// UI clicked something -> send some midi. Works for different sources.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void ChannelControl_SendMidi(object? sender, BaseMidiEvent e)
         {
-            var cc = sender as ChannelControl;
-            var channel = cc!.BoundChannel!;
-
-            Tell(INFO, $"Channel send [{e}]");
-
-            if (channel.Enable)
+            var channel = sender switch
             {
+                ChannelControl => (sender as ChannelControl)!.BoundChannel,
+                CustomRenderer => _mgr.GetOutputChannel((sender as CustomRenderer)!.ChannelHandle),
+                _ => null // should never happen
+            };
+
+            if (channel is not null && channel.Enable)
+            {
+                Tell(INFO, $"Channel send [{e}]");
                 channel.Device.Send(e);
             }
         }
@@ -454,7 +464,6 @@ namespace Ephemera.MidiLibLite.Test
             if (e.AliasFileChange)
             {
                 Tell(INFO, $"AliasFileChange [{channel.AliasFile}]");
-                //channel.UpdatePresetsTODO1();
             }
         }
 

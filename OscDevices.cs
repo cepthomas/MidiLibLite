@@ -169,7 +169,7 @@ namespace Ephemera.MidiLibLite
                         case NoteOn evt:
                             // /noteon/ channel notenum
                             msg = new NebOsc.Message() { Address = "/noteon" };
-                            msg.Data.Add(evt.Channel);
+                            msg.Data.Add(evt.ChannelNumber);
                             msg.Data.Add(evt.Note);
                             msg.Data.Add(evt.Velocity);
                             break;
@@ -177,14 +177,14 @@ namespace Ephemera.MidiLibLite
                         case NoteOff evt:// when evt.Velocity == 0: // aka NoteOff
                             // /noteoff/ channel notenum
                             msg = new NebOsc.Message() { Address = "/noteoff" };
-                            msg.Data.Add(evt.Channel);
+                            msg.Data.Add(evt.ChannelNumber);
                             msg.Data.Add(evt.Note);
                             break;
 
                         case Controller evt:
                             // /controller/ channel ctlnum val
                             msg = new NebOsc.Message() { Address = "/controller" };
-                            msg.Data.Add(evt.Channel);
+                            msg.Data.Add(evt.ChannelNumber);
                             msg.Data.Add(evt.ControllerId);
                             msg.Data.Add(evt.Value);
                             break;
@@ -192,7 +192,7 @@ namespace Ephemera.MidiLibLite
                         case Patch evt:
                             // /patch/ channel patchnum
                             msg = new NebOsc.Message() { Address = "/patch" };
-                            msg.Data.Add(evt.Channel);
+                            msg.Data.Add(evt.ChannelNumber);
                             msg.Data.Add(evt.Value);
                             break;
 

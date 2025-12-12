@@ -14,6 +14,7 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLibLite
 {
+    /// <summary>Some flavors of control need to be defeatured.</summary>
     [Flags]
     public enum ChannelControlOptions
     {
@@ -55,24 +56,17 @@ namespace Ephemera.MidiLibLite
         }
     }
 
-
-
-
-
     //----------------------------------------------------------------
     /// <summary>Describes one midi output channel.</summary>
     public class OutputChannel
     {
         #region Properties
-        ///// <summary>Device name.</summary>
-    //    public string DeviceName { get; set; } = "";
-
         /// <summary>Channel name - optional.</summary>
         public string ChannelName { get; set; } = "";
 
         /// <summary>Actual 1-based midi channel number.</summary>
         [Range(1, MidiDefs.NUM_CHANNELS)]
-        public int ChannelNumber { get; set; } = 1;
+        public int ChannelNumber { get; private set; } = 1;
 
         /// <summary>Override default instrument presets.</summary>
         public string AliasFile
@@ -87,13 +81,14 @@ namespace Ephemera.MidiLibLite
                 {
                     try
                     {
+                        _instruments.Clear();
                         var ir = new IniReader(_aliasFile);
                         var defs = ir.Contents["instruments"];
                         defs.Values.ForEach(kv =>
                         {
                             int i = int.Parse(kv.Key); // can throw
                             i = MathUtils.Constrain(i, 0, MidiDefs.MAX_MIDI);
-                            _instruments[i] = kv.Value.Length > 0 ? kv.Value : "";
+                            _instruments.Add(i, kv.Value.Length > 0 ? kv.Value : "");
                         });
                     }
                     catch (Exception ex)
@@ -146,8 +141,9 @@ namespace Ephemera.MidiLibLite
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
 
-        /// <summary>Convenience property for type editors etc.</summary>
+        /// <summary>Convenience property for testing. TODO1 ??</summary>
         public Dictionary<int, string> Instruments { get { return _instruments; } }
+
         Dictionary<int, string> _instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
         #endregion
 
@@ -180,9 +176,6 @@ namespace Ephemera.MidiLibLite
     public class InputChannel
     {
         #region Properties
-        ///// <summary>Device name.</summary>
-        //public string DeviceName { get; set; } = "";
-
         /// <summary>Channel name - optional.</summary>
         public string ChannelName { get; set; } = "";
 

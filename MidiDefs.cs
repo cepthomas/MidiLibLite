@@ -7,7 +7,7 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLibLite
 {
-    public class MidiDefs // from all Midi*
+    public class MidiDefs
     {
         /// <summary>The global collection.</summary>
         public static MidiDefs TheDefs { get; set; } = new();
@@ -39,9 +39,7 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Lifecycle
-        /// <summary>
-        /// Initialize some collections.
-        /// </summary>
+        /// <summary>Initialize some collections.</summary>
         public MidiDefs()
         {
             string fn = @"C:\Dev\Libs\MidiLibLite\_def_files\gm_defs.ini";
@@ -55,7 +53,7 @@ namespace Ephemera.MidiLibLite
             DoSection("controllers", _controllerIds);
             DoSection("drums", _drums);
             DoSection("drumkits", _drumKits);
-            // Special case.
+            // Special case. TODO2 useful?
             Enumerable.Range(0, MAX_MIDI).ForEach(c => _controllerIdsAll.Add(c, $"CTLR_{c}"));
             DoSection("controllers", _controllerIdsAll);
 

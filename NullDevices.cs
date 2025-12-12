@@ -38,9 +38,6 @@ namespace Ephemera.MidiLibLite
             DeviceName = deviceName;
         }
 
-        /// <summary>
-        /// Resource clean up.
-        /// </summary>
         public void Dispose()
         {
         }
@@ -73,9 +70,6 @@ namespace Ephemera.MidiLibLite
             DeviceName = deviceName;
         }
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
         public void Dispose()
         {
         }

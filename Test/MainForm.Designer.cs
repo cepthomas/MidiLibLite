@@ -27,7 +27,7 @@ namespace Ephemera.MidiLibLite.Test
             ch_ctrl1 = new ChannelControl();
             ch_ctrl2 = new ChannelControl();
             btnDemo = new System.Windows.Forms.Button();
-            btnEdit = new System.Windows.Forms.Button();
+            btnTestEdit = new System.Windows.Forms.Button();
             propGrid = new System.Windows.Forms.PropertyGrid();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -122,15 +122,15 @@ namespace Ephemera.MidiLibLite.Test
             btnDemo.UseVisualStyleBackColor = true;
             btnDemo.Click += Demo_Click;
             // 
-            // btnEdit
+            // btnTestEdit
             // 
-            btnEdit.Location = new System.Drawing.Point(266, 41);
-            btnEdit.Name = "btnEdit";
-            btnEdit.Size = new System.Drawing.Size(89, 45);
-            btnEdit.TabIndex = 108;
-            btnEdit.Text = "edit";
-            btnEdit.UseVisualStyleBackColor = true;
-            btnEdit.Click += Edit_Click;
+            btnTestEdit.Location = new System.Drawing.Point(266, 41);
+            btnTestEdit.Name = "btnTestEdit";
+            btnTestEdit.Size = new System.Drawing.Size(89, 45);
+            btnTestEdit.TabIndex = 108;
+            btnTestEdit.Text = "test edit";
+            btnTestEdit.UseVisualStyleBackColor = true;
+            btnTestEdit.Click += Edit_Click;
             // 
             // propGrid
             // 
@@ -145,7 +145,7 @@ namespace Ephemera.MidiLibLite.Test
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1092, 600);
             Controls.Add(propGrid);
-            Controls.Add(btnEdit);
+            Controls.Add(btnTestEdit);
             Controls.Add(btnDemo);
             Controls.Add(ch_ctrl2);
             Controls.Add(ch_ctrl1);
@@ -173,10 +173,10 @@ namespace Ephemera.MidiLibLite.Test
         private System.Windows.Forms.ToolStripButton btnKillMidi;
         private ChannelControl ch_ctrl1;
         private ChannelControl ch_ctrl2;
+        private System.Windows.Forms.PropertyGrid propGrid;
         private System.Windows.Forms.Button btnTestDefs;
         private System.Windows.Forms.Button btnDemo;
-        private System.Windows.Forms.Button btnEdit;
-        private System.Windows.Forms.PropertyGrid propGrid;
+        private System.Windows.Forms.Button btnTestEdit;
     }
 }
 

@@ -25,11 +25,13 @@ namespace Ephemera.MidiLibLite
         public enum ChannelState { Normal, Solo, Mute }
 
         /// <summary>Notify host of UI changes.</summary>
-        public class ChannelChangeEventArgs : EventArgs
+        public class ChannelChangeEventArgs : EventArgs // TODO2 clean up
         {
+            public bool InfoChange { get; set; } = false;
+            public bool StateChange { get; set; } = false;
+
             public bool PatchChange { get; set; } = false;
             public bool ChannelNumberChange { get; set; } = false;
-            public bool StateChange { get; set; } = false;
             public bool AliasFileChange { get; set; } = false;
         }
         #endregion
@@ -285,25 +287,12 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Handlers for user selections
-        // /// <summary>Edit channel properties. Notifies client of any changes.</summary>
-        // void ChannelInfo_Click(object? sender, EventArgs e)
-        // {
-        //     //TODO1:
-        //     var changes = SettingsEditor.Edit(BoundChannel.Config, "Channel", 300);
-
-        //     // Notify client.
-        //     ChannelChangeEventArgs args = new()
-        //     {
-        //        ChannelNumberChange = changes.Any(ch => ch.name == "ChannelNumber"),
-        //        PatchChange = changes.Any(ch => ch.name == "Patch"),
-        //        AliasFileChange = changes.Any(ch => ch.name == "AliasFile"),
-        //        StateChange = false
-        //     };
-
-        //     ChannelChange?.Invoke(this, new() { ChannelNumberChange = true });
-
-        //     UpdateUi();
-        // }
+        // /// <summary>User clicked info. Maybe host would like to do something.</summary>
+        void ChannelInfo_Click(object? sender, EventArgs e)
+        {
+            // Notify client.
+            ChannelChange?.Invoke(this, new() { InfoChange = true });
+        }
 
         /// <summary>Handles solo and mute.</summary>
         void SoloMute_Click(object? sender, EventArgs e)
