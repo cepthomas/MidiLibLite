@@ -26,10 +26,10 @@ namespace Ephemera.MidiLibLite
         readonly List<IInputDevice> _inputDevices = [];
 
         /// <summary>All the output channels. Key is handle.</summary>
-        readonly Dictionary<int, OutputChannel> _outputChannels = [];
+        readonly List<OutputChannel> _outputChannels = [];
 
         /// <summary>All the input channels. Key is handle.</summary>
-        readonly Dictionary<int, InputChannel> _inputChannels = [];
+        readonly List<InputChannel> _inputChannels = [];
         #endregion
 
         #region Events
@@ -65,7 +65,7 @@ namespace Ephemera.MidiLibLite
                 Enable = true,
             };
 
-            _inputChannels.Add(ch.Handle, ch);
+            _inputChannels.Add(ch);
 
             return ch;
         }
@@ -100,7 +100,7 @@ namespace Ephemera.MidiLibLite
                 Volume = Defs.DEFAULT_VOLUME
             };
 
-            _outputChannels.Add(ch.Handle, ch);
+            _outputChannels.Add(ch);
 
             return ch;
         }
@@ -124,7 +124,7 @@ namespace Ephemera.MidiLibLite
                 // Is it a new device? Try to create it.
 
                 // Midi input device?
-                if (MidiInputDevice.GetAvailableDevices().Contains(deviceName))
+                if (DeviceUtils.GetAvailableInputDevices().Contains(deviceName))
                 {
                     dev = new MidiInputDevice(deviceName) { Id = _inputDevices.Count + 1 };
                 }
@@ -175,7 +175,7 @@ namespace Ephemera.MidiLibLite
                 // Is it a new device? Try to create it.
 
                 // Midi output device?
-                if (MidiOutputDevice.GetAvailableDevices().Contains(deviceName))
+                if (DeviceUtils.GetAvailableOutputDevices().Contains(deviceName))
                 {
                     dev = new MidiOutputDevice(deviceName) { Id = _outputDevices.Count + 1 };
                 }
@@ -220,7 +220,7 @@ namespace Ephemera.MidiLibLite
 
         #region Misc
         /// <summary>
-        /// Helper. A bit klunky?
+        /// Helper. A bit klunky? TODO1 Also maybe an int overload?
         /// </summary>
         /// <param name="chnd"></param>
         /// <returns>The channel.</returns>

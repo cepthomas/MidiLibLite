@@ -44,10 +44,17 @@ namespace Ephemera.MidiLibLite
 
         /// <summary>Operator to convert to int handle.</summary>
         /// <param name="ch"></param>
-        public static implicit operator int(ChannelHandle ch)
+        public int Raw()
         {
-            return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Output ? OUTPUT_FLAG : OUTPUT_FLAG);
+            return (DeviceId << 8) | ChannelNumber | (Output ? OUTPUT_FLAG : OUTPUT_FLAG);
         }
+
+        ///// <summary>Operator to convert to int handle.</summary>
+        ///// <param name="ch"></param>
+        //public static implicit operator int(ChannelHandle ch)
+        //{
+        //    return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Output ? OUTPUT_FLAG : OUTPUT_FLAG);
+        //}
 
         /// <summary>See me.</summary>
         public override readonly string ToString()

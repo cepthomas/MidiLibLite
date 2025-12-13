@@ -100,22 +100,6 @@ namespace Ephemera.MidiLibLite
         {
             // Just ignore? or ErrorInfo = $"Message:0x{e.RawMessage:X8}";
         }
-
-        /// <summary>
-        /// Get a list of available device names.
-        /// </summary>
-        /// <returns></returns>
-        public static List<string> GetAvailableDevices()
-        {
-            List<string> devs = [];
-
-            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
-            {
-                devs.Add(MidiIn.DeviceInfo(i).ProductName);
-            }
-
-            return devs;
-        }
     }
 
     /// <summary>A midi output device.</summary>
@@ -186,12 +170,33 @@ namespace Ephemera.MidiLibLite
 
             _midiOut?.Send(mevt.GetAsShortMessage());
         }
+    }
+
+
+    /// <summary>Bonus stuff.</summary>
+    public class DeviceUtils
+    {
+        /// <summary>
+        /// Get a list of available device names.
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> GetAvailableInputDevices()
+        {
+            List<string> devs = [];
+
+            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
+            {
+                devs.Add(MidiIn.DeviceInfo(i).ProductName);
+            }
+
+            return devs;
+        }
 
         /// <summary>
         /// Get a list of available device names.
         /// </summary>
         /// <returns></returns>
-        public static List<string> GetAvailableDevices()
+        public static List<string> GetAvailableOutputDevices()
         {
             List<string> devs = [];
 
@@ -201,6 +206,46 @@ namespace Ephemera.MidiLibLite
             }
 
             return devs;
+        }
+
+        /// <summary>
+        /// Get text suitable for help.
+        /// </summary>
+        /// <returns></returns>
+        public static string GetDevicesDoc()
+        {
+            List<string> ls = [];
+
+            // Show them what they have.
+            var outs = GetAvailableOutputDevices();
+            var ins = GetAvailableInputDevices();
+
+            ls.Add($"# Your Midi Devices");
+
+            ls.Add($"");
+            ls.Add($"## Inputs");
+            ls.Add($"");
+            GetAvailableInputDevices().ForEach(d => ls.Add($"- [{d}]"));
+            if (ins.Count == 0)
+            {
+                ls.Add($"- None");
+            }
+            else
+            {
+                ins.ForEach(d => ls.Add($"- [{d}]"));
+            }
+
+            ls.Add($"## Outputs");
+            if (outs.Count == 0)
+            {
+                ls.Add($"- None");
+            }
+            else
+            {
+                outs.ForEach(d => ls.Add($"- [{d}]"));
+            }
+
+            return string.Join(Environment.NewLine, ls);
         }
     }
 }
