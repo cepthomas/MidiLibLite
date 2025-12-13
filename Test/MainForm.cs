@@ -348,7 +348,7 @@ namespace Ephemera.MidiLibLite.Test
         /// <param name="note_num"></param>
         /// <param name="volume"></param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        void SendMidiNote(ChannelHandle chnd, int note_num, double volume)
+        void SendMidiNote(int chnd, int note_num, double volume)
         {
             if (note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note_num)); }
 
@@ -370,7 +370,7 @@ namespace Ephemera.MidiLibLite.Test
         /// <param name="controller_id"></param>
         /// <param name="value"></param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        void SendMidiController(ChannelHandle chnd, int controller_id, int value)
+        void SendMidiController(int chnd, int controller_id, int value)
         {
             if (controller_id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(controller_id)); }
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
@@ -385,7 +385,7 @@ namespace Ephemera.MidiLibLite.Test
         /// <param name="chnd"></param>
         /// <param name="note_num"></param>
         /// <param name="volume"></param>
-        void ReceiveMidiNote(ChannelHandle chnd, int note_num, double volume)
+        void ReceiveMidiNote(int chnd, int note_num, double volume)
         {
         }
 
@@ -395,7 +395,7 @@ namespace Ephemera.MidiLibLite.Test
         /// <param name="chnd"></param>
         /// <param name="controller_id"></param>
         /// <param name="value"></param>
-        void ReceiveMidiController(ChannelHandle chnd, int controller_id, int value)
+        void ReceiveMidiController(int chnd, int controller_id, int value)
         {
         }
         #endregion

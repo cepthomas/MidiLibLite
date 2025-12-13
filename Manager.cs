@@ -25,12 +25,14 @@ namespace Ephemera.MidiLibLite
         /// <summary>All midi devices to use for receive. Index is the id.</summary>
         readonly List<IInputDevice> _inputDevices = [];
 
-        /// <summary>All the output channels. Key is handle.</summary>
+        /// <summary>All the output channels.</summary>
         readonly List<OutputChannel> _outputChannels = [];
 
-        /// <summary>All the input channels. Key is handle.</summary>
+        /// <summary>All the input channels.</summary>
         readonly List<InputChannel> _inputChannels = [];
         #endregion
+
+        
 
         #region Events
         /// <summary>Handler for message arrived.</summary>
@@ -47,6 +49,8 @@ namespace Ephemera.MidiLibLite
         /// <returns></returns>
         public InputChannel OpenMidiInput(string deviceName, int channelNumber, string channelName)
         {
+            var ii = _outputChannels.AsEnumerable();
+
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
             if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channelNumber)); }
@@ -219,27 +223,27 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Misc
-        /// <summary>
-        /// Helper. A bit klunky? TODO1 Also maybe an int overload?
-        /// </summary>
-        /// <param name="chnd"></param>
-        /// <returns>The channel.</returns>
-        public OutputChannel GetOutputChannel(ChannelHandle chnd)
-        {
-            return _outputChannels[chnd];
-        }
+        ///// <summary>
+        ///// Helper. A bit klunky? TODO1 Also maybe an int overload?
+        ///// </summary>
+        ///// <param name="chnd"></param>
+        ///// <returns>The channel.</returns>
+        //public OutputChannel? GetOutputChannel(int chnd)
+        //{
+        //    return _outputChannels.Find(ch => ch.Handle == chnd);
+        //}
 
         /// <summary>
         /// Stop all midi. Doesn't throw.
         /// </summary>
-        /// <param name="channel"></param>
+        /// <param name="channel">Specific channel or all if null.</param>
         public void Kill(OutputChannel? channel = null)
         {
             int cc = 120; // fix magical knowledge => "AllNotesOff"
 
             if (channel is null)
             {
-                _outputChannels.ForEach(ch => ch.Value.Device.Send(new Controller(ch.Value.ChannelNumber, cc, 0)));
+                _outputChannels.ForEach(ch => ch.Device.Send(new Controller(ch.ChannelNumber, cc, 0)));
             }
             else
             {

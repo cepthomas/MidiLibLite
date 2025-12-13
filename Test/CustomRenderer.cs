@@ -31,7 +31,7 @@ namespace Ephemera.MidiLibLite.Test
 
         #region Properties
         /// <summary>Context.</summary>
-        public ChannelHandle ChannelHandle { get; init; }
+        public int ChannelHandle { get; init; }
         #endregion
 
         #region Events

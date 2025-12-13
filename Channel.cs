@@ -24,44 +24,67 @@ namespace Ephemera.MidiLibLite
         All = 0x0F, // of above
     }
 
-    //----------------------------------------------------------------
-    /// <summary>References one channel. Supports translation to/from script unique int handle.</summary>
-    /// <param name="DeviceId">Unique number</param>
-    /// <param name="ChannelNumber">Midi channel 1-based</param>
-    /// <param name="Output">T or F</param>
-    public record struct ChannelHandle(int DeviceId, int ChannelNumber, bool Output)
+    public class ChannelHandle
     {
-        const int OUTPUT_FLAG = 0x8000;
+        const int OUTPUT_FLAG = 0x0800;
 
-        /// <summary>Create from int handle.</summary>
-        /// <param name="handle"></param>
-        public ChannelHandle(int handle) : this(-1, -1, false)
+        public static int Encode(int DeviceId, int ChannelNumber, bool Output)
         {
-            Output = (handle & OUTPUT_FLAG) > 0;
-            DeviceId = ((handle & ~OUTPUT_FLAG) >> 8) & 0xFF;
-            ChannelNumber = (handle & ~OUTPUT_FLAG) & 0xFF;
+            return (int)(DeviceId << 4) | ChannelNumber | (Output ? OUTPUT_FLAG : OUTPUT_FLAG);
         }
 
-        /// <summary>Operator to convert to int handle.</summary>
-        /// <param name="ch"></param>
-        public int Raw()
+        public static (int DeviceId, int ChannelNumber, bool Output) Decode(int Handle)
         {
-            return (DeviceId << 8) | ChannelNumber | (Output ? OUTPUT_FLAG : OUTPUT_FLAG);
+            var output = (Handle & OUTPUT_FLAG) > 0;
+            var deviceId = ((Handle & ~OUTPUT_FLAG) >> 4) & 0x0F;
+            var channelNumber = (Handle & ~OUTPUT_FLAG) & 0xF0;
+            return (deviceId, channelNumber, output);
         }
 
-        ///// <summary>Operator to convert to int handle.</summary>
-        ///// <param name="ch"></param>
-        //public static implicit operator int(ChannelHandle ch)
-        //{
-        //    return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Output ? OUTPUT_FLAG : OUTPUT_FLAG);
-        //}
-
-        /// <summary>See me.</summary>
-        public override readonly string ToString()
+        public static string Format(int Handle)
         {
-            return $"{(Output ? "OUT" : "IN")}  {DeviceId}:{ChannelNumber}";
+            var parts = Decode(Handle);
+            return $"{(parts.Output ? "OUT" : "IN")}  {parts.DeviceId}:{parts.ChannelNumber}";
         }
     }
+
+    //----------------------------------------------------------------
+    ///// <summary>References one channel. Supports translation to/from script unique int handle.</summary>
+    ///// <param name="DeviceId">Unique number</param>
+    ///// <param name="ChannelNumber">Midi channel 1-based</param>
+    ///// <param name="Output">T or F</param>
+    //public record struct ChannelHandle(int DeviceId, int ChannelNumber, bool Output)
+    //{
+    //    const int OUTPUT_FLAG = 0x8000;
+
+    //    /// <summary>Create from int handle.</summary>
+    //    /// <param name="handle"></param>
+    //    public ChannelHandle(int handle) : this(-1, -1, false)
+    //    {
+    //        Output = (handle & OUTPUT_FLAG) > 0;
+    //        DeviceId = ((handle & ~OUTPUT_FLAG) >> 8) & 0xFF;
+    //        ChannelNumber = (handle & ~OUTPUT_FLAG) & 0xFF;
+    //    }
+
+    //    ///// <summary>Operator to convert to int handle.</summary>
+    //    //public int Raw()
+    //    //{
+    //    //    return (DeviceId << 8) | ChannelNumber | (Output ? OUTPUT_FLAG : OUTPUT_FLAG);
+    //    //}
+
+    //    /// <summary>Operator to convert to int handle.</summary>
+    //    /// <param name="ch"></param>
+    //    public static implicit operator int(ChannelHandle ch)
+    //    {
+    //        return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Output ? OUTPUT_FLAG : OUTPUT_FLAG);
+    //    }
+
+    //    /// <summary>See me.</summary>
+    //    public override readonly string ToString()
+    //    {
+    //        return $"{(Output ? "OUT" : "IN")}  {DeviceId}:{ChannelNumber}";
+    //    }
+    //}
 
     //----------------------------------------------------------------
     /// <summary>Describes one midi output channel.</summary>
@@ -144,7 +167,7 @@ namespace Ephemera.MidiLibLite
         public IOutputDevice Device { get; init; }
 
         /// <summary>Handle for use by scripts.</summary>
-        public ChannelHandle Handle { get; init; }
+        public int Handle { get; init; }
 
         /// <summary>True if channel is active.</summary>
         public bool Enable { get; set; } = true;
@@ -163,7 +186,7 @@ namespace Ephemera.MidiLibLite
             Device = device;
             ChannelNumber = channelNumber;
             Volume = Defs.DEFAULT_VOLUME;
-            Handle = new(device.Id, ChannelNumber, true);
+            Handle = ChannelHandle.Encode(device.Id, ChannelNumber, true);
         }
 
         /// <summary>
@@ -196,7 +219,7 @@ namespace Ephemera.MidiLibLite
         public bool Enable { get; set; } = true;
 
         /// <summary>Handle for use by scripts.</summary>
-        public ChannelHandle Handle { get; init; }
+        public int Handle { get; init; }
         #endregion
 
         /// <summary>
@@ -208,7 +231,7 @@ namespace Ephemera.MidiLibLite
         {
             Device = device;
             ChannelNumber = channelNumber;
-            Handle = new(device.Id, ChannelNumber, false);
+            Handle = ChannelHandle.Encode(device.Id, ChannelNumber, false);
         }
     }
 }

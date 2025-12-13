@@ -44,7 +44,7 @@ namespace Ephemera.MidiLibLite
         public MidiInputDevice(string deviceName)
         {
             // Figure out which midi output device.
-            var devs = GetAvailableDevices();
+            var devs = DeviceUtils.GetAvailableOutputDevices();
             var ind = devs.IndexOf(deviceName);
             if (ind >= 0)
             {
@@ -129,7 +129,7 @@ namespace Ephemera.MidiLibLite
         public MidiOutputDevice(string deviceName)
         {
             // Figure out which midi output device.
-            var devs = GetAvailableDevices();
+            var devs = DeviceUtils.GetAvailableInputDevices();
             var ind = devs.IndexOf(deviceName);
             if (ind >= 0)
             {
