@@ -16,7 +16,7 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLibLite
 {
-    [DesignTimeVisible(false)]
+    [DesignTimeVisible(true)] // TODO1 attrs?
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class ChannelControl : UserControl
     {
@@ -32,6 +32,16 @@ namespace Ephemera.MidiLibLite
             // public bool PatchChange { get; set; } = false;
             // public bool ChannelNumberChange { get; set; } = false;
             // public bool AliasFileChange { get; set; } = false;
+        }
+
+        /// <summary>Some flavors of control may need to be defeatured.</summary>
+        [Flags]
+        public enum DisplayOptions
+        {
+            Notes = 0x01,       // TODO1 what for?
+            SoloMute = 0x02,    // solo and mute buttons
+            Controller = 0x04,  // controller select and send
+            All = 0x0F,         // all of above
         }
         #endregion
 
@@ -80,6 +90,11 @@ namespace Ephemera.MidiLibLite
             }
         }
         UserControl? _userRenderer = null;
+
+        /// <summary>Display options.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public DisplayOptions Options { get; set; } = DisplayOptions.All;
 
         /// <summary>Drawing the active elements of a control.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -144,9 +159,7 @@ namespace Ephemera.MidiLibLite
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 
             // Dummy channel to satisfy designer. Will be overwritten by the real one.
-            //var cfig = new OutputChannelConfig() { ChannelName = "DUMMY_CHANNEL" };
             var dev = new NullOutputDevice("DUMMY_DEVICE");
-            //BoundChannel = new OutputChannel(cfig, dev);
             BoundChannel = new OutputChannel(dev, 9);
         }
 
@@ -159,13 +172,12 @@ namespace Ephemera.MidiLibLite
             SuspendLayout();
             
             // Create the controls per the config.
-            var opts = BoundChannel.DisplayOptions; // shorthand
             int xPos = PAD;
             int xMax = xPos;
             int yPos = PAD;
             int yMax = yPos;
 
-            if (true) // opts.HasFlag(ChannelControlOptions.Info))
+            if (true) // Options.HasFlag(DisplayOptions.Info))
             {
                 txtInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
                 txtInfo.BorderStyle = BorderStyle.FixedSingle;
@@ -175,7 +187,7 @@ namespace Ephemera.MidiLibLite
                 txtInfo.Multiline = true;
                 txtInfo.WordWrap = false;
                 txtInfo.Text = "Hello world\nWhat's up?";
-//                txtInfo.Click += ChannelInfo_Click;
+                txtInfo.Click += ChannelInfo_Click;
                 Controls.Add(txtInfo);
 
                 xPos = txtInfo.Right + PAD;
@@ -183,7 +195,7 @@ namespace Ephemera.MidiLibLite
                 yMax = Math.Max(txtInfo.Bottom, yMax);
             }
 
-            if (opts.HasFlag(ChannelControlOptions.Notes))
+            if (Options.HasFlag(DisplayOptions.Notes))
             {
                 sldVolume.Minimum = 0.0;
                 sldVolume.Maximum = Defs.MAX_VOLUME;
@@ -202,7 +214,7 @@ namespace Ephemera.MidiLibLite
                 yMax = Math.Max(sldVolume.Bottom, yMax);
             }
 
-            if (opts.HasFlag(ChannelControlOptions.SoloMute))
+            if (Options.HasFlag(DisplayOptions.SoloMute))
             {
                 lblSolo.Location = new(xPos, yPos);
                 lblSolo.Size = new(20, 20);//SIZE / 2),
@@ -221,7 +233,7 @@ namespace Ephemera.MidiLibLite
                 yMax = Math.Max(lblMute.Bottom, yMax);
             }
 
-            if (opts.HasFlag(ChannelControlOptions.Controller))
+            if (Options.HasFlag(DisplayOptions.Controller))
             {
                 btnSend.FlatStyle = FlatStyle.Flat;
                 btnSend.UseVisualStyleBackColor = true;
@@ -343,8 +355,8 @@ namespace Ephemera.MidiLibLite
         void UpdateUi()
         {
             StringBuilder sb = new();
-            sb.AppendLine($"Channel {BoundChannel.Handle}");
-            sb.AppendLine($"Patch {BoundChannel.GetPatchName(BoundChannel.Patch)}({BoundChannel.Patch})");
+            sb.AppendLine($"{ChannelHandle.Format(BoundChannel.Handle)}");
+            sb.AppendLine($"{BoundChannel.GetPatchName(BoundChannel.Patch)} ({BoundChannel.Patch})");
             txtInfo.Text = sb.ToString();
             toolTip.SetToolTip(txtInfo, sb.ToString());
 
@@ -352,11 +364,20 @@ namespace Ephemera.MidiLibLite
             lblMute.BackColor = _state == ChannelState.Mute ? SelectedColor : BackColor;
         }
 
-        /// <summary>Read me.</summary>
-        public override string ToString()
-        {
-            return $"{BoundChannel.Handle} P:{BoundChannel.Patch}";
-        }
+
+
+
+        ///// <summary>Read me.</summary>
+        //public override string ToString() // TODO1
+        //{
+        //    return $"{ChannelHandleX.Format(BoundChannel.Handle)} P:{BoundChannel.Patch}";
+        //}
+        //public static string Format(int Handle)
+        //{
+        //    var parts = DecodeX(Handle);
+        //    return $"{(parts.Output ? "OUT" : "IN")} {parts.DeviceId}:{parts.ChannelNumber}";
+        //}
+
         #endregion
     }
 }

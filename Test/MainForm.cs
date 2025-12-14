@@ -31,10 +31,7 @@ namespace Ephemera.MidiLibLite.Test
         /// <summary>All the channel controls.</summary>
         readonly List<ChannelControl> _channelControls = [];
 
-        ///// <summary>Where to put things.</summary>
-        //readonly string _outPath = @"..\..\out";
-
-        /// <summary>Cosmetics.</summ ary>
+        /// <summary>Cosmetics.</summary>
         readonly Color _controlColor = Color.Aquamarine;
 
         /// <summary>Cosmetics.</summary>
@@ -59,10 +56,6 @@ namespace Ephemera.MidiLibLite.Test
         public MainForm()
         {
             InitializeComponent();
-
-            //// Make sure out path exists.
-            //DirectoryInfo di = new(_outPath);
-            //di.Create();
 
             // The text output.
             txtViewer.Font = Font;
@@ -186,7 +179,8 @@ namespace Ephemera.MidiLibLite.Test
             var inst1 = ch.Instruments;
             if (inst1.Count != 128) Tell(ERROR, "FAIL");
 
-            ch.AliasFile = Path.Combine(Environment.CurrentDirectory, "exp_defs.ini");
+            // ch.AliasFile = Path.Combine(Environment.CurrentDirectory, "exp_defs.ini"); // TODO1 this file does not really belong here
+            ch.AliasFile = Path.Combine(AppContext.BaseDirectory, "exp_defs.ini");
 
             var inst2 = ch.Instruments;
             if (inst2.Count != 66) Tell(ERROR, "FAIL");
@@ -213,11 +207,11 @@ namespace Ephemera.MidiLibLite.Test
             };
 
             // Set up options.
-            var insts = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
+            var insts = MidiDefs.Instance.GetDefaultInstrumentDefs();
             IEnumerable<string> orderedValues = insts.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
             var instsList = orderedValues.ToList();
 
-            GenericListTypeEditor.SetOptions("DeviceName", MidiOutputDevice.GetAvailableDevices());
+            GenericListTypeEditor.SetOptions("DeviceName", DeviceUtils.GetAvailableOutputDevices());
             GenericListTypeEditor.SetOptions("Patch", instsList);
 
             var changes = SettingsEditor.Edit(td, "TESTOMATIC", 300);
@@ -228,7 +222,7 @@ namespace Ephemera.MidiLibLite.Test
         /// <summary>Test def file loading.</summary>
         void TestDefs_Click(object sender, EventArgs e)
         {
-            string fn = Path.Combine(Environment.CurrentDirectory, "..", "gm_defs.ini");
+            string fn = Path.Combine(AppContext.BaseDirectory, "gm_defs.ini");
 
             // key is section name, value is line
             Dictionary<string, List<string>> res = [];
@@ -274,7 +268,7 @@ namespace Ephemera.MidiLibLite.Test
                 ch.Item2.BoundChannel = ch.Item1;
 
                 var rend = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
-                rend.SendMidi += ChannelControl_SendMidi;
+                rend.SendMidi += ChannelControl_SendMidi; //TODO1 ideally hide this event chain in the ChannelControl itself.
                 ch.Item2.UserRenderer = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
             });
 
@@ -292,7 +286,8 @@ namespace Ephemera.MidiLibLite.Test
 
             ///// 1 - create all channels
             var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "keys", 0);
-            var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 10, "drums", 32);
+            var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 4, "bass", 32);
+            //var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 10, "drums", 32);
             var chan_in1 = _mgr.OpenMidiInput(INDEV, 1, "my input");
 
             ///// 2 - create a control for each channel and bind object
@@ -353,13 +348,17 @@ namespace Ephemera.MidiLibLite.Test
             if (note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note_num)); }
 
             var ch = _mgr.GetOutputChannel(chnd);
-            if (volume == 0.0)
+
+            if (ch is not null)
             {
-                ch.Device.Send(new NoteOff(chnd.ChannelNumber, note_num));
+                BaseMidiEvent evt = volume == 0.0 ?
+                    new NoteOff(ChannelHandle.ChannelNumber(chnd), note_num) :
+                    new NoteOn(ChannelHandle.ChannelNumber(chnd), note_num, (int)MathUtils.Constrain(volume * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI));
+                ch.Device.Send(evt);
             }
             else
             {
-                ch.Device.Send(new NoteOn(chnd.ChannelNumber, note_num, (int)MathUtils.Constrain(volume * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI)));
+                //TODO1 error?
             }
         }
 
@@ -376,7 +375,16 @@ namespace Ephemera.MidiLibLite.Test
             if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
 
             var ch = _mgr.GetOutputChannel(chnd);
-            ch.Device.Send(new Controller(chnd.ChannelNumber, controller_id, value));
+
+            if (ch is not null)
+            {
+                BaseMidiEvent evt = new Controller(ChannelHandle.ChannelNumber(chnd), controller_id, value);
+                ch.Device.Send(evt);
+            }
+            else
+            {
+                //TODO1 error?
+            }
         }
 
         /// <summary>

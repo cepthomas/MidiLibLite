@@ -14,37 +14,31 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLibLite
 {
-    /// <summary>Some flavors of control need to be defeatured.</summary>
-    [Flags]
-    public enum ChannelControlOptions
-    {
-        Notes = 0x01,
-        SoloMute = 0x02,
-        Controller = 0x04,
-        All = 0x0F, // of above
-    }
-
-    public class ChannelHandle
+    public class ChannelHandle //TODO1 better name/home?
     {
         const int OUTPUT_FLAG = 0x0800;
 
-        public static int Encode(int DeviceId, int ChannelNumber, bool Output)
+        public static int Create(int deviceId, int channelNumber, bool output)
         {
-            return (int)(DeviceId << 4) | ChannelNumber | (Output ? OUTPUT_FLAG : OUTPUT_FLAG);
+            return (deviceId << 4) | channelNumber | (output ? OUTPUT_FLAG : OUTPUT_FLAG);
         }
 
-        public static (int DeviceId, int ChannelNumber, bool Output) Decode(int Handle)
-        {
-            var output = (Handle & OUTPUT_FLAG) > 0;
-            var deviceId = ((Handle & ~OUTPUT_FLAG) >> 4) & 0x0F;
-            var channelNumber = (Handle & ~OUTPUT_FLAG) & 0xF0;
-            return (deviceId, channelNumber, output);
-        }
+        //public static (int DeviceId, int ChannelNumber, bool Output) DecodeX(int Handle)
+        //{
+        //    var output = (Handle & OUTPUT_FLAG) > 0;
+        //    var deviceId = ((Handle & ~OUTPUT_FLAG) >> 4) & 0x0F;
+        //    var channelNumber = (Handle & ~OUTPUT_FLAG) & 0xF0;
+        //    return (deviceId, channelNumber, output);
+        //}
 
-        public static string Format(int Handle)
+        public static int DeviceId(int handle) { return (handle >> 4) & 0x0F; }
+        public static int ChannelNumber(int handle) { return handle & 0x0F; }
+        public static bool Output(int handle) { return (handle & OUTPUT_FLAG) > 0; }
+
+        /// <summary>See me.</summary>
+        public static string Format(int handle)
         {
-            var parts = Decode(Handle);
-            return $"{(parts.Output ? "OUT" : "IN")}  {parts.DeviceId}:{parts.ChannelNumber}";
+            return $"{(Output(handle) ? "OUT" : "IN")} {DeviceId(handle)}:{ChannelNumber(handle)}";
         }
     }
 
@@ -102,36 +96,7 @@ namespace Ephemera.MidiLibLite
         public string AliasFile
         {
             get { return _aliasFile; }
-            set
-            {
-                _aliasFile = value;
-
-                // Alternate instrument names?
-                if (_aliasFile != "")
-                {
-                    try
-                    {
-                        Instruments.Clear();
-                        var ir = new IniReader(_aliasFile);
-                        var defs = ir.Contents["instruments"];
-
-                        defs.Values.ForEach(kv =>
-                        {
-                            int i = int.Parse(kv.Key); // can throw
-                            i = MathUtils.Constrain(i, 0, MidiDefs.MAX_MIDI);
-                            Instruments.Add(i, kv.Value.Length > 0 ? kv.Value : "");
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new MidiLibException($"Failed to load alias file {_aliasFile}: {ex.Message}");
-                    }
-                }
-                else
-                {
-                    Instruments = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
-                }
-            }
+            set { _aliasFile = value; LoadInstruments(); }
         }
         string _aliasFile = "";
 
@@ -140,11 +105,7 @@ namespace Ephemera.MidiLibLite
         public int Patch
         {
             get {  return _patch; }
-            set
-            {
-                _patch = value;
-                Device.Send(new Patch(ChannelNumber, _patch));
-            }
+            set { _patch = value; Device.Send(new Patch(ChannelNumber, _patch)); }
         }
         int _patch = 0;
 
@@ -160,9 +121,6 @@ namespace Ephemera.MidiLibLite
         [Range(0, MidiDefs.MAX_MIDI)]
         public int ControllerValue { get; set; } = 50;
 
-        /// <summary>ChannelControl options.</summary>
-        public ChannelControlOptions DisplayOptions { get; set; } = ChannelControlOptions.All;
-
         /// <summary>Associated device.</summary>
         public IOutputDevice Device { get; init; }
 
@@ -173,7 +131,7 @@ namespace Ephemera.MidiLibLite
         public bool Enable { get; set; } = true;
 
         /// <summary>Current list for this channel.</summary>
-        public Dictionary<int, string> Instruments { get; private set; } = MidiDefs.TheDefs.GetDefaultInstrumentDefs();
+        public Dictionary<int, string> Instruments { get; private set; } = MidiDefs.Instance.GetDefaultInstrumentDefs();
         #endregion
 
         /// <summary>
@@ -186,7 +144,7 @@ namespace Ephemera.MidiLibLite
             Device = device;
             ChannelNumber = channelNumber;
             Volume = Defs.DEFAULT_VOLUME;
-            Handle = ChannelHandle.Encode(device.Id, ChannelNumber, true);
+            Handle = ChannelHandle.Create(device.Id, ChannelNumber, true);
         }
 
         /// <summary>
@@ -197,6 +155,36 @@ namespace Ephemera.MidiLibLite
         public string GetPatchName(int which)
         {
             return Instruments.TryGetValue(which, out string? value) ? value : $"PATCH_{which}";
+        }
+
+        /// <summary>Load default or aliases.</summary>
+        void LoadInstruments()
+        {
+            // Alternate instrument names?
+            if (_aliasFile != "")
+            {
+                try
+                {
+                    Instruments.Clear();
+                    var ir = new IniReader(_aliasFile);
+                    var defs = ir.Contents["instruments"];
+
+                    defs.Values.ForEach(kv =>
+                    {
+                        int i = int.Parse(kv.Key); // can throw
+                        i = MathUtils.Constrain(i, 0, MidiDefs.MAX_MIDI);
+                        Instruments.Add(i, kv.Value.Length > 0 ? kv.Value : "");
+                    });
+                }
+                catch (Exception ex)
+                {
+                    throw new MidiLibException($"Failed to load alias file {_aliasFile}: {ex.Message}");
+                }
+            }
+            else
+            {
+                Instruments = MidiDefs.Instance.GetDefaultInstrumentDefs();
+            }
         }
     }
 
@@ -231,7 +219,7 @@ namespace Ephemera.MidiLibLite
         {
             Device = device;
             ChannelNumber = channelNumber;
-            Handle = ChannelHandle.Encode(device.Id, ChannelNumber, false);
+            Handle = ChannelHandle.Create(device.Id, ChannelNumber, false);
         }
     }
 }

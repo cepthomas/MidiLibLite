@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Ephemera.NBagOfTricks;
@@ -9,8 +10,28 @@ namespace Ephemera.MidiLibLite
 {
     public class MidiDefs
     {
-        /// <summary>The global collection.</summary>
-        public static MidiDefs TheDefs { get; set; } = new();
+        ///// <summary>The global collection.</summary>
+//        public static MidiDefs TheDefs { get; set; } = new();
+
+
+        ///// <summary>Prevent client multiple instantiation.</summary>
+    //    MidiDefs() { }
+
+        /// <summary>The singleton instance.</summary>
+        public static MidiDefs Instance // Instance
+        {
+            get
+            {
+                _instance ??= new MidiDefs();
+                return _instance;
+            }
+        }
+
+        /// <summary>The singleton instance.</summary>
+        static MidiDefs? _instance;
+
+
+
 
         #region Fields
         /// <summary>Midi constant.</summary>
@@ -40,9 +61,11 @@ namespace Ephemera.MidiLibLite
 
         #region Lifecycle
         /// <summary>Initialize some collections.</summary>
-        public MidiDefs()
+        MidiDefs()
         {
-            string fn = @".\gm_defs.ini";
+            string fn = Path.Combine(AppContext.BaseDirectory, "gm_defs.ini");
+
+            if (!File.Exists(fn)) return; // sloppy assumption about DesignTime.
 
             // key is section name, value is line
             Dictionary<string, List<string>> res = [];

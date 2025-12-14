@@ -106,12 +106,12 @@ namespace Ephemera.MidiLibLite.Test
                         if (_lastNote != -1)
                         {
                             // Turn off last note.
-                            SendMidi?.Invoke(this, new NoteOff(ChannelHandle.ChannelNumber, _lastNote));
+                            SendMidi?.Invoke(this, new NoteOff(MidiLibLite.ChannelHandle.ChannelNumber(ChannelHandle), _lastNote));
                         }
 
                         // Start the new note.
                         _lastNote = res.Value.ux;
-                        SendMidi?.Invoke(this, new NoteOn(ChannelHandle.ChannelNumber, res.Value.ux, res.Value.uy));
+                        SendMidi?.Invoke(this, new NoteOn(MidiLibLite.ChannelHandle.ChannelNumber(ChannelHandle), res.Value.ux, res.Value.uy));
                     }
                 }
             }
@@ -129,7 +129,7 @@ namespace Ephemera.MidiLibLite.Test
             if (res is not null)
             {
                 _lastNote = res.Value.ux;
-                SendMidi?.Invoke(this, new NoteOn(ChannelHandle.ChannelNumber, res.Value.ux, res.Value.uy));
+                SendMidi?.Invoke(this, new NoteOn(MidiLibLite.ChannelHandle.ChannelNumber(ChannelHandle), res.Value.ux, res.Value.uy));
             }
 
             base.OnMouseDown(e);
@@ -143,7 +143,7 @@ namespace Ephemera.MidiLibLite.Test
         {
             if (_lastNote != -1)
             {
-                SendMidi?.Invoke(this, new NoteOff(ChannelHandle.ChannelNumber, _lastNote));
+                SendMidi?.Invoke(this, new NoteOff(MidiLibLite.ChannelHandle.ChannelNumber(ChannelHandle), _lastNote));
                 _lastNote = -1;
             }
 
@@ -159,7 +159,7 @@ namespace Ephemera.MidiLibLite.Test
             // Turn off last click.
             if (_lastNote != -1)
             {
-                SendMidi?.Invoke(this, new NoteOff(ChannelHandle.ChannelNumber, _lastNote));
+                SendMidi?.Invoke(this, new NoteOff(MidiLibLite.ChannelHandle.ChannelNumber(ChannelHandle), _lastNote));
             }
 
             // Reset and tell client.

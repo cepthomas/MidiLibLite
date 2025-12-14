@@ -32,7 +32,9 @@ namespace Ephemera.MidiLibLite
         readonly List<InputChannel> _inputChannels = [];
         #endregion
 
-        
+
+        /// <summary>Readonly collection.</summary>
+        public IEnumerable<OutputChannel> XXX { get { return _outputChannels.AsEnumerable(); } }
 
         #region Events
         /// <summary>Handler for message arrived.</summary>
@@ -49,18 +51,11 @@ namespace Ephemera.MidiLibLite
         /// <returns></returns>
         public InputChannel OpenMidiInput(string deviceName, int channelNumber, string channelName)
         {
-            var ii = _outputChannels.AsEnumerable();
-
             // Check args.
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
             if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channelNumber)); }
 
-            var indev = GetInputDevice(deviceName);
-
-            if (indev is null)
-            {
-                throw new MidiLibException($"Invalid input device [{deviceName}]");
-            }
+            var indev = GetInputDevice(deviceName) ?? throw new MidiLibException($"Invalid input device [{deviceName}]");
 
             // Add the channel.
             InputChannel ch = new(indev, channelNumber)
@@ -88,12 +83,7 @@ namespace Ephemera.MidiLibLite
             if (string.IsNullOrEmpty(deviceName)) { throw new ArgumentException("Invalid deviceName"); }
             if (channelNumber is < 1 or > MidiDefs.NUM_CHANNELS) { throw new ArgumentOutOfRangeException(nameof(channelNumber)); }
 
-            var outdev = GetOutputDevice(deviceName);
-
-            if (outdev is null)
-            {
-                throw new MidiLibException($"Invalid output device [{deviceName}]");
-            }
+            var outdev = GetOutputDevice(deviceName) ?? throw new MidiLibException($"Invalid output device [{deviceName}]");
 
             // Add the channel.
             OutputChannel ch = new(outdev, channelNumber)
@@ -103,8 +93,10 @@ namespace Ephemera.MidiLibLite
                 Enable = true,
                 Volume = Defs.DEFAULT_VOLUME
             };
-
             _outputChannels.Add(ch);
+
+            // Send patch now.
+            //outdev.Send(new Patch(channelNumber, patch));
 
             return ch;
         }
@@ -151,7 +143,7 @@ namespace Ephemera.MidiLibLite
                     _inputDevices.Add(dev);
                     dev.CaptureEnable = true;
                     // Just pass inputs up.
-                    dev.InputReceive += (object? sender, BaseMidiEvent e) => InputReceive?.Invoke((MidiInputDevice)sender!, e);
+                    dev.InputReceive += (sender, e) => InputReceive?.Invoke((MidiInputDevice)sender!, e);
                 }
             }
             else
@@ -223,15 +215,15 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Misc
-        ///// <summary>
-        ///// Helper. A bit klunky? TODO1 Also maybe an int overload?
-        ///// </summary>
-        ///// <param name="chnd"></param>
-        ///// <returns>The channel.</returns>
-        //public OutputChannel? GetOutputChannel(int chnd)
-        //{
-        //    return _outputChannels.Find(ch => ch.Handle == chnd);
-        //}
+        /// <summary>
+        /// Helper.
+        /// </summary>
+        /// <param name="chnd"></param>
+        /// <returns>The channel or null if invalid handle.</returns>
+        public OutputChannel? GetOutputChannel(int chnd)
+        {
+           return _outputChannels.Find(ch => ch.Handle == chnd);
+        }
 
         /// <summary>
         /// Stop all midi. Doesn't throw.

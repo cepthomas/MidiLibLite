@@ -5,6 +5,7 @@ using System.Text;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using NAudio.CoreAudioApi;
+using System.Diagnostics;
 
 
 namespace Ephemera.MidiLibLite
@@ -44,7 +45,7 @@ namespace Ephemera.MidiLibLite
         public MidiInputDevice(string deviceName)
         {
             // Figure out which midi output device.
-            var devs = DeviceUtils.GetAvailableOutputDevices();
+            var devs = DeviceUtils.GetAvailableInputDevices();
             var ind = devs.IndexOf(deviceName);
             if (ind >= 0)
             {
@@ -90,6 +91,8 @@ namespace Ephemera.MidiLibLite
                 _ => new BaseMidiEvent() // Just ignore? or ErrorInfo = $"Invalid message: {m}"
             };
 
+            // //TODO1 should be logging here
+
             InputReceive?.Invoke(this, evt);
         }
 
@@ -129,7 +132,7 @@ namespace Ephemera.MidiLibLite
         public MidiOutputDevice(string deviceName)
         {
             // Figure out which midi output device.
-            var devs = DeviceUtils.GetAvailableInputDevices();
+            var devs = DeviceUtils.GetAvailableOutputDevices();
             var ind = devs.IndexOf(deviceName);
             if (ind >= 0)
             {
@@ -168,13 +171,15 @@ namespace Ephemera.MidiLibLite
                 _ => throw new MidiLibException($"Invalid event: {evt}")
             };
 
+            //Debug.WriteLine($">>> {mevt}"); //TODO1 should be logging here
+
             _midiOut?.Send(mevt.GetAsShortMessage());
         }
     }
 
 
     /// <summary>Bonus stuff.</summary>
-    public class DeviceUtils
+    public class DeviceUtils //TODO1 better home?
     {
         /// <summary>
         /// Get a list of available device names.
