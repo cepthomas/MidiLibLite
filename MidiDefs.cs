@@ -10,28 +10,13 @@ namespace Ephemera.MidiLibLite
 {
     public class MidiDefs
     {
-        ///// <summary>The global collection.</summary>
-//        public static MidiDefs TheDefs { get; set; } = new();
-
-
-        ///// <summary>Prevent client multiple instantiation.</summary>
-    //    MidiDefs() { }
-
+        #region Global collection
         /// <summary>The singleton instance.</summary>
-        public static MidiDefs Instance // Instance
-        {
-            get
-            {
-                _instance ??= new MidiDefs();
-                return _instance;
-            }
-        }
+        public static MidiDefs Instance { get { _instance ??= new MidiDefs(); return _instance; } }
 
         /// <summary>The singleton instance.</summary>
         static MidiDefs? _instance;
-
-
-
+        #endregion
 
         #region Fields
         /// <summary>Midi constant.</summary>

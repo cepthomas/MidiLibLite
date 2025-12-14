@@ -32,9 +32,10 @@ namespace Ephemera.MidiLibLite
         readonly List<InputChannel> _inputChannels = [];
         #endregion
 
-
-        /// <summary>Readonly collection.</summary>
-        public IEnumerable<OutputChannel> XXX { get { return _outputChannels.AsEnumerable(); } }
+        #region Properties
+        /// <summary>Readonly collection access.</summary>
+        public IEnumerable<OutputChannel> OutputChannels { get { return _outputChannels.AsEnumerable(); } }
+        #endregion
 
         #region Events
         /// <summary>Handler for message arrived.</summary>
@@ -95,7 +96,7 @@ namespace Ephemera.MidiLibLite
             };
             _outputChannels.Add(ch);
 
-            // Send patch now.
+            // Send patch now. 
             //outdev.Send(new Patch(channelNumber, patch));
 
             return ch;

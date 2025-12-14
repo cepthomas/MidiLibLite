@@ -364,9 +364,6 @@ namespace Ephemera.MidiLibLite
             lblMute.BackColor = _state == ChannelState.Mute ? SelectedColor : BackColor;
         }
 
-
-
-
         ///// <summary>Read me.</summary>
         //public override string ToString() // TODO1
         //{
@@ -377,7 +374,6 @@ namespace Ephemera.MidiLibLite
         //    var parts = DecodeX(Handle);
         //    return $"{(parts.Output ? "OUT" : "IN")} {parts.DeviceId}:{parts.ChannelNumber}";
         //}
-
         #endregion
     }
 }

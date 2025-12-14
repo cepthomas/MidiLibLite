@@ -23,14 +23,6 @@ namespace Ephemera.MidiLibLite
             return (deviceId << 4) | channelNumber | (output ? OUTPUT_FLAG : OUTPUT_FLAG);
         }
 
-        //public static (int DeviceId, int ChannelNumber, bool Output) DecodeX(int Handle)
-        //{
-        //    var output = (Handle & OUTPUT_FLAG) > 0;
-        //    var deviceId = ((Handle & ~OUTPUT_FLAG) >> 4) & 0x0F;
-        //    var channelNumber = (Handle & ~OUTPUT_FLAG) & 0xF0;
-        //    return (deviceId, channelNumber, output);
-        //}
-
         public static int DeviceId(int handle) { return (handle >> 4) & 0x0F; }
         public static int ChannelNumber(int handle) { return handle & 0x0F; }
         public static bool Output(int handle) { return (handle & OUTPUT_FLAG) > 0; }
@@ -41,44 +33,6 @@ namespace Ephemera.MidiLibLite
             return $"{(Output(handle) ? "OUT" : "IN")} {DeviceId(handle)}:{ChannelNumber(handle)}";
         }
     }
-
-    //----------------------------------------------------------------
-    ///// <summary>References one channel. Supports translation to/from script unique int handle.</summary>
-    ///// <param name="DeviceId">Unique number</param>
-    ///// <param name="ChannelNumber">Midi channel 1-based</param>
-    ///// <param name="Output">T or F</param>
-    //public record struct ChannelHandle(int DeviceId, int ChannelNumber, bool Output)
-    //{
-    //    const int OUTPUT_FLAG = 0x8000;
-
-    //    /// <summary>Create from int handle.</summary>
-    //    /// <param name="handle"></param>
-    //    public ChannelHandle(int handle) : this(-1, -1, false)
-    //    {
-    //        Output = (handle & OUTPUT_FLAG) > 0;
-    //        DeviceId = ((handle & ~OUTPUT_FLAG) >> 8) & 0xFF;
-    //        ChannelNumber = (handle & ~OUTPUT_FLAG) & 0xFF;
-    //    }
-
-    //    ///// <summary>Operator to convert to int handle.</summary>
-    //    //public int Raw()
-    //    //{
-    //    //    return (DeviceId << 8) | ChannelNumber | (Output ? OUTPUT_FLAG : OUTPUT_FLAG);
-    //    //}
-
-    //    /// <summary>Operator to convert to int handle.</summary>
-    //    /// <param name="ch"></param>
-    //    public static implicit operator int(ChannelHandle ch)
-    //    {
-    //        return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Output ? OUTPUT_FLAG : OUTPUT_FLAG);
-    //    }
-
-    //    /// <summary>See me.</summary>
-    //    public override readonly string ToString()
-    //    {
-    //        return $"{(Output ? "OUT" : "IN")}  {DeviceId}:{ChannelNumber}";
-    //    }
-    //}
 
     //----------------------------------------------------------------
     /// <summary>Describes one midi output channel.</summary>

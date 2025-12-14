@@ -171,7 +171,8 @@ namespace Ephemera.MidiLibLite
                 _ => throw new MidiLibException($"Invalid event: {evt}")
             };
 
-            //Debug.WriteLine($">>> {mevt}"); //TODO1 should be logging here
+            //Debug.WriteLine($">>> {mevt}"); 
+            //TODO1 should be logging here
 
             _midiOut?.Send(mevt.GetAsShortMessage());
         }
