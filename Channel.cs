@@ -14,7 +14,8 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLibLite
 {
-    public class ChannelHandle //TODO1 better name/home?
+    //----------------------------------------------------------------
+    public class ChannelHandle //TODO2 better name/home?
     {
         const int OUTPUT_FLAG = 0x0800;
 
@@ -31,6 +32,41 @@ namespace Ephemera.MidiLibLite
         public static string Format(int handle)
         {
             return $"{(Output(handle) ? "OUT" : "IN")} {DeviceId(handle)}:{ChannelNumber(handle)}";
+        }
+    }
+
+    //----------------------------------------------------------------
+    /// <summary>Describes one midi input channel.</summary>
+    public class InputChannel
+    {
+        #region Properties
+        /// <summary>Channel name - optional.</summary>
+        public string ChannelName { get; set; } = "";
+
+        /// <summary>Actual 1-based midi channel number.</summary>
+        [Range(1, MidiDefs.NUM_CHANNELS)]
+        public int ChannelNumber { get; set; } = 1;
+
+        /// <summary>Associated device.</summary>
+        public IInputDevice Device { get; init; }
+
+        /// <summary>True if channel is active.</summary>
+        public bool Enable { get; set; } = true;
+
+        /// <summary>Handle for use by scripts.</summary>
+        public int Handle { get; init; }
+        #endregion
+
+        /// <summary>
+        /// Constructor with required args.
+        /// </summary>
+        /// <param name="device"></param>
+        /// <param name="channelNumber"></param>
+        public InputChannel(IInputDevice device, int channelNumber)
+        {
+            Device = device;
+            ChannelNumber = channelNumber;
+            Handle = ChannelHandle.Create(device.Id, ChannelNumber, false);
         }
     }
 
@@ -139,41 +175,6 @@ namespace Ephemera.MidiLibLite
             {
                 Instruments = MidiDefs.Instance.GetDefaultInstrumentDefs();
             }
-        }
-    }
-
-    //----------------------------------------------------------------
-    /// <summary>Describes one midi input channel.</summary>
-    public class InputChannel
-    {
-        #region Properties
-        /// <summary>Channel name - optional.</summary>
-        public string ChannelName { get; set; } = "";
-
-        /// <summary>Actual 1-based midi channel number.</summary>
-        [Range(1, MidiDefs.NUM_CHANNELS)]
-        public int ChannelNumber { get; set; } = 1;
-
-        /// <summary>Associated device.</summary>
-        public IInputDevice Device { get; init; }
-
-        /// <summary>True if channel is active.</summary>
-        public bool Enable { get; set; } = true;
-
-        /// <summary>Handle for use by scripts.</summary>
-        public int Handle { get; init; }
-        #endregion
-
-        /// <summary>
-        /// Constructor with required args.
-        /// </summary>
-        /// <param name="device"></param>
-        /// <param name="channelNumber"></param>
-        public InputChannel(IInputDevice device, int channelNumber)
-        {
-            Device = device;
-            ChannelNumber = channelNumber;
-            Handle = ChannelHandle.Create(device.Id, ChannelNumber, false);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Ephemera.MidiLibLite
         public int Id { get; init; }
 
         /// <inheritdoc />
-        public event EventHandler<BaseMidiEvent>? InputReceive;
+        public event EventHandler<BaseMidiEvent>? MessageReceive;
 
         /// <summary>For test use.</summary>
         public List<BaseMidiEvent> EventsToSend = [];
@@ -55,8 +55,12 @@ namespace Ephemera.MidiLibLite
         /// <inheritdoc />
         public int Id { get; init; }
 
+        /// <inheritdoc />
+        public event EventHandler<BaseMidiEvent>? MessageSend;
+
         /// <summary>For test use.</summary>
         public List<BaseMidiEvent> CollectedEvents = [];
+
 
         #region Lifecycle
         /// <summary>
@@ -78,6 +82,8 @@ namespace Ephemera.MidiLibLite
         /// <inheritdoc />
         public void Send(BaseMidiEvent evt)
         {
+            MessageSend?.Invoke(this, evt);
+
             CollectedEvents.Add(evt);        
         }
     }

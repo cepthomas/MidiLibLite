@@ -39,7 +39,10 @@ namespace Ephemera.MidiLibLite
 
         #region Events
         /// <summary>Handler for message arrived.</summary>
-        public event EventHandler<BaseMidiEvent>? InputReceive;
+        public event EventHandler<BaseMidiEvent>? MessageReceive;
+
+        /// <summary>Handler for message arrived.</summary>
+        public event EventHandler<BaseMidiEvent>? MessageSend;
         #endregion
 
         #region Script => Host API
@@ -121,7 +124,7 @@ namespace Ephemera.MidiLibLite
                 // Is it a new device? Try to create it.
 
                 // Midi input device?
-                if (DeviceUtils.GetAvailableInputDevices().Contains(deviceName))
+                if (MidiInputDevice.GetAvailableDevices().Contains(deviceName))
                 {
                     dev = new MidiInputDevice(deviceName) { Id = _inputDevices.Count + 1 };
                 }
@@ -144,7 +147,7 @@ namespace Ephemera.MidiLibLite
                     _inputDevices.Add(dev);
                     dev.CaptureEnable = true;
                     // Just pass inputs up.
-                    dev.InputReceive += (sender, e) => InputReceive?.Invoke((MidiInputDevice)sender!, e);
+                    dev.MessageReceive += (sender, e) => MessageReceive?.Invoke((MidiInputDevice)sender!, e);
                 }
             }
             else
@@ -172,7 +175,7 @@ namespace Ephemera.MidiLibLite
                 // Is it a new device? Try to create it.
 
                 // Midi output device?
-                if (DeviceUtils.GetAvailableOutputDevices().Contains(deviceName))
+                if (MidiOutputDevice.GetAvailableDevices().Contains(deviceName))
                 {
                     dev = new MidiOutputDevice(deviceName) { Id = _outputDevices.Count + 1 };
                 }
@@ -193,6 +196,7 @@ namespace Ephemera.MidiLibLite
                 if (dev is not null)
                 {
                     _outputDevices.Add(dev);
+                    dev.MessageSend += (sender, e) => MessageSend?.Invoke((MidiOutputDevice)sender!, e);
                 }
             }
             else

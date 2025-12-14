@@ -75,7 +75,8 @@ namespace Ephemera.MidiLibLite.Test
             btnKillMidi.Click += (_, __) => { _mgr.Kill(); };
             btnLogMidi.CheckedChanged += (_, __) => { };
 
-            _mgr.InputReceive += Mgr_InputReceive;
+            _mgr.MessageReceive += Mgr_MessageReceive;
+            _mgr.MessageSend += Mgr_MessageSend;
         }
 
         /// <summary>
@@ -179,7 +180,7 @@ namespace Ephemera.MidiLibLite.Test
             var inst1 = ch.Instruments;
             if (inst1.Count != 128) Tell(ERROR, "FAIL");
 
-            // ch.AliasFile = Path.Combine(Environment.CurrentDirectory, "exp_defs.ini"); // TODO1 this file does not really belong here
+            // ch.AliasFile = Path.Combine(Environment.CurrentDirectory, "exp_defs.ini"); // TODO2 this file does not really belong here
             ch.AliasFile = Path.Combine(AppContext.BaseDirectory, "exp_defs.ini");
 
             var inst2 = ch.Instruments;
@@ -211,7 +212,7 @@ namespace Ephemera.MidiLibLite.Test
             IEnumerable<string> orderedValues = insts.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
             var instsList = orderedValues.ToList();
 
-            GenericListTypeEditor.SetOptions("DeviceName", DeviceUtils.GetAvailableOutputDevices());
+            GenericListTypeEditor.SetOptions("DeviceName", MidiOutputDevice.GetAvailableDevices());
             GenericListTypeEditor.SetOptions("Patch", instsList);
 
             var changes = SettingsEditor.Edit(td, "TESTOMATIC", 300);
@@ -268,7 +269,8 @@ namespace Ephemera.MidiLibLite.Test
                 ch.Item2.BoundChannel = ch.Item1;
 
                 var rend = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
-                rend.SendMidi += ChannelControl_SendMidi; //TODO1 ideally hide this event chain in the ChannelControl itself.
+                rend.SendMidi += ChannelControl_SendMidi;
+                //TODO2 ideally hide this event chain in the ChannelControl itself. Prob need to add an interface for renderers.
                 ch.Item2.UserRenderer = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
             });
 
@@ -358,7 +360,7 @@ namespace Ephemera.MidiLibLite.Test
             }
             else
             {
-                //TODO1 error?
+                //TODO2 error?
             }
         }
 
@@ -383,7 +385,7 @@ namespace Ephemera.MidiLibLite.Test
             }
             else
             {
-                //TODO1 error?
+                //TODO2 error?
             }
         }
 
@@ -479,9 +481,19 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Mgr_InputReceive(object? sender, BaseMidiEvent e)
+        void Mgr_MessageReceive(object? sender, BaseMidiEvent e)
         {
-            Tell(INFO, $"Received [{e}]");
+            Tell(INFO, $"Receive [{e}]");
+        }
+
+        /// <summary>
+        /// Something sent to a midi device.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Mgr_MessageSend(object? sender, BaseMidiEvent e)
+        {
+            Tell(INFO, $"Send actual [{e}]");
         }
         #endregion
 

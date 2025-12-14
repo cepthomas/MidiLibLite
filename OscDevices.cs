@@ -15,7 +15,7 @@ namespace Ephemera.MidiLibLite
 
         #region Events
         /// <inheritdoc />
-        public event EventHandler<BaseMidiEvent>? InputReceive;
+        public event EventHandler<BaseMidiEvent>? MessageReceive;
         #endregion
 
         #region Properties
@@ -98,7 +98,7 @@ namespace Ephemera.MidiLibLite
                     _ => new BaseMidiEvent() // Just ignore? or ErrorInfo = $"Invalid message: {m}"
                 };
 
-                InputReceive?.Invoke(this, evt);
+                MessageReceive?.Invoke(this, evt);
              });
         }
         #endregion
@@ -114,6 +114,9 @@ namespace Ephemera.MidiLibLite
         /// <summary>Access synchronizer.</summary>
         readonly object _lock = new();
         #endregion
+
+        /// <inheritdoc />
+        public event EventHandler<BaseMidiEvent>? MessageSend;
 
         #region Properties
         /// <inheritdoc />
@@ -160,6 +163,8 @@ namespace Ephemera.MidiLibLite
             // Critical code section.
             if (_oscOutput is not null)
             {
+                MessageSend?.Invoke(this, mevt);
+
                 lock (_lock)
                 {
                     NebOsc.Message msg;

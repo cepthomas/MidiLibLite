@@ -16,8 +16,7 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.MidiLibLite
 {
-    [DesignTimeVisible(true)] // TODO1 attrs?
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [DesignTimeVisible(true)]
     public class ChannelControl : UserControl
     {
         #region Types
@@ -29,16 +28,15 @@ namespace Ephemera.MidiLibLite
         {
             public bool InfoChange { get; set; } = false;
             public bool StateChange { get; set; } = false;
-            // public bool PatchChange { get; set; } = false;
-            // public bool ChannelNumberChange { get; set; } = false;
-            // public bool AliasFileChange { get; set; } = false;
+            public bool PatchChange { get; set; } = false;
+            public bool ChannelNumberChange { get; set; } = false;
         }
 
         /// <summary>Some flavors of control may need to be defeatured.</summary>
         [Flags]
         public enum DisplayOptions
         {
-            Notes = 0x01,       // TODO1 what for?
+            //Notes = 0x01,     // NA
             SoloMute = 0x02,    // solo and mute buttons
             Controller = 0x04,  // controller select and send
             All = 0x0F,         // all of above
@@ -177,7 +175,7 @@ namespace Ephemera.MidiLibLite
             int yPos = PAD;
             int yMax = yPos;
 
-            if (true) // Options.HasFlag(DisplayOptions.Info))
+            // The standard stuff.
             {
                 txtInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
                 txtInfo.BorderStyle = BorderStyle.FixedSingle;
@@ -195,7 +193,6 @@ namespace Ephemera.MidiLibLite
                 yMax = Math.Max(txtInfo.Bottom, yMax);
             }
 
-            if (Options.HasFlag(DisplayOptions.Notes))
             {
                 sldVolume.Minimum = 0.0;
                 sldVolume.Maximum = Defs.MAX_VOLUME;
@@ -365,7 +362,7 @@ namespace Ephemera.MidiLibLite
         }
 
         ///// <summary>Read me.</summary>
-        //public override string ToString() // TODO1
+        //public override string ToString() // TODO2
         //{
         //    return $"{ChannelHandleX.Format(BoundChannel.Handle)} P:{BoundChannel.Patch}";
         //}

@@ -10,6 +10,7 @@ using System.Diagnostics;
 
 namespace Ephemera.MidiLibLite
 {
+    //----------------------------------------------------------------
     /// <summary>A midi input device.</summary>
     public class MidiInputDevice : IInputDevice
     {
@@ -34,7 +35,7 @@ namespace Ephemera.MidiLibLite
 
         #region Events
         /// <summary>Client needs to deal with this.</summary>
-        public event EventHandler<BaseMidiEvent>? InputReceive;
+        public event EventHandler<BaseMidiEvent>? MessageReceive;
         #endregion
 
         #region Lifecycle
@@ -44,8 +45,8 @@ namespace Ephemera.MidiLibLite
         /// <param name="deviceName">Client must supply name of device.</param>
         public MidiInputDevice(string deviceName)
         {
-            // Figure out which midi output device.
-            var devs = DeviceUtils.GetAvailableInputDevices();
+            // Figure out which midi device.
+            var devs = GetAvailableDevices();
             var ind = devs.IndexOf(deviceName);
             if (ind >= 0)
             {
@@ -91,9 +92,8 @@ namespace Ephemera.MidiLibLite
                 _ => new BaseMidiEvent() // Just ignore? or ErrorInfo = $"Invalid message: {m}"
             };
 
-            // //TODO1 should be logging here
-
-            InputReceive?.Invoke(this, evt);
+            // Tell the boss.
+            MessageReceive?.Invoke(this, evt);
         }
 
         /// <summary>
@@ -103,14 +103,36 @@ namespace Ephemera.MidiLibLite
         {
             // Just ignore? or ErrorInfo = $"Message:0x{e.RawMessage:X8}";
         }
+
+        /// <summary>
+        /// Get a list of available device names.
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> GetAvailableDevices()
+        {
+            List<string> devs = [];
+
+            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
+            {
+                devs.Add(MidiIn.DeviceInfo(i).ProductName);
+            }
+
+            return devs;
+        }
     }
 
+    //----------------------------------------------------------------
     /// <summary>A midi output device.</summary>
     public class MidiOutputDevice : IOutputDevice
     {
         #region Fields
         /// <summary>NAudio midi output device.</summary>
         readonly MidiOut? _midiOut = null;
+        #endregion
+
+        #region Events
+        /// <summary>Client needs to deal with this.</summary>
+        public event EventHandler<BaseMidiEvent>? MessageSend;
         #endregion
 
         #region Properties
@@ -131,8 +153,8 @@ namespace Ephemera.MidiLibLite
         /// <param name="deviceName">Client must supply name of device.</param>
         public MidiOutputDevice(string deviceName)
         {
-            // Figure out which midi output device.
-            var devs = DeviceUtils.GetAvailableOutputDevices();
+            // Figure out which midi device.
+            var devs = GetAvailableDevices();
             var ind = devs.IndexOf(deviceName);
             if (ind >= 0)
             {
@@ -171,38 +193,17 @@ namespace Ephemera.MidiLibLite
                 _ => throw new MidiLibException($"Invalid event: {evt}")
             };
 
-            //Debug.WriteLine($">>> {mevt}"); 
-            //TODO1 should be logging here
-
             _midiOut?.Send(mevt.GetAsShortMessage());
-        }
-    }
 
-
-    /// <summary>Bonus stuff.</summary>
-    public class DeviceUtils //TODO1 better home?
-    {
-        /// <summary>
-        /// Get a list of available device names.
-        /// </summary>
-        /// <returns></returns>
-        public static List<string> GetAvailableInputDevices()
-        {
-            List<string> devs = [];
-
-            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
-            {
-                devs.Add(MidiIn.DeviceInfo(i).ProductName);
-            }
-
-            return devs;
+            // Tell the boss.
+            MessageSend?.Invoke(this, evt);
         }
 
         /// <summary>
         /// Get a list of available device names.
         /// </summary>
         /// <returns></returns>
-        public static List<string> GetAvailableOutputDevices()
+        public static List<string> GetAvailableDevices()
         {
             List<string> devs = [];
 
@@ -212,46 +213,6 @@ namespace Ephemera.MidiLibLite
             }
 
             return devs;
-        }
-
-        /// <summary>
-        /// Get text suitable for help.
-        /// </summary>
-        /// <returns></returns>
-        public static string GetDevicesDoc()
-        {
-            List<string> ls = [];
-
-            // Show them what they have.
-            var outs = GetAvailableOutputDevices();
-            var ins = GetAvailableInputDevices();
-
-            ls.Add($"# Your Midi Devices");
-
-            ls.Add($"");
-            ls.Add($"## Inputs");
-            ls.Add($"");
-            GetAvailableInputDevices().ForEach(d => ls.Add($"- [{d}]"));
-            if (ins.Count == 0)
-            {
-                ls.Add($"- None");
-            }
-            else
-            {
-                ins.ForEach(d => ls.Add($"- [{d}]"));
-            }
-
-            ls.Add($"## Outputs");
-            if (outs.Count == 0)
-            {
-                ls.Add($"- None");
-            }
-            else
-            {
-                outs.ForEach(d => ls.Add($"- [{d}]"));
-            }
-
-            return string.Join(Environment.NewLine, ls);
         }
     }
 }

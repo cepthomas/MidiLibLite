@@ -15,7 +15,7 @@ using System.Reflection;
 namespace Ephemera.MidiLibLite
 {
     /// <summary>Select from list supplied to cache. Value can be int or string.</summary>
-    public class GenericListTypeEditor : UITypeEditor // TODO1 put in NBUI
+    public class GenericListTypeEditor : UITypeEditor // TODO2 put in NBUI
     {
         #region Store global property options here.
         static readonly Dictionary<string, List<string>> _options = [];
