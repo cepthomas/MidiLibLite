@@ -73,7 +73,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>int to string</summary>
         public override object? ConvertTo(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, Type destinationType)
         {
-            if (context is null || context.Instance is null || value is not int) { return base.ConvertTo(context, culture, value, destinationType); }
+            if (context is null || context.Instance is null || value is not int || (int)value < 0) { return base.ConvertTo(context, culture, value, destinationType); }
             var propName = context.PropertyDescriptor.Name;
             var options = GenericListTypeEditor.GetOptions(propName);
             return options[(int)value];
@@ -82,7 +82,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>string to int</summary>
         public override object? ConvertFrom(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
         {
-            if (context is null || context.Instance is null || value is not int) { return base.ConvertFrom(context, culture, value); }
+            if (context is null || context.Instance is null || value is not int || (int)value < 0) { return base.ConvertFrom(context, culture, value); }
             var propName = context.PropertyDescriptor.Name;
             var options = GenericListTypeEditor.GetOptions(propName);
             var res = options.FirstOrDefault(ch => ch == (string)value);

@@ -72,12 +72,8 @@ namespace Ephemera.MidiLibLite
         [EditorBrowsable(EditorBrowsableState.Never)]
         public UserControl? UserRenderer
         {
-            get
-            {
-                return _userRenderer;
-            }
-            set
-            {
+            get { return _userRenderer; }
+            set {
                 _userRenderer = value;
                 if (_userRenderer is not null)
                 {
@@ -99,12 +95,8 @@ namespace Ephemera.MidiLibLite
         [EditorBrowsable(EditorBrowsableState.Never)]
         public Color ControlColor
         {
-            get
-            {
-                return txtInfo.BackColor;
-            }
-            set
-            {
+            get { return txtInfo.BackColor; }
+            set {
                 txtInfo.BackColor = value;
                 sldVolume.DrawColor = value;
                 sldControllerValue.DrawColor = value;
@@ -213,14 +205,14 @@ namespace Ephemera.MidiLibLite
 
             if (Options.HasFlag(DisplayOptions.SoloMute))
             {
-                lblSolo.Location = new(xPos, yPos);
-                lblSolo.Size = new(20, 20);//SIZE / 2),
+                lblSolo.Location = new(xPos, yPos + 1);
+                lblSolo.Size = new(20, 20);
                 lblSolo.Text = "S";
                 lblSolo.Click += SoloMute_Click;
                 Controls.Add(lblSolo);
 
-                lblMute.Location = new(xPos, yPos + SIZE / 2);
-                lblMute.Size = new(20, 20); //SIZE / 2);
+                lblMute.Location = new(xPos, yPos  + SIZE / 2 + 1);
+                lblMute.Size = new(20, 20);
                 lblMute.Text = "M";
                 lblMute.Click += SoloMute_Click;
                 Controls.Add(lblMute);
@@ -353,7 +345,7 @@ namespace Ephemera.MidiLibLite
         {
             StringBuilder sb = new();
             sb.AppendLine($"{ChannelHandle.Format(BoundChannel.Handle)}");
-            sb.AppendLine($"{BoundChannel.GetPatchName(BoundChannel.Patch)} ({BoundChannel.Patch})");
+            sb.AppendLine($"{BoundChannel.GetPatchName(BoundChannel.Patch)} {BoundChannel.Patch:000}");
             txtInfo.Text = sb.ToString();
             toolTip.SetToolTip(txtInfo, sb.ToString());
 
@@ -364,12 +356,12 @@ namespace Ephemera.MidiLibLite
         ///// <summary>Read me.</summary>
         //public override string ToString() // TODO2
         //{
-        //    return $"{ChannelHandleX.Format(BoundChannel.Handle)} P:{BoundChannel.Patch}";
+        //    return $"{ChannelHandleX.Format(BoundChannel.Handle)} P:{BoundChannel.Patch:000}";
         //}
         //public static string Format(int Handle)
         //{
         //    var parts = DecodeX(Handle);
-        //    return $"{(parts.Output ? "OUT" : "IN")} {parts.DeviceId}:{parts.ChannelNumber}";
+        //    return $"{(parts.Output ? "OUT" : "IN")} {parts.DeviceId}:{parts.ChannelNumber:00}";
         //}
         #endregion
     }

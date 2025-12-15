@@ -23,11 +23,10 @@ namespace Ephemera.MidiLibLite.Test
             btnKillMidi = new System.Windows.Forms.ToolStripButton();
             txtViewer = new Ephemera.NBagOfUis.TextViewer();
             sldMasterVolume = new Ephemera.NBagOfUis.Slider();
-            btnTestDefs = new System.Windows.Forms.Button();
             ch_ctrl1 = new ChannelControl();
             ch_ctrl2 = new ChannelControl();
-            btnDemo = new System.Windows.Forms.Button();
-            btnTestEdit = new System.Windows.Forms.Button();
+            btnOne = new System.Windows.Forms.Button();
+            btnTwo = new System.Windows.Forms.Button();
             propGrid = new System.Windows.Forms.PropertyGrid();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -88,16 +87,6 @@ namespace Ephemera.MidiLibLite.Test
             sldMasterVolume.TabIndex = 99;
             sldMasterVolume.Value = 5D;
             // 
-            // btnTestDefs
-            // 
-            btnTestDefs.Location = new System.Drawing.Point(398, 41);
-            btnTestDefs.Name = "btnTestDefs";
-            btnTestDefs.Size = new System.Drawing.Size(89, 45);
-            btnTestDefs.TabIndex = 104;
-            btnTestDefs.Text = "test defs";
-            btnTestDefs.UseVisualStyleBackColor = true;
-            btnTestDefs.Click += TestDefs_Click;
-            // 
             // ch_ctrl1
             // 
             ch_ctrl1.Location = new System.Drawing.Point(8, 101);
@@ -112,25 +101,25 @@ namespace Ephemera.MidiLibLite.Test
             ch_ctrl2.Size = new System.Drawing.Size(356, 56);
             ch_ctrl2.TabIndex = 106;
             // 
-            // btnDemo
+            // btnOne
             // 
-            btnDemo.Location = new System.Drawing.Point(161, 41);
-            btnDemo.Name = "btnDemo";
-            btnDemo.Size = new System.Drawing.Size(89, 45);
-            btnDemo.TabIndex = 107;
-            btnDemo.Text = "demo";
-            btnDemo.UseVisualStyleBackColor = true;
-            btnDemo.Click += Demo_Click;
+            btnOne.Location = new System.Drawing.Point(161, 41);
+            btnOne.Name = "btnOne";
+            btnOne.Size = new System.Drawing.Size(89, 45);
+            btnOne.TabIndex = 107;
+            btnOne.Text = "1";
+            btnOne.UseVisualStyleBackColor = true;
+            btnOne.Click += One_Click;
             // 
-            // btnTestEdit
+            // btnTwo
             // 
-            btnTestEdit.Location = new System.Drawing.Point(266, 41);
-            btnTestEdit.Name = "btnTestEdit";
-            btnTestEdit.Size = new System.Drawing.Size(89, 45);
-            btnTestEdit.TabIndex = 108;
-            btnTestEdit.Text = "test edit";
-            btnTestEdit.UseVisualStyleBackColor = true;
-            btnTestEdit.Click += Edit_Click;
+            btnTwo.Location = new System.Drawing.Point(266, 41);
+            btnTwo.Name = "btnTwo";
+            btnTwo.Size = new System.Drawing.Size(89, 45);
+            btnTwo.TabIndex = 108;
+            btnTwo.Text = "2";
+            btnTwo.UseVisualStyleBackColor = true;
+            btnTwo.Click += Two_Click;
             // 
             // propGrid
             // 
@@ -145,11 +134,10 @@ namespace Ephemera.MidiLibLite.Test
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1092, 600);
             Controls.Add(propGrid);
-            Controls.Add(btnTestEdit);
-            Controls.Add(btnDemo);
+            Controls.Add(btnOne);
+            Controls.Add(btnTwo);
             Controls.Add(ch_ctrl2);
             Controls.Add(ch_ctrl1);
-            Controls.Add(btnTestDefs);
             Controls.Add(sldMasterVolume);
             Controls.Add(txtViewer);
             Controls.Add(toolStrip1);
@@ -174,9 +162,8 @@ namespace Ephemera.MidiLibLite.Test
         private ChannelControl ch_ctrl1;
         private ChannelControl ch_ctrl2;
         private System.Windows.Forms.PropertyGrid propGrid;
-        private System.Windows.Forms.Button btnTestDefs;
-        private System.Windows.Forms.Button btnDemo;
-        private System.Windows.Forms.Button btnTestEdit;
+        private System.Windows.Forms.Button btnOne;
+        private System.Windows.Forms.Button btnTwo;
     }
 }
 

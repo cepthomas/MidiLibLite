@@ -15,7 +15,7 @@ using Ephemera.NBagOfTricks;
 namespace Ephemera.MidiLibLite
 {
     //----------------------------------------------------------------
-    public class ChannelHandle //TODO2 better name/home?
+    public class ChannelHandle //TODO2 better name/home? HandleOps
     {
         const int OUTPUT_FLAG = 0x0800;
 
@@ -31,7 +31,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>See me.</summary>
         public static string Format(int handle)
         {
-            return $"{(Output(handle) ? "OUT" : "IN")} {DeviceId(handle)}:{ChannelNumber(handle)}";
+            return $"{(Output(handle) ? "OUT" : "IN")} {DeviceId(handle)}:{ChannelNumber(handle):00}";
         }
     }
 

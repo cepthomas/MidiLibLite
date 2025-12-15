@@ -41,7 +41,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>Handler for message arrived.</summary>
         public event EventHandler<BaseMidiEvent>? MessageReceive;
 
-        /// <summary>Handler for message arrived.</summary>
+        /// <summary>Handler for message sent. This is the actual message on the wire.</summary>
         public event EventHandler<BaseMidiEvent>? MessageSend;
         #endregion
 
@@ -236,7 +236,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="channel">Specific channel or all if null.</param>
         public void Kill(OutputChannel? channel = null)
         {
-            int cc = 120; // fix magical knowledge => "AllNotesOff"
+            int cc = 123; // TODO2 fix magical knowledge => "AllNotesOff"
 
             if (channel is null)
             {

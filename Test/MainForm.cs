@@ -20,7 +20,25 @@ using Ephemera.NBagOfUis;
 using Ephemera.MidiLibLite;
 
 
-// ?? TODO1 generate lua versions of mididefs and musicdefs from ini files?
+
+// TODO1 MusicLib:
+// C:\Dev\Libs\MidiLibLite\music_defs.ini
+//
+// C:\Dev\Libs\NBagOfTricks\MusicDefinitions.cs
+// C:\Dev\Apps\Nebulua\MusicTime.cs
+// C:\Dev\Apps\Nebulua\TimeBar.cs
+//
+// ???
+// C:\Dev\Libs\MidiLib\BarTime.cs
+// C:\Dev\Libs\MidiLib\BarBar.cs
+//
+// + Tests
+//
+// from ini files:
+// public void GenMarkdown_musicdefs() // see C:\Dev\Libs\NBagOfTricks\MusicDefinitions.cs
+// public void GenLua_musicdefs()
+
+
 
 
 namespace Ephemera.MidiLibLite.Test
@@ -73,10 +91,10 @@ namespace Ephemera.MidiLibLite.Test
 
             // Hook up some simple UI handlers.
             btnKillMidi.Click += (_, __) => { _mgr.Kill(); };
-            btnLogMidi.CheckedChanged += (_, __) => { };
-
-            _mgr.MessageReceive += Mgr_MessageReceive;
-            _mgr.MessageSend += Mgr_MessageSend;
+            //btnLogMidi.CheckedChanged += (_, __) => { };
+//>>>>>>>>>>>>>>>
+//_mgr.MessageReceive += Mgr_MessageReceive;
+//_mgr.MessageSend += Mgr_MessageSend;
         }
 
         /// <summary>
@@ -87,15 +105,17 @@ namespace Ephemera.MidiLibLite.Test
         {
             try
             {
-                //DemoScriptApp();
-                //DemoStandardApp();
+                TestScriptApp();
+
+                //TestStandardApp();
             }
             catch (Exception ex)
             {
+                // MidiLibException ex
+                // AppException ex
+
                 Tell(ERROR, ex.Message);
             }
-            // catch (MidiLibException ex)
-            // catch (AppException ex)
 
             base.OnLoad(e);
         }
@@ -118,56 +138,33 @@ namespace Ephemera.MidiLibLite.Test
         }
         #endregion
 
-        #region Do some work
-        //-------------------------------------------------------------------------------//
-        /// <summary>Test property editing.</summary>
-        void Edit_Click(object sender, EventArgs e)
+        #region Start here
+        void One_Click(object sender, EventArgs e)
         {
-            //PropertyEdit();
+            Tell(INFO, $">>>>> One.");
 
-            ChannelEdit();
+            TestDefFile();
+
+            TestPropertyEditor();
+
+            TestChannel();
         }
 
-        /// <summary>TypeEditor test class</summary>
-        [Serializable]
-        public class TypeEditorTestData
+        void Two_Click(object sender, EventArgs e)
         {
-            /// <summary>Device name.</summary>
-            [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
-            public string DeviceName { get; set; } = "";
-
-            /// <summary>Channel name - optional.</summary>
-            public string ChannelName { get; set; } = "";
-
-            /// <summary>Actual 1-based midi channel number.</summary>
-            [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-            [Range(1, MidiDefs.NUM_CHANNELS)]
-            public int ChannelNumber { get; set; } = 1;
-
-            /// <summary>Actual 1-based midi channel number.</summary>
-            [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
-            [Range(0, MidiDefs.MAX_MIDI)]
-            public int SomeOtherMidi { get; set; } = 0;
-
-            /// <summary>Override default instrument presets.</summary>
-            [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
-            public string AliasFile { get; set; } = "";
-
-            /// <summary>Current instrument/patch number.</summary>
-            [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
-            [TypeConverter(typeof(GenericConverter))]
-            [Range(0, MidiDefs.MAX_MIDI)]
-            public int Patch { get; set; } = 0;
+            Tell(INFO, $">>>>> Two.");
         }
+        #endregion
 
 
         //-------------------------------------------------------------------------------//
-        /// <summary>Test property editing.</summary>
-        void ChannelEdit()
+        /// <summary>Test channel logic.</summary>
+        void TestChannel()
         {
-            // Dummy channel to satisfy designer. Will be overwritten by the real one.
+            Tell(INFO, $">>>>> Channel.");
+
+            // Dummy channel.
             var dev = new NullOutputDevice("DUMMY_DEVICE");
-            //BoundChannel = new OutputChannel(dev, 9);
 
             OutputChannel ch = new(dev, 3)
             {
@@ -180,8 +177,7 @@ namespace Ephemera.MidiLibLite.Test
             var inst1 = ch.Instruments;
             if (inst1.Count != 128) Tell(ERROR, "FAIL");
 
-            // ch.AliasFile = Path.Combine(Environment.CurrentDirectory, "exp_defs.ini"); // TODO2 this file does not really belong here
-            ch.AliasFile = Path.Combine(AppContext.BaseDirectory, "exp_defs.ini");
+            ch.AliasFile = Path.Combine(AppContext.BaseDirectory, "exp_defs.ini"); // TODO2 this file does not really belong here
 
             var inst2 = ch.Instruments;
             if (inst2.Count != 66) Tell(ERROR, "FAIL");
@@ -194,10 +190,12 @@ namespace Ephemera.MidiLibLite.Test
         }
 
         //-------------------------------------------------------------------------------//
-        /// <summary>Test property editing.</summary>
-        void PropertyEdit()
+        /// <summary>Test property editing using TypeEditors.</summary>
+        void TestPropertyEditor()
         {
-            TypeEditorTestData td = new()
+            Tell(INFO, $">>>>> Property editor.");
+
+            TargetClass td = new()
             {
                 Patch = 77,
                 ChannelName = "booga-booga",
@@ -208,9 +206,12 @@ namespace Ephemera.MidiLibLite.Test
             };
 
             // Set up options.
-            var insts = MidiDefs.Instance.GetDefaultInstrumentDefs();
-            IEnumerable<string> orderedValues = insts.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
-            var instsList = orderedValues.ToList();
+            //var insts = MidiDefs.Instance.GetDefaultInstrumentDefs();
+            //IEnumerable<string> orderedValues = insts.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
+            //var instsList = orderedValues.ToList();
+
+            var instsList = CreateOrderedMidiList(MidiDefs.Instance.GetDefaultInstrumentDefs(), true, true);
+
 
             GenericListTypeEditor.SetOptions("DeviceName", MidiOutputDevice.GetAvailableDevices());
             GenericListTypeEditor.SetOptions("Patch", instsList);
@@ -219,10 +220,80 @@ namespace Ephemera.MidiLibLite.Test
             changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
         }
 
-        //-------------------------------------------------------------------------------//
-        /// <summary>Test def file loading.</summary>
-        void TestDefs_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Convert a midi dictionary into ordered list of strings.
+        /// </summary>
+        /// <param name="source">The dictionary to process</param>
+        /// <param name="addKey">Add the index number to the entry</param>
+        /// <param name="fill">Add mising midi values</param>
+        /// <returns></returns>
+        List<string> CreateOrderedMidiList(Dictionary<int, string> source, bool addKey, bool fill) // TODO2 put somewhere
         {
+            List<string> res = [];
+
+            for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
+            {
+                if (source.ContainsKey(i))
+                {
+                    res.Add(addKey ? $"{i:000} {source[i]}" : $"{source[i]}");
+                }
+                else if (fill)
+                {
+                    res.Add($"{i:000}");
+                }
+            }
+
+
+            //if (fill)
+            //{
+            //    for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
+            //    {
+            //        if (source.ContainsKey(i))
+            //        {
+            //            if (addKey)
+            //            {
+            //                res.Add($"{i:000} {source[i]}");
+            //            }
+            //            else
+            //            {
+            //                res.Add($"{source[i]}");
+            //            }
+            //        }
+            //        else
+            //        {
+            //            res.Add($"{i:000}");
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    var orderedKeys = source.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key).ToList();
+            //    for (int i = 0; i < orderedKeys.Count; i++)
+            //    {
+            //        if (addKey)
+            //        {
+            //            res.Add($"{i:000} {orderedKeys[i]}");
+            //        }
+            //        else
+            //        {
+            //            res.Add($"{orderedKeys[i]}");
+            //        }
+            //    }
+            //}
+
+            //IEnumerable<string> orderedValues = source.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
+            //var instsList = orderedValues.ToList();
+
+
+            return res;
+        }
+
+
+        //-------------------------------------------------------------------------------//
+        /// <summary>Test def file loading etc.</summary>
+        void TestDefFile()
+        {
+            Tell(INFO, $">>>>> Low level loading.");
             string fn = Path.Combine(AppContext.BaseDirectory, "gm_defs.ini");
 
             // key is section name, value is line
@@ -233,54 +304,20 @@ namespace Ephemera.MidiLibLite.Test
             {
                 Tell(INFO, $"section:{ic.Key} => {ic.Value.Values.Count}");
             });
-        }
 
-        //-------------------------------------------------------------------------------//
-        /// <summary>Test dynamic UI creation.</summary>
-        void Demo_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                DemoScriptApp();
-            }
-            catch (Exception ex)
-            {
-                Tell(ERROR, ex.Message);
-            }
-        }
+            Tell(INFO, $">>>>> Gen Markdown.");
+            var smd = MidiDefs.Instance.GenMarkdown(fn);
+            Tell(INFO, $"Markdown:{smd.Left(200)}");
 
-        //-------------------------------------------------------------------------------//
-        /// <summary>A standard app where controls are defined in VS designer.</summary>
-        void DemoStandardApp()
-        {
-            // Create channels and initialize controls.
-            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);
-            var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12);
+            Tell(INFO, $">>>>> Gen Lua.");
+            var sld = MidiDefs.Instance.GenLua(fn);
+            Tell(INFO, $"Lua:{sld.Left(200)}");
 
-            List<(OutputChannel, ChannelControl)> channels = [(chan_out1, ch_ctrl1), (chan_out2, ch_ctrl2)];
-            channels.ForEach(ch =>
-            {
-                ch.Item2.BorderStyle = BorderStyle.FixedSingle;
-                ch.Item2.ControlColor = _controlColor;
-                ch.Item2.SelectedColor = _selectedColor;
-                ch.Item2.Volume = Defs.DEFAULT_VOLUME;
-                ch.Item2.ChannelChange += ChannelControl_ChannelChange;
-                ch.Item2.SendMidi += ChannelControl_SendMidi;
-                ch.Item2.BoundChannel = ch.Item1;
-
-                var rend = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
-                rend.SendMidi += ChannelControl_SendMidi;
-                //TODO2 ideally hide this event chain in the ChannelControl itself. Prob need to add an interface for renderers.
-                ch.Item2.UserRenderer = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
-            });
-
-            ///// 3 - do work
-            // ????
         }
 
         //-------------------------------------------------------------------------------//
         /// <summary>App driven by a script - as Nebulua/Nebulator. Creates channels and controls dynamically.</summary>
-        void DemoScriptApp()
+        void TestScriptApp()
         {
             ///// 0 - pre-steps - only for this demo
             ch_ctrl1.Hide();
@@ -314,8 +351,7 @@ namespace Ephemera.MidiLibLite.Test
                     Volume = Defs.DEFAULT_VOLUME,
                 };
                 ctrl.ChannelChange += ChannelControl_ChannelChange;
-                ctrl.SendMidi += ChannelControl_SendMidi;
-
+                ctrl.SendMidi += Mgr_MessageSend;
                 Controls.Add(ctrl);
                 x += ctrl.Width + 4; // Width is not valid until after previous statement.
             });
@@ -335,82 +371,143 @@ namespace Ephemera.MidiLibLite.Test
             // function receive_midi_note(chan_hnd, note_num, volume)
             // function receive_midi_controller(chan_hnd, controller, value)
         }
-        #endregion
 
-        #region Script api functions
-        /// <summary>
-        /// api.send_midi_note(hnd_strings, note_num, volume)
-        /// </summary>
-        /// <param name="chnd"></param>
-        /// <param name="note_num"></param>
-        /// <param name="volume"></param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        void SendMidiNote(int chnd, int note_num, double volume)
+        //-------------------------------------------------------------------------------//
+        /// <summary>A standard app where controls are defined in VS designer.</summary>
+        void TestStandardApp()
         {
-            if (note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note_num)); }
+            // Create channels and initialize controls.
+            var chan_out1 = _mgr.OpenMidiOutput(OUTDEV1, 1, "channel 1!", 0);
+            var chan_out2 = _mgr.OpenMidiOutput(OUTDEV1, 2, "channel 2!", 12);
 
-            var ch = _mgr.GetOutputChannel(chnd);
+            List<(OutputChannel, ChannelControl)> channels = [(chan_out1, ch_ctrl1), (chan_out2, ch_ctrl2)];
+            channels.ForEach(ch =>
+            {
+                ch.Item2.BorderStyle = BorderStyle.FixedSingle;
+                ch.Item2.ControlColor = _controlColor;
+                ch.Item2.SelectedColor = _selectedColor;
+                ch.Item2.Volume = Defs.DEFAULT_VOLUME;
+                ch.Item2.ChannelChange += ChannelControl_ChannelChange;
+                ch.Item2.SendMidi += ChannelControl_SendMidi;
+                ch.Item2.BoundChannel = ch.Item1;
 
-            if (ch is not null)
-            {
-                BaseMidiEvent evt = volume == 0.0 ?
-                    new NoteOff(ChannelHandle.ChannelNumber(chnd), note_num) :
-                    new NoteOn(ChannelHandle.ChannelNumber(chnd), note_num, (int)MathUtils.Constrain(volume * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI));
-                ch.Device.Send(evt);
-            }
-            else
-            {
-                //TODO2 error?
-            }
+                var rend = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
+                rend.SendMidi += ChannelControl_SendMidi;
+                //TODO2 ideally hide this event chain in the ChannelControl itself. Prob need to add an interface for renderers.
+                ch.Item2.UserRenderer = new CustomRenderer() { ChannelHandle = ch.Item1.Handle };
+            });
+
+            ///// 3 - do work
+            // ...
         }
 
-        /// <summary>
-        /// api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
-        /// </summary>
-        /// <param name="chnd"></param>
-        /// <param name="controller_id"></param>
-        /// <param name="value"></param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        void SendMidiController(int chnd, int controller_id, int value)
+
+        //-------------------------------------------------------------------------------//
+        /// <summary>General purpose test class</summary>
+        [Serializable]
+        public class TargetClass
         {
-            if (controller_id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(controller_id)); }
-            if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
+            /// <summary>Device name.</summary>
+            [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
+            public string DeviceName { get; set; } = "";
 
-            var ch = _mgr.GetOutputChannel(chnd);
+            /// <summary>Channel name - optional.</summary>
+            public string ChannelName { get; set; } = "";
 
-            if (ch is not null)
-            {
-                BaseMidiEvent evt = new Controller(ChannelHandle.ChannelNumber(chnd), controller_id, value);
-                ch.Device.Send(evt);
-            }
-            else
-            {
-                //TODO2 error?
-            }
+            /// <summary>Actual 1-based midi channel number.</summary>
+            [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
+            [Range(1, MidiDefs.NUM_CHANNELS)]
+            public int ChannelNumber { get; set; } = 1;
+
+            /// <summary>Actual 1-based midi channel number.</summary>
+            [Editor(typeof(MidiValueTypeEditor), typeof(UITypeEditor))]
+            [Range(0, MidiDefs.MAX_MIDI)]
+            public int SomeOtherMidi { get; set; } = 0;
+
+            /// <summary>Override default instrument presets.</summary>
+            [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
+            public string AliasFile { get; set; } = "";
+
+            /// <summary>Current instrument/patch number.</summary>
+            [Editor(typeof(GenericListTypeEditor), typeof(UITypeEditor))]
+            [TypeConverter(typeof(GenericConverter))]
+            [Range(0, MidiDefs.MAX_MIDI)]
+            public int Patch { get; set; } = 0;
         }
 
-        /// <summary>
-        /// Callback from script: function receive_midi_note(chan_hnd, note_num, volume)
-        /// </summary>
-        /// <param name="chnd"></param>
-        /// <param name="note_num"></param>
-        /// <param name="volume"></param>
-        void ReceiveMidiNote(int chnd, int note_num, double volume)
-        {
-        }
 
-        /// <summary>
-        /// Callback from script: function receive_midi_controller(chan_hnd, controller, value)
-        /// </summary>
-        /// <param name="chnd"></param>
-        /// <param name="controller_id"></param>
-        /// <param name="value"></param>
-        void ReceiveMidiController(int chnd, int controller_id, int value)
-        {
-        }
+        #region Script api functions ????
+
+        // /// api.send_midi_note(hnd_strings, note_num, volume)
+        // void SendMidiNote(int chnd, int note_num, double volume)
+        // {
+        //     if (note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note_num)); }
+
+        //     var ch = _mgr.GetOutputChannel(chnd);
+
+        //     if (ch is not null)
+        //     {
+        //         BaseMidiEvent evt = volume == 0.0 ?
+        //             new NoteOff(ChannelHandle.ChannelNumber(chnd), note_num) :
+        //             new NoteOn(ChannelHandle.ChannelNumber(chnd), note_num, (int)MathUtils.Constrain(volume * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI));
+        //         ch.Device.Send(evt);
+        //     }
+        //     else
+        //     {
+        //         //TODO2 error?
+        //     }
+        // }
+
+        // /// api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
+        // void SendMidiController(int chnd, int controller_id, int value)
+        // {
+        //     if (controller_id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(controller_id)); }
+        //     if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
+        //     var ch = _mgr.GetOutputChannel(chnd);
+        //     if (ch is not null)
+        //     {
+        //         BaseMidiEvent evt = new Controller(ChannelHandle.ChannelNumber(chnd), controller_id, value);
+        //         ch.Device.Send(evt);
+        //     }
+        //     else
+        //     {
+        //         //TODO2 error?
+        //     }
+        // }
+
+        // /// Callback from script: function receive_midi_note(chan_hnd, note_num, volume)
+        // void ReceiveMidiNote(int chnd, int note_num, double volume)
+        // {
+        // }
+
+        // /// Callback from script: function receive_midi_controller(chan_hnd, controller, value)
+        // void ReceiveMidiController(int chnd, int controller_id, int value)
+        // {
+        // }
         #endregion
 
         #region Events
+        /// <summary>
+        /// Something arrived from a midi device.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Mgr_MessageReceive(object? sender, BaseMidiEvent e)
+        {
+            Tell(INFO, $"Receive [{e}]");
+        }
+
+        /// <summary>
+        /// Something sent to a midi device. This is what was actually sent, not what the
+        /// channel thought it was sending.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Mgr_MessageSend(object? sender, BaseMidiEvent e)
+        {
+            Tell(INFO, $"Send actual [{e}]");
+        }
+
         /// <summary>
         /// UI clicked something -> send some midi. Works for different sources.
         /// </summary>
@@ -476,25 +573,6 @@ namespace Ephemera.MidiLibLite.Test
             //}
         }
 
-        /// <summary>
-        /// Something arrived from a midi device.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Mgr_MessageReceive(object? sender, BaseMidiEvent e)
-        {
-            Tell(INFO, $"Receive [{e}]");
-        }
-
-        /// <summary>
-        /// Something sent to a midi device.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Mgr_MessageSend(object? sender, BaseMidiEvent e)
-        {
-            Tell(INFO, $"Send actual [{e}]");
-        }
         #endregion
 
         #region Misc internals

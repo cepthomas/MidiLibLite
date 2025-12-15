@@ -134,30 +134,81 @@ namespace Ephemera.MidiLibLite
         /// Make content from the definitions.
         /// </summary>
         /// <returns>Content.</returns>
-        public List<string> FormatDoc()//TODO1 from defs ??
+        public string GenMarkdown(string fn) //TODO2 lua script?
         {
-            List<string> docs = [];
-            docs.Add("# Midi GM Instruments");
-            docs.Add("Instrument          | Number");
-            docs.Add("----------          | ------");
-            Enumerable.Range(0, _instruments.Count).ForEach(i => docs.Add($"{_instruments[i]}|{i}"));
-            docs.Add("# Midi GM Drums");
-            docs.Add("Drum                | Number");
-            docs.Add("----                | ------");
-            _drums.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
-            docs.Add("# Midi GM Controllers");
-            docs.Add("- Undefined: 3, 9, 14-15, 20-31, 85-90, 102-119");
-            docs.Add("- For most controllers marked on/off, on=127 and off=0");
-            docs.Add("Controller          | Number");
-            docs.Add("----------          | ------");
-            _controllerIds.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
-            docs.Add("# Midi GM Drum Kits");
-            docs.Add("Note that these will vary depending on your Soundfont file.");
-            docs.Add("Kit        | Number");
-            docs.Add("-----------| ------");
-            _drumKits.ForEach(kv => docs.Add($"{kv.Value}|{kv.Key}"));
+            // key is section name, value is line
+            Dictionary<string, List<string>> res = [];
+            var ir = new IniReader(fn);
 
-            return docs;
+            List<string> ls = [];
+            ls.Add("# Midi GM Instruments");
+            ls.Add("Instrument          | Number");
+            ls.Add("----------          | ------");
+            ir.Contents["instruments"].Values.ForEach(kv => { ls.Add($"{kv.Value}|{kv.Key}"); });
+
+            ls.Add("# Midi GM Controllers");
+            ls.Add("- Undefined: 3, 9, 14-15, 20-31, 85-90, 102-119");
+            ls.Add("- For most controllers marked on/off, on=127 and off=0");
+            ls.Add("Controller          | Number");
+            ls.Add("----------          | ------");
+            ir.Contents["controllers"].Values.ForEach(kv => { ls.Add($"{kv.Value}|{kv.Key}"); });
+
+            ls.Add("# Midi GM Drums");
+            ls.Add("Drum                | Number");
+            ls.Add("----                | ------");
+            ir.Contents["drums"].Values.ForEach(kv => { ls.Add($"{kv.Value}|{kv.Key}"); });
+
+            ls.Add("# Midi GM Drum Kits");
+            ls.Add("Note that these will vary depending on your Soundfont file.");
+            ls.Add("Kit        | Number");
+            ls.Add("-----------| ------");
+            ir.Contents["drumkits"].Values.ForEach(kv => { ls.Add($"{kv.Value}|{kv.Key}"); });
+
+            return string.Join(Environment.NewLine, ls);
+        }
+
+        /// <summary>
+        /// Make content from the definitions.
+        /// </summary>
+        /// <returns>Content.</returns>
+        public string GenLua(string fn) //TODO2 lua script?
+        {
+            // key is section name, value is line
+            Dictionary<string, List<string>> res = [];
+            var ir = new IniReader(fn);
+
+            List<string> ls = [];
+
+            ls.Add("local M = {}");
+            ls.Add("M.MAX_MIDI = 127");
+
+            ls.Add("-- The GM midi instrument definitions.");
+            ls.Add("M.instruments =");
+            ls.Add("{");
+            ir.Contents["instruments"].Values.ForEach(kv => ls.Add($"{kv.Key} = {kv.Value},"));
+            ls.Add("}");
+
+            ls.Add("-- The GM midi controller definitions.");
+            ls.Add("M.controllers =");
+            ls.Add("{");
+            ir.Contents["controllers"].Values.ForEach(kv => ls.Add($"{kv.Key} = {kv.Value},"));
+            ls.Add("}");
+
+            ls.Add("-- The GM midi drum definitions.");
+            ls.Add("M.drums =");
+            ls.Add("{");
+            ir.Contents["drums"].Values.ForEach(kv => ls.Add($"{kv.Key} = {kv.Value},"));
+            ls.Add("}");
+
+            ls.Add("-- The GM midi drum kit definitions.");
+            ls.Add("M.drum_kits =");
+            ls.Add("{");
+            ir.Contents["drumkits"].Values.ForEach(kv => ls.Add($"{kv.Key} = {kv.Value},"));
+            ls.Add("}");
+
+            ls.Add("return M");
+
+            return string.Join(Environment.NewLine, ls);
         }
     }
 }
