@@ -21,26 +21,6 @@ using Ephemera.MidiLibLite;
 
 
 
-// TODO1 MusicLib:
-// C:\Dev\Libs\MidiLibLite\music_defs.ini
-//
-// C:\Dev\Libs\NBagOfTricks\MusicDefinitions.cs
-// C:\Dev\Apps\Nebulua\MusicTime.cs
-// C:\Dev\Apps\Nebulua\TimeBar.cs
-//
-// ???
-// C:\Dev\Libs\MidiLib\BarTime.cs
-// C:\Dev\Libs\MidiLib\BarBar.cs
-//
-// + Tests
-//
-// from ini files:
-// public void GenMarkdown_musicdefs() // see C:\Dev\Libs\NBagOfTricks\MusicDefinitions.cs
-// public void GenLua_musicdefs()
-
-
-
-
 namespace Ephemera.MidiLibLite.Test
 {
     public partial class MainForm : Form
@@ -210,7 +190,7 @@ namespace Ephemera.MidiLibLite.Test
             //IEnumerable<string> orderedValues = insts.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
             //var instsList = orderedValues.ToList();
 
-            var instsList = CreateOrderedMidiList(MidiDefs.Instance.GetDefaultInstrumentDefs(), true, true);
+            var instsList = Utils.CreateOrderedMidiList(MidiDefs.Instance.GetDefaultInstrumentDefs(), true, true);
 
 
             GenericListTypeEditor.SetOptions("DeviceName", MidiOutputDevice.GetAvailableDevices());
@@ -219,75 +199,6 @@ namespace Ephemera.MidiLibLite.Test
             var changes = SettingsEditor.Edit(td, "TESTOMATIC", 300);
             changes.ForEach(s => Tell(INFO, $"Editor changed {s}"));
         }
-
-        /// <summary>
-        /// Convert a midi dictionary into ordered list of strings.
-        /// </summary>
-        /// <param name="source">The dictionary to process</param>
-        /// <param name="addKey">Add the index number to the entry</param>
-        /// <param name="fill">Add mising midi values</param>
-        /// <returns></returns>
-        List<string> CreateOrderedMidiList(Dictionary<int, string> source, bool addKey, bool fill) // TODO2 put somewhere
-        {
-            List<string> res = [];
-
-            for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
-            {
-                if (source.ContainsKey(i))
-                {
-                    res.Add(addKey ? $"{i:000} {source[i]}" : $"{source[i]}");
-                }
-                else if (fill)
-                {
-                    res.Add($"{i:000}");
-                }
-            }
-
-
-            //if (fill)
-            //{
-            //    for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
-            //    {
-            //        if (source.ContainsKey(i))
-            //        {
-            //            if (addKey)
-            //            {
-            //                res.Add($"{i:000} {source[i]}");
-            //            }
-            //            else
-            //            {
-            //                res.Add($"{source[i]}");
-            //            }
-            //        }
-            //        else
-            //        {
-            //            res.Add($"{i:000}");
-            //        }
-            //    }
-            //}
-            //else
-            //{
-            //    var orderedKeys = source.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key).ToList();
-            //    for (int i = 0; i < orderedKeys.Count; i++)
-            //    {
-            //        if (addKey)
-            //        {
-            //            res.Add($"{i:000} {orderedKeys[i]}");
-            //        }
-            //        else
-            //        {
-            //            res.Add($"{orderedKeys[i]}");
-            //        }
-            //    }
-            //}
-
-            //IEnumerable<string> orderedValues = source.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
-            //var instsList = orderedValues.ToList();
-
-
-            return res;
-        }
-
 
         //-------------------------------------------------------------------------------//
         /// <summary>Test def file loading etc.</summary>

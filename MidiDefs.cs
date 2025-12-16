@@ -134,7 +134,7 @@ namespace Ephemera.MidiLibLite
         /// Make content from the definitions.
         /// </summary>
         /// <returns>Content.</returns>
-        public string GenMarkdown(string fn) //TODO2 lua script?
+        public string GenMarkdown(string fn) //TODO2 could be lua script?
         {
             // key is section name, value is line
             Dictionary<string, List<string>> res = [];
@@ -171,7 +171,7 @@ namespace Ephemera.MidiLibLite
         /// Make content from the definitions.
         /// </summary>
         /// <returns>Content.</returns>
-        public string GenLua(string fn) //TODO2 lua script?
+        public string GenLua(string fn) //TODO2 could be lua script?
         {
             // key is section name, value is line
             Dictionary<string, List<string>> res = [];
