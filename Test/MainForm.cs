@@ -47,6 +47,9 @@ namespace Ephemera.MidiLibLite.Test
         const string OUTDEV2 = "Microsoft GS Wavetable Synth";
         #endregion
 
+        /// <summary>Where to put things.</summary>
+        readonly string _outPath = @"???";
+
         #region Lifecycle
         /// <summary>
         /// Constructor.
@@ -54,6 +57,11 @@ namespace Ephemera.MidiLibLite.Test
         public MainForm()
         {
             InitializeComponent();
+
+            // Make sure out path exists.
+            _outPath = Path.Join(MiscUtils.GetSourcePath(), "out");
+            DirectoryInfo di = new(_outPath);
+            di.Create();
 
             // The text output.
             txtViewer.Font = Font;
