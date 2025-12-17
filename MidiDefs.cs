@@ -142,27 +142,27 @@ namespace Ephemera.MidiLibLite
 
             List<string> ls = [];
             ls.Add("# Midi GM Instruments");
-            ls.Add("Instrument          | Number");
-            ls.Add("----------          | ------");
-            ir.Contents["instruments"].Values.ForEach(kv => { ls.Add($"{kv.Value}|{kv.Key}"); });
+            ls.Add("Instrument          | Number|");
+            ls.Add("----------          | ------|");
+            ir.Contents["instruments"].Values.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
 
             ls.Add("# Midi GM Controllers");
             ls.Add("- Undefined: 3, 9, 14-15, 20-31, 85-90, 102-119");
             ls.Add("- For most controllers marked on/off, on=127 and off=0");
-            ls.Add("Controller          | Number");
-            ls.Add("----------          | ------");
-            ir.Contents["controllers"].Values.ForEach(kv => { ls.Add($"{kv.Value}|{kv.Key}"); });
+            ls.Add("Controller          | Number|");
+            ls.Add("----------          | ------|");
+            ir.Contents["controllers"].Values.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
 
             ls.Add("# Midi GM Drums");
-            ls.Add("Drum                | Number");
-            ls.Add("----                | ------");
-            ir.Contents["drums"].Values.ForEach(kv => { ls.Add($"{kv.Value}|{kv.Key}"); });
+            ls.Add("Drum                | Number|");
+            ls.Add("----                | ------|");
+            ir.Contents["drums"].Values.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
 
             ls.Add("# Midi GM Drum Kits");
             ls.Add("Note that these will vary depending on your Soundfont file.");
             ls.Add("Kit        | Number");
             ls.Add("-----------| ------");
-            ir.Contents["drumkits"].Values.ForEach(kv => { ls.Add($"{kv.Value}|{kv.Key}"); });
+            ir.Contents["drumkits"].Values.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
 
             return string.Join(Environment.NewLine, ls);
         }

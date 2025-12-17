@@ -218,12 +218,13 @@ namespace Ephemera.MidiLibLite.Test
 
             Tell(INFO, $">>>>> Gen Markdown.");
             var smd = MidiDefs.Instance.GenMarkdown(fn);
-            Tell(INFO, $"Markdown:{smd.Left(200)}");
+            File.WriteAllText(@"C:\Dev\Libs\MidiLibLite\Test\mididefs.md", smd);
+            // Tell(INFO, $"Markdown:{smd.Left(200)}");
 
             Tell(INFO, $">>>>> Gen Lua.");
             var sld = MidiDefs.Instance.GenLua(fn);
-            Tell(INFO, $"Lua:{sld.Left(200)}");
-
+            File.WriteAllText(@"C:\Dev\Libs\MidiLibLite\Test\mididefs.lua", sld);
+            // Tell(INFO, $"Lua:{sld.Left(200)}");
         }
 
         //-------------------------------------------------------------------------------//
