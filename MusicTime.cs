@@ -8,25 +8,43 @@ using Ephemera.NBagOfTricks;
 namespace Ephemera.MidiLibLite
 {
     /// <summary>Misc musical timing functions.</summary>
-    public class MusicTime
+    /// <summary>Sort of like DateTime but for musical terminology.</summary>
+    public class MusicTime : IComparable // TODO1 implement - used by TimeBar
     {
-        /// <summary>Only 4/4 time supported.</summary>
-        public const int BEATS_PER_BAR = 4;
+        // from => public class MidiSettings TODO1 somewhere else?
+        //{
+        public static int DefaultTempo { get; set; } = 100;
+        public static SnapType Snap { get; set; } = SnapType.Beat;
+        public static int InternalPPQ { get; set; } = 32;
+        // Properties - internal
 
-        /// <summary>GOur resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.</summary>
-        public const int SUBS_PER_BEAT = 8;
+        /// <summary>Only 4/4 time supported.</summary>
+        public static int BeatsPerBar { get { return 4; } }
+        /// <summary>Our resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.</summary>
+        public static int SubsPerBeat { get { return InternalPPQ; } }
+        public static int SubsPerBar { get { return InternalPPQ * BeatsPerBar; } }
+       // public const int SubsPerBar = SubsPerBeat * BeatsPerBar;
+        // TotalSubs = beats * MidiSettings.
+        //}
+
+
+        /// <summary>Only 4/4 time supported.</summary>
+        //  public const int BeatsPerBar = 4;
+
+        /// <summary>Our resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.</summary>
+        //       public const int SubsPerBeat = 8;
 
         /// <summary>Convenience.</summary>
-        public const int SUBS_PER_BAR = SUBS_PER_BEAT * BEATS_PER_BAR;
+    //    public const int SubsPerBar = SubsPerBeat * BeatsPerBar;
 
         /// <summary>Get the bar number.</summary>
-        public static int BAR(int tick) { return tick / SUBS_PER_BAR; }
+        public static int BAR(int tick) { return tick / SubsPerBar; }
 
         /// <summary>Get the beat number in the bar.</summary>
-        public static int BEAT(int tick) { return tick / SUBS_PER_BEAT % BEATS_PER_BAR; }
+        public static int BEAT(int tick) { return tick / SubsPerBeat % BeatsPerBar; }
 
         /// <summary>Get the sub in the beat.</summary>
-        public static int SUB(int tick) { return tick % SUBS_PER_BEAT; }
+        public static int SUB(int tick) { return tick % SubsPerBeat; }
 
         /// <summary>
         /// Convert a string bar time to absolute position/tick.
@@ -40,17 +58,17 @@ namespace Ephemera.MidiLibLite
 
             if (tick >= 0 && parts.Count > 0)
             {
-                tick = (int.TryParse(parts[0], out int v) && v >= 0 && v <= 9999) ? tick + v * SUBS_PER_BAR : -1;
+                tick = (int.TryParse(parts[0], out int v) && v >= 0 && v <= 9999) ? tick + v * SubsPerBar : -1;
             }
 
             if (tick >= 0 && parts.Count > 1)
             {
-                tick = (int.TryParse(parts[1], out int v) && v >= 0 && v <= BEATS_PER_BAR - 1) ? tick + v * SUBS_PER_BEAT : -1;
+                tick = (int.TryParse(parts[1], out int v) && v >= 0 && v <= BeatsPerBar - 1) ? tick + v * SubsPerBeat : -1;
             }
 
             if (tick >= 0 && parts.Count > 2)
             {
-                tick = (int.TryParse(parts[2], out int v) && v >= 0 && v <= SUBS_PER_BEAT - 1) ? tick + v : -1;
+                tick = (int.TryParse(parts[2], out int v) && v >= 0 && v <= SubsPerBeat - 1) ? tick + v : -1;
             }
 
             return tick;
@@ -75,16 +93,11 @@ namespace Ephemera.MidiLibLite
                 return "Invalid";
             }
         }
-    }
 
 
 
 
 
-
-    /// <summary>Sort of like DateTime but for musical terminology.</summary>
-    public class BarTime : IComparable
-    {
         #region Fields
         /// <summary>For hashing.</summary>
         readonly int _id;
@@ -101,23 +114,23 @@ namespace Ephemera.MidiLibLite
         public int TotalSubs { get; private set; }
 
         /// <summary>The time in beats. Always zero-based.</summary>
-        public int TotalBeats { get { return TotalSubs / MidiSettings.LibSettings.SubsPerBeat; } }
+        public int TotalBeats { get { return TotalSubs / SubsPerBeat; } }
 
         /// <summary>The bar number.</summary>
-        public int Bar { get { return TotalSubs / MidiSettings.LibSettings.SubsPerBar; } }
+        public int Bar { get { return TotalSubs / SubsPerBar; } }
 
         /// <summary>The beat number in the bar.</summary>
-        public int Beat { get { return TotalSubs / MidiSettings.LibSettings.SubsPerBeat % MidiSettings.LibSettings.BeatsPerBar; } }
+        public int Beat { get { return TotalSubs / SubsPerBeat % BeatsPerBar; } }
 
         /// <summary>The sub in the beat.</summary>
-        public int Sub { get { return TotalSubs % MidiSettings.LibSettings.SubsPerBeat; } }
+        public int Sub { get { return TotalSubs % SubsPerBeat; } }
         #endregion
 
         #region Lifecycle
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public BarTime()
+        public MusicTime()
         {
             TotalSubs = 0;
             _id = _all_ids++;
@@ -129,9 +142,9 @@ namespace Ephemera.MidiLibLite
         /// <param name="bar"></param>
         /// <param name="beat"></param>
         /// <param name="sub"></param>
-        public BarTime(int bar, int beat, int sub)
+        public MusicTime(int bar, int beat, int sub)
         {
-            TotalSubs = (bar * MidiSettings.LibSettings.SubsPerBar) + (beat * MidiSettings.LibSettings.SubsPerBeat) + sub;
+            TotalSubs = (bar * SubsPerBar) + (beat * SubsPerBeat) + sub;
             _id = _all_ids++;
         }
 
@@ -139,7 +152,7 @@ namespace Ephemera.MidiLibLite
         /// Constructor from subs.
         /// </summary>
         /// <param name="subs">Number of subs.</param>
-        public BarTime(int subs)
+        public MusicTime(int subs)
         {
             if (subs < 0)
             {
@@ -151,11 +164,11 @@ namespace Ephemera.MidiLibLite
         }
 
         /// <summary>
-        /// Construct a BarTime from Beat.Sub representation as a double. Sub is LOW_RES_PPQ.
+        /// Construct a MusicTime from Beat.Sub representation as a double. Sub is LOW_RES_PPQ.
         /// </summary>
         /// <param name="beat"></param>
-        /// <returns>New BarTime.</returns>
-        public BarTime(double beat)
+        /// <returns>New MusicTime.</returns>
+        public MusicTime(double beat)
         {
             var (integral, fractional) = MathUtils.SplitDouble(beat);
             var beats = (int)integral;
@@ -167,8 +180,8 @@ namespace Ephemera.MidiLibLite
             }
 
             // Scale subs to native.
-            subs = subs * MidiSettings.LibSettings.InternalPPQ / LOW_RES_PPQ;
-            TotalSubs = beats * MidiSettings.LibSettings.SubsPerBeat + subs;
+            subs = subs * InternalPPQ / LOW_RES_PPQ;
+            TotalSubs = beats * SubsPerBeat + subs;
         }
         #endregion
 
@@ -186,7 +199,7 @@ namespace Ephemera.MidiLibLite
         /// </summary>
         /// <param name="lower"></param>
         /// <param name="upper"></param>
-        public void Constrain(BarTime lower, BarTime upper)
+        public void Constrain(MusicTime lower, MusicTime upper)
         {
             TotalSubs = MathUtils.Constrain(TotalSubs, lower.TotalSubs, upper.TotalSubs);
         }
@@ -215,7 +228,7 @@ namespace Ephemera.MidiLibLite
             if(sub > 0 && snapType != SnapType.Sub)
             {
                 // res:32 in:27 floor=(in%aim)*aim  ceiling=floor+aim
-                int res = snapType == SnapType.Bar ? MidiSettings.LibSettings.SubsPerBar : MidiSettings.LibSettings.SubsPerBeat;
+                int res = snapType == SnapType.Bar ? SubsPerBar : SubsPerBeat;
                 int floor = (sub / res) * res;
                 int ceiling = floor + res;
 
@@ -254,7 +267,7 @@ namespace Ephemera.MidiLibLite
         #region Standard IComparable stuff
         public override bool Equals(object? obj)
         {
-            return obj is not null && obj is BarTime tm && tm.TotalSubs == TotalSubs;
+            return obj is not null && obj is MusicTime tm && tm.TotalSubs == TotalSubs;
         }
 
         public override int GetHashCode()
@@ -269,53 +282,53 @@ namespace Ephemera.MidiLibLite
                 throw new ArgumentException("Object is null");
             }
 
-            BarTime? other = obj as BarTime;
+            MusicTime? other = obj as MusicTime;
             if (other is not null)
             {
                 return TotalSubs.CompareTo(other.TotalSubs);
             }
             else
             {
-                throw new ArgumentException("Object is not a BarTime");
+                throw new ArgumentException("Object is not a MusicTime");
             }
         }
 
-        public static bool operator ==(BarTime a, BarTime b)
+        public static bool operator ==(MusicTime a, MusicTime b)
         {
             return a.TotalSubs == b.TotalSubs;
         }
 
-        public static bool operator !=(BarTime a, BarTime b)
+        public static bool operator !=(MusicTime a, MusicTime b)
         {
             return !(a == b);
         }
 
-        public static BarTime operator +(BarTime a, BarTime b)
+        public static MusicTime operator +(MusicTime a, MusicTime b)
         {
-            return new BarTime(a.TotalSubs + b.TotalSubs);
+            return new MusicTime(a.TotalSubs + b.TotalSubs);
         }
 
-        public static BarTime operator -(BarTime a, BarTime b)
+        public static MusicTime operator -(MusicTime a, MusicTime b)
         {
-            return new BarTime(a.TotalSubs - b.TotalSubs);
+            return new MusicTime(a.TotalSubs - b.TotalSubs);
         }
 
-        public static bool operator <(BarTime a, BarTime b)
+        public static bool operator <(MusicTime a, MusicTime b)
         {
             return a.TotalSubs < b.TotalSubs;
         }
 
-        public static bool operator >(BarTime a, BarTime b)
+        public static bool operator >(MusicTime a, MusicTime b)
         {
             return a.TotalSubs > b.TotalSubs;
         }
 
-        public static bool operator <=(BarTime a, BarTime b)
+        public static bool operator <=(MusicTime a, MusicTime b)
         {
             return a.TotalSubs <= b.TotalSubs;
         }
 
-        public static bool operator >=(BarTime a, BarTime b)
+        public static bool operator >=(MusicTime a, MusicTime b)
         {
             return a.TotalSubs >= b.TotalSubs;
         }

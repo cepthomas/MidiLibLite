@@ -9,7 +9,7 @@ using Ephemera.NBagOfTricks;
 namespace Ephemera.MidiLibLite
 {
     /// <summary>System dynamic values for access by all other components. Some notify clients.</summary>
-    public class RunState
+    public class RunState // TODO1 implement - used by TimeBar
     {
         #region Backing fields
         List<(int tick, string name)> _sectionInfo = [];

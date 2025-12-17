@@ -93,7 +93,7 @@ namespace Ephemera.MidiLibLite.Test
         {
             try
             {
-                TestScriptApp();
+                //TestScriptApp();
 
                 //TestStandardApp();
             }
@@ -140,6 +140,8 @@ namespace Ephemera.MidiLibLite.Test
 
         void Two_Click(object sender, EventArgs e)
         {
+            TestScriptApp();
+
             Tell(INFO, $">>>>> Two.");
         }
         #endregion
