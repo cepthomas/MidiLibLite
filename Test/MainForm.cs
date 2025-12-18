@@ -72,9 +72,9 @@ namespace Ephemera.MidiLibLite.Test
             // Master volume.
             sldMasterVolume.DrawColor = _controlColor;
             sldMasterVolume.Minimum = 0.0;
-            sldMasterVolume.Maximum = Defs.MAX_VOLUME;
-            sldMasterVolume.Resolution = Defs.MAX_VOLUME / 50;
-            sldMasterVolume.Value = Defs.DEFAULT_VOLUME;
+            sldMasterVolume.Maximum = Stuff.MAX_VOLUME;
+            sldMasterVolume.Resolution = Stuff.MAX_VOLUME / 50;
+            sldMasterVolume.Value = Stuff.DEFAULT_VOLUME;
             sldMasterVolume.Label = "master volume";
 
             // Hook up some simple UI handlers.
@@ -270,7 +270,7 @@ namespace Ephemera.MidiLibLite.Test
                     BorderStyle = BorderStyle.FixedSingle,
                     ControlColor = _controlColor,
                     SelectedColor = _selectedColor,
-                    Volume = Defs.DEFAULT_VOLUME,
+                    Volume = Stuff.DEFAULT_VOLUME,
                 };
                 ctrl.ChannelChange += ChannelControl_ChannelChange;
                 ctrl.SendMidi += Mgr_MessageSend;
@@ -308,7 +308,7 @@ namespace Ephemera.MidiLibLite.Test
                 ch.Item2.BorderStyle = BorderStyle.FixedSingle;
                 ch.Item2.ControlColor = _controlColor;
                 ch.Item2.SelectedColor = _selectedColor;
-                ch.Item2.Volume = Defs.DEFAULT_VOLUME;
+                ch.Item2.Volume = Stuff.DEFAULT_VOLUME;
                 ch.Item2.ChannelChange += ChannelControl_ChannelChange;
                 ch.Item2.SendMidi += ChannelControl_SendMidi;
                 ch.Item2.BoundChannel = ch.Item1;

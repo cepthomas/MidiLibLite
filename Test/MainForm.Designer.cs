@@ -136,9 +136,7 @@ namespace Ephemera.MidiLibLite.Test
             timeBar1.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             timeBar1.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             timeBar1.Location = new System.Drawing.Point(381, 41);
-            timeBar1.MarkerColor = System.Drawing.Color.Red;
             timeBar1.Name = "timeBar1";
-            timeBar1.ProgressColor = System.Drawing.Color.White;
             timeBar1.Size = new System.Drawing.Size(638, 45);
             timeBar1.Snap = SnapType.Bar;
             timeBar1.TabIndex = 110;

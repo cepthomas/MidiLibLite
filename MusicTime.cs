@@ -9,97 +9,21 @@ namespace Ephemera.MidiLibLite
 {
     /// <summary>Misc musical timing functions.</summary>
     /// <summary>Sort of like DateTime but for musical terminology.</summary>
-    public class MusicTime : IComparable // TODO1 implement - used by TimeBar
+    //    public class MusicTime : IComparable
+    public struct MusicTime : IEquatable<MusicTime> //IComparable
     {
-        // from => public class MidiSettings TODO1 somewhere else?
-        //{
-        public static int DefaultTempo { get; set; } = 100;
-        public static SnapType Snap { get; set; } = SnapType.Beat;
-        public static int InternalPPQ { get; set; } = 32;
-        // Properties - internal
+        // https://stackoverflow.com/a/4537848
 
-        /// <summary>Only 4/4 time supported.</summary>
-        public static int BeatsPerBar { get { return 4; } }
-        /// <summary>Our resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.</summary>
-        public static int SubsPerBeat { get { return InternalPPQ; } }
-        public static int SubsPerBar { get { return InternalPPQ * BeatsPerBar; } }
-       // public const int SubsPerBar = SubsPerBeat * BeatsPerBar;
-        // TotalSubs = beats * MidiSettings.
-        //}
+        // For a value type, you should always implement IEquatable<T> and override Equals(Object) for better performance.
+        // Equals(Object) boxes value types and relies on reflection to compare two values for equality. Both your
+        // implementation of Equals(T) and your override of Equals(Object) should return consistent results.
 
-
-        /// <summary>Only 4/4 time supported.</summary>
-        //  public const int BeatsPerBar = 4;
-
-        /// <summary>Our resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.</summary>
-        //       public const int SubsPerBeat = 8;
-
-        /// <summary>Convenience.</summary>
-    //    public const int SubsPerBar = SubsPerBeat * BeatsPerBar;
-
-        /// <summary>Get the bar number.</summary>
-        public static int BAR(int tick) { return tick / SubsPerBar; }
-
-        /// <summary>Get the beat number in the bar.</summary>
-        public static int BEAT(int tick) { return tick / SubsPerBeat % BeatsPerBar; }
-
-        /// <summary>Get the sub in the beat.</summary>
-        public static int SUB(int tick) { return tick % SubsPerBeat; }
-
-        /// <summary>
-        /// Convert a string bar time to absolute position/tick.
-        /// </summary>
-        /// <param name="sbt">time string can be "1.2.3" or "1.2" or "1".</param>
-        /// <returns>Ticks or -1 if invalid input</returns>
-        public static int Parse(string sbt)
-        {
-            int tick = 0;
-            var parts = StringUtils.SplitByToken(sbt, ".");
-
-            if (tick >= 0 && parts.Count > 0)
-            {
-                tick = (int.TryParse(parts[0], out int v) && v >= 0 && v <= 9999) ? tick + v * SubsPerBar : -1;
-            }
-
-            if (tick >= 0 && parts.Count > 1)
-            {
-                tick = (int.TryParse(parts[1], out int v) && v >= 0 && v <= BeatsPerBar - 1) ? tick + v * SubsPerBeat : -1;
-            }
-
-            if (tick >= 0 && parts.Count > 2)
-            {
-                tick = (int.TryParse(parts[2], out int v) && v >= 0 && v <= SubsPerBeat - 1) ? tick + v : -1;
-            }
-
-            return tick;
-        }
-
-        /// <summary>
-        /// Convert a position/tick to string bar time.
-        /// </summary>
-        /// <param name="tick"></param>
-        /// <returns></returns>
-        public static string Format(int tick)
-        {
-            if (tick >= 0)
-            {
-                int bar = BAR(tick);
-                int beat = BEAT(tick);
-                int sub = SUB(tick);
-                return $"{bar}.{beat}.{sub}";
-            }
-            else
-            {
-                return "Invalid";
-            }
-        }
-
-
-
+        // If you implement IEquatable<T>, you should also implement IComparable<T> if instances of your type can be
+        // ordered or sorted. If your type implements IComparable<T>, you almost always also implement IEquatable<T>.
 
 
         #region Fields
-        /// <summary>For hashing.</summary>
+        /// <summary>For hashing comparable.</summary>
         readonly int _id;
 
         /// <summary>Increment for unique value.</summary>
@@ -109,21 +33,47 @@ namespace Ephemera.MidiLibLite
         public const int LOW_RES_PPQ = 8;
         #endregion
 
+        #region Constants
+        // MidiLib version:
+        public static int InternalPPQ { get; set; } = 32;
+        // Properties - internal
+        /// <summary>Only 4/4 time supported.</summary>
+        public static int BeatsPerBar { get { return 4; } }
+        /// <summary>Our resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.</summary>
+        public static int SubsPerBeat { get { return InternalPPQ; } }
+        public static int SubsPerBar { get { return InternalPPQ * BeatsPerBar; } }
+        // or?? public const int SubsPerBar = SubsPerBeat * BeatsPerBar;
+        // TotalSubs = beats * MidiSettings.
+
+        // nebulua version:
+        // /// <summary>Only 4/4 time supported.</summary>
+        // public const int BEATS_PER_BAR = 4;
+        // /// <summary>GOur resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.</summary>
+        // public const int SUBS_PER_BEAT = 8;
+        // /// <summary>Convenience.</summary>
+        // public const int SUBS_PER_BAR = SUBS_PER_BEAT * BEATS_PER_BAR;
+        #endregion
+
+
+bool _valid = false;
+
+       // public const MusicTime ZERO = new MusicTime(0);
+
         #region Properties
         /// <summary>The time in subs. Always zero-based.</summary>
         public int TotalSubs { get; private set; }
 
         /// <summary>The time in beats. Always zero-based.</summary>
-        public int TotalBeats { get { return TotalSubs / SubsPerBeat; } }
+        public readonly int TotalBeats { get { return TotalSubs / SubsPerBeat; } }
 
         /// <summary>The bar number.</summary>
-        public int Bar { get { return TotalSubs / SubsPerBar; } }
+        public readonly int Bar { get { return TotalSubs / SubsPerBar; } }
 
         /// <summary>The beat number in the bar.</summary>
-        public int Beat { get { return TotalSubs / SubsPerBeat % BeatsPerBar; } }
+        public readonly int Beat { get { return TotalSubs / SubsPerBeat % BeatsPerBar; } }
 
         /// <summary>The sub in the beat.</summary>
-        public int Sub { get { return TotalSubs % SubsPerBeat; } }
+        public readonly int Sub { get { return TotalSubs % SubsPerBeat; } }
         #endregion
 
         #region Lifecycle
@@ -192,6 +142,7 @@ namespace Ephemera.MidiLibLite
         public void Reset()
         {
             TotalSubs = 0;
+            _valid = false;
         }
 
         /// <summary>
@@ -249,7 +200,7 @@ namespace Ephemera.MidiLibLite
         /// Format a readable string.
         /// </summary>
         /// <returns></returns>
-        public string Format()
+        public readonly string Format()
         {
            return $"{Bar}.{Beat}.{Sub:00}";
         }
@@ -258,41 +209,74 @@ namespace Ephemera.MidiLibLite
         /// Format a readable string.
         /// </summary>
         /// <returns></returns>
-        public override string ToString()
+        public override readonly string ToString()
         {
             return Format();
         }
         #endregion
 
-        #region Standard IComparable stuff
-        public override bool Equals(object? obj)
-        {
-            return obj is not null && obj is MusicTime tm && tm.TotalSubs == TotalSubs;
-        }
+        #region Conversions between music time and absolute
+        /// <summary>Get the bar number.</summary>
+        public static int BAR(int tick) { return tick / SubsPerBar; }
 
-        public override int GetHashCode()
-        {
-            return _id;
-        }
+        /// <summary>Get the beat number in the bar.</summary>
+        public static int BEAT(int tick) { return tick / SubsPerBeat % BeatsPerBar; }
 
-        public int CompareTo(object? obj)
+        /// <summary>Get the sub in the beat.</summary>
+        public static int SUB(int tick) { return tick % SubsPerBeat; }
+
+        /// <summary>Convert a string bar time to absolute position/tick.</summary>
+        /// <param name="sbt">time string can be "1.2.3" or "1.2" or "1".</param>
+        /// <returns>Ticks or -1 if invalid input</returns>
+        public static int Parse(string sbt)
         {
-            if (obj is null)
+            int tick = 0;
+            var parts = StringUtils.SplitByToken(sbt, ".");
+
+            if (tick >= 0 && parts.Count > 0)
             {
-                throw new ArgumentException("Object is null");
+                tick = (int.TryParse(parts[0], out int v) && v >= 0 && v <= 9999) ? tick + v * SubsPerBar : -1;
             }
 
-            MusicTime? other = obj as MusicTime;
-            if (other is not null)
+            if (tick >= 0 && parts.Count > 1)
             {
-                return TotalSubs.CompareTo(other.TotalSubs);
+                tick = (int.TryParse(parts[1], out int v) && v >= 0 && v <= BeatsPerBar - 1) ? tick + v * SubsPerBeat : -1;
+            }
+
+            if (tick >= 0 && parts.Count > 2)
+            {
+                tick = (int.TryParse(parts[2], out int v) && v >= 0 && v <= SubsPerBeat - 1) ? tick + v : -1;
+            }
+
+            return tick;
+        }
+
+        /// <summary>Convert a position/tick to string bar time.</summary>
+        /// <param name="tick"></param>
+        /// <returns></returns>
+        public static string Format(int tick)
+        {
+            if (tick >= 0)
+            {
+                int bar = BAR(tick);
+                int beat = BEAT(tick);
+                int sub = SUB(tick);
+                return $"{bar}.{beat}.{sub}";
             }
             else
             {
-                throw new ArgumentException("Object is not a MusicTime");
+                return "Invalid";
             }
         }
+        #endregion
 
+
+
+        public static implicit operator MusicTime(int value)
+        {
+            return new MusicTime(value);
+        }
+        
         public static bool operator ==(MusicTime a, MusicTime b)
         {
             return a.TotalSubs == b.TotalSubs;
@@ -332,7 +316,45 @@ namespace Ephemera.MidiLibLite
         {
             return a.TotalSubs >= b.TotalSubs;
         }
-        #endregion
+
+
+
+        public override readonly int GetHashCode()
+        {
+            return _id;
+        }
+
+        ////////////////// IEquatable
+        public readonly bool Equals(MusicTime other)
+        {
+            return other is MusicTime tm && tm.TotalSubs == TotalSubs;
+        }
+
+        public override readonly bool Equals(object obj)
+        {
+            return obj is MusicTime time && Equals(time);
+        }
+
+
+
+        // public int CompareTo(object? obj)
+        // {
+        //     if (obj is null)
+        //     {
+        //         throw new ArgumentException("Object is null");
+        //     }
+
+        //     MusicTime? other = obj as MusicTime;
+        //     if (other is not null)
+        //     {
+        //         return TotalSubs.CompareTo(other.TotalSubs);
+        //     }
+        //     else
+        //     {
+        //         throw new ArgumentException("Object is not a MusicTime");
+        //     }
+        // }
+
     }
-    
+
 }

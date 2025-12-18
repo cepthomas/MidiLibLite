@@ -95,7 +95,7 @@ namespace Ephemera.MidiLibLite
                 ChannelName = channelName,
                 Patch = patch,
                 Enable = true,
-                Volume = Defs.DEFAULT_VOLUME
+                Volume = Stuff.DEFAULT_VOLUME
             };
             _outputChannels.Add(ch);
 

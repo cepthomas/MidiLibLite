@@ -121,7 +121,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>Current volume.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        [Range(0.0, Defs.MAX_VOLUME)]
+        [Range(0.0, Stuff.MAX_VOLUME)]
         public double Volume
         {
             get { return sldVolume.Value; }
@@ -187,7 +187,7 @@ namespace Ephemera.MidiLibLite
 
             {
                 sldVolume.Minimum = 0.0;
-                sldVolume.Maximum = Defs.MAX_VOLUME;
+                sldVolume.Maximum = Stuff.MAX_VOLUME;
                 sldVolume.Resolution = 0.05;
                 sldVolume.Value = 1.0;
                 sldVolume.BorderStyle = BorderStyle.FixedSingle;

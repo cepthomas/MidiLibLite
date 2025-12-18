@@ -14,17 +14,28 @@ namespace Ephemera.MidiLibLite
     /// <summary>Library error.</summary>
     public class MidiLibException(string message) : Exception(message) { }
 
-    public class Defs
+    /// <summary>User selection options.</summary>
+    public enum SnapType { Bar, Beat, Sub }
+
+    public class Stuff
     {
         /// <summary>Default value.</summary>
         public const double DEFAULT_VOLUME = 0.8;
 
         /// <summary>Allow UI controls some more headroom.</summary>
         public const double MAX_VOLUME = 2.0;
+
+
+        // from MidiSettings TODO1 somewhere else?
+        public static int DefaultTempo { get; set; } = 100;
+        public static SnapType Snap { get; set; } = SnapType.Beat;
+
     }
 
 
-    public class Utils // TODO2 final home?
+
+
+    public class Utils // TODO2 home?
     {
         /// <summary>
         /// Convert a midi dictionary into ordered list of strings.

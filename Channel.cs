@@ -100,8 +100,8 @@ namespace Ephemera.MidiLibLite
         int _patch = 0;
 
         /// <summary>Current volume.</summary>
-        [Range(0.0, Defs.MAX_VOLUME)]
-        public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
+        [Range(0.0, Stuff.MAX_VOLUME)]
+        public double Volume { get; set; } = Stuff.DEFAULT_VOLUME;
     
         /// <summary>Edit current controller number.</summary>
         [Range(0, MidiDefs.MAX_MIDI)]
@@ -133,7 +133,7 @@ namespace Ephemera.MidiLibLite
         {
             Device = device;
             ChannelNumber = channelNumber;
-            Volume = Defs.DEFAULT_VOLUME;
+            Volume = Stuff.DEFAULT_VOLUME;
             Handle = ChannelHandle.Create(device.Id, ChannelNumber, true);
         }
 
