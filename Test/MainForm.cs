@@ -77,12 +77,20 @@ namespace Ephemera.MidiLibLite.Test
             sldMasterVolume.Value = Stuff.DEFAULT_VOLUME;
             sldMasterVolume.Label = "master volume";
 
+            timeBar.ControlColor = _controlColor;
+            timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged;
+
             // Hook up some simple UI handlers.
             btnKillMidi.Click += (_, __) => { _mgr.Kill(); };
             //btnLogMidi.CheckedChanged += (_, __) => { };
 //>>>>>>>>>>>>>>>
 //_mgr.MessageReceive += Mgr_MessageReceive;
 //_mgr.MessageSend += Mgr_MessageSend;
+        }
+
+        void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -131,6 +139,8 @@ namespace Ephemera.MidiLibLite.Test
         {
             Tell(INFO, $">>>>> One.");
 
+            TestScriptApp();
+
             TestDefFile();
 
             TestPropertyEditor();
@@ -140,11 +150,67 @@ namespace Ephemera.MidiLibLite.Test
 
         void Two_Click(object sender, EventArgs e)
         {
-            TestScriptApp();
-
             Tell(INFO, $">>>>> Two.");
+
+            TestTimeBar();
         }
         #endregion
+
+
+
+        //-------------------------------------------------------------------------------//
+        /// <summary>Test time bar.</summary>
+        void TestTimeBar()
+        {
+            // Sections.
+            Dictionary<int, string> sectInfo = [];
+            sectInfo.Add(0, "sect1");
+            sectInfo.Add(100, "sect2");
+            sectInfo.Add(200, "sect3");
+            sectInfo.Add(300, "sect4");
+            sectInfo.Add(400, "END");
+
+            Clock.Instance.InitSectionInfo(sectInfo);
+
+            timeBar.Invalidate();
+
+            for (int i = 0; i < 500; i++)
+            {
+                if (Clock.Instance.IsFreeRunning)
+                {
+                    Clock.Instance.Current.Inc();
+                }
+                else
+                {
+                    // Bump time and check state.
+                    //Clock.Instance.Current.Inc();
+                    Clock.Instance.Current = Clock.Instance.Current + 1;
+
+                    if (Clock.Instance.Current >= Clock.Instance.Length) // done
+                    {
+                        // Keep going? else stop/rewind.
+                        if (Clock.Instance.DoLoop)
+                        {
+                            // Keep going.
+                            Clock.Instance.Current = Clock.Instance.SelStart;
+                        }
+                        else
+                        {
+                            // Stop and rewind.
+                            //CurrentState = ExecState.Idle;
+                            Clock.Instance.Current = Clock.Instance.SelStart;
+
+                            //// just in case
+                            //_mgr.Kill();
+                        }
+                    }
+                }
+
+                timeBar.Invalidate();
+                Thread.Sleep(2);
+            }
+
+        }
 
 
         //-------------------------------------------------------------------------------//

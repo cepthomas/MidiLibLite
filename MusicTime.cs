@@ -292,6 +292,26 @@ bool _valid = false;
             return new MusicTime(a.TotalSubs + b.TotalSubs);
         }
 
+
+        public void Inc() { TotalSubs += 1; }
+        public void Dec() { TotalSubs--; }
+
+
+        //public static MusicTime operator ++(MusicTime obj)
+        //{
+        //    obj.TotalSubs = ++obj.TotalSubs;
+        //    return obj;
+        //}
+
+        //public static MusicTime operator --(MusicTime obj)
+        //{
+        //    obj.TotalSubs = --obj.TotalSubs;
+        //    return obj;
+        //}
+
+
+
+
         public static MusicTime operator -(MusicTime a, MusicTime b)
         {
             return new MusicTime(a.TotalSubs - b.TotalSubs);

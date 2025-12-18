@@ -15,7 +15,7 @@ using Ephemera.NBagOfTricks;
 
 // Basic version is from Nebulua, simpler. MidiLib version knows about MusicTime.
 // TODO1 Look at how client uses API. Nebulator, Midifrier
-// - TimeDefs
+// - TimeDefs => use SectionInfo
 // - public event EventHandler? CurrentTimeChanged;
 // - IncrementCurrent(1)
 // - MidiSettings.LibSettings
@@ -90,9 +90,10 @@ namespace Ephemera.MidiLibLite
         public MusicTime Current { get { return _current; } set { _current = value; Invalidate(); } }
         MusicTime _current = new();
 
-        /// <summary>All the important beat points with their names. Used also by tooltip.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public Dictionary<int, string> TimeDefs { get; set; } = [];
+// /// <summary>All the important beat points with their names. Used also by tooltip.</summary>
+// [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+// public Dictionary<int, string> TimeDefs { get; set; } = [];
+
         #endregion
 
         #region Events => MidiLib OK
@@ -231,8 +232,8 @@ namespace Ephemera.MidiLibLite
                 var vpos = Height / 2;
 
                 // Loop area.
-                int lstart = GetClientFromTick(Clock.Instance.Start.Sub);
-                int lend = GetClientFromTick(Clock.Instance.End.Sub);
+                int lstart = GetClientFromTick(Clock.Instance.SelStart.Sub);
+                int lend = GetClientFromTick(Clock.Instance.SelEnd.Sub);
                 pe.Graphics.DrawLine(_penMarker, lstart, 0, lstart, Height);
                 pe.Graphics.DrawLine(_penMarker, lend, 0, lend, Height);
                 pe.Graphics.FillPolygon(_penMarker.Brush, new PointF[] { new(lstart, vpos - 5), new(lstart, vpos + 5), new(lstart + 10, vpos) });
@@ -266,13 +267,13 @@ namespace Ephemera.MidiLibLite
             
             _format.Alignment = StringAlignment.Near;
             _format.LineAlignment = StringAlignment.Near;
-            pe.Graphics.DrawString(MusicTime.Format(Clock.Instance.Start.Sub), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(MusicTime.Format(Clock.Instance.SelStart.Sub), FontSmall, Brushes.Black, ClientRectangle, _format);
             
             _format.Alignment = StringAlignment.Far;
             _format.LineAlignment = StringAlignment.Near;
-            pe.Graphics.DrawString(MusicTime.Format(Clock.Instance.End.Sub), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(MusicTime.Format(Clock.Instance.SelEnd.Sub), FontSmall, Brushes.Black, ClientRectangle, _format);
 
-#else // MidiLib version: TODO1
+#else // !_NEW_ML TODO1
             // Setup.
             pe.Graphics.Clear(BackColor);
 
@@ -336,11 +337,11 @@ namespace Ephemera.MidiLibLite
             if (!Clock.Instance.IsFreeRunning && e.KeyData == Keys.Escape)
             {
                 // Reset.
-                Clock.Instance.Start = -1;
-                Clock.Instance.End = -1;
+                Clock.Instance.SelStart = -1;
+                Clock.Instance.SelEnd = -1;
                 Invalidate();
             }
-#else // MidiLib version: TODO1
+#else // !_NEW_ML TODO1
             if (e.KeyData == Keys.Escape)
             {
                 // Reset.
@@ -368,7 +369,7 @@ namespace Ephemera.MidiLibLite
 
                 _lastXPos = e.X;
             }
-#else // MidiLib version: TODO1
+#else // !_NEW_ML TODO1
             if (e.Button == MouseButtons.Left)
             {
                 _current.SetRounded(GetSubFromMouse(e.X), Snap);
@@ -397,17 +398,17 @@ namespace Ephemera.MidiLibLite
         protected override void OnMouseDown(MouseEventArgs e) // Nebulua simple
         {
 #if _NEW_ML
-          if (!Clock.Instance.IsFreeRunning)
+            if (!Clock.Instance.IsFreeRunning)
             {
-                int lstart = Clock.Instance.Start.Sub;
-                int lend = Clock.Instance.End.Sub;
+                int lstart = Clock.Instance.SelStart.Sub;
+                int lend = Clock.Instance.SelEnd.Sub;
                 int newval = GetRounded(GetTickFromClient(e.X), Snap);
 
                 if (ModifierKeys.HasFlag(Keys.Control))
                 {
                     if (newval < lend)
                     {
-                        Clock.Instance.Start = newval;
+                        Clock.Instance.SelStart = newval;
                     }
                     // else beeeeeep?
                 }
@@ -415,7 +416,7 @@ namespace Ephemera.MidiLibLite
                 {
                     if (newval > lstart)
                     {
-                        Clock.Instance.End = newval;
+                        Clock.Instance.SelEnd = newval;
                     }
                     // else beeeeeep?
                 }
@@ -424,7 +425,7 @@ namespace Ephemera.MidiLibLite
                     Clock.Instance.Current = newval;
                 }
             }
-#else // MidiLib version: TODO1
+#else // !_NEW_ML TODO1
             if (ModifierKeys.HasFlag(Keys.Control))
             {
                 _start.SetRounded(GetSubFromMouse(e.X), Snap);
@@ -456,11 +457,8 @@ namespace Ephemera.MidiLibLite
             string s = "";
 #if _NEW_ML
             Clock.Instance.SectionInfo.TakeWhile(si => si.tick <= val).ForEach(si => s = si.name);
-#else // MidiLib version: TODO1
 
-            ///// <summary>All the important beat points with their names. Used also by tooltip.</summary>
-            //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-            //public Dictionary<int, string> TimeDefs { get; set; } = new Dictionary<int, string>();
+#else // !_NEW_ML TODO1
 
             foreach (KeyValuePair<int, string> kv in TimeDefs) // => Clock.Instance.SectionInfo
             {
@@ -473,6 +471,7 @@ namespace Ephemera.MidiLibLite
                     s = kv.Value;
                 }
             }
+
 #endif
 
             return s;

@@ -27,7 +27,7 @@ namespace Ephemera.MidiLibLite
         MusicTime _length = new();
 
         /// <summary>Start of marked/loop region.</summary>
-        public MusicTime Start
+        public MusicTime SelStart
         {
             // get { return _start < 0 ? 0 : _start; }
             get { return _start; }
@@ -36,7 +36,7 @@ namespace Ephemera.MidiLibLite
         MusicTime _start = new();
 
         /// <summary>End of marked/loop region.</summary>
-        public MusicTime End
+        public MusicTime SelEnd
         {
             // get { return _end < 0 ? _length : _end; }
             get { return _end; }
@@ -52,11 +52,11 @@ namespace Ephemera.MidiLibLite
         }
         MusicTime _current = new();
 
-        /// <summary>All the important beat points with their names. Used also by tooltip.</summary>
-        public Dictionary<int, string> TimeDefs { get; set; } = [];
+// /// <summary>All the important beat points with their names. Used also by tooltip.</summary>
+// public Dictionary<int, string> TimeDefs { get; set; } = [];
 
         /// <summary>Metadata.</summary>
-        public List<(int tick, string name)> SectionInfo
+        public List<(int tick, string name)> SectionInfo //TODO1 doesn't belong here
         {
             get { return _sectionInfo; }
             set { _sectionInfo = value; _length = _sectionInfo.Last().tick; ValidateTimes(); }
@@ -160,8 +160,8 @@ namespace Ephemera.MidiLibLite
         {
             _sectionInfo.Clear();
             _length = 0;//.Reset();
-            _start = -1;
-            _end = -1;
+            _start = 0;
+            _end = 0;
             _current = 0;
 
             if (sectInfo.Count > 0)
@@ -170,7 +170,6 @@ namespace Ephemera.MidiLibLite
                 var spos = sectInfo.Keys.OrderBy(k => k).ToList();
                 spos.ForEach(sp => _sectionInfo.Add((sp, sectInfo[sp])));
 
-                // Also reset position stuff.
                 _length = _sectionInfo.Last().tick;
                 ValidateTimes();
             }

@@ -28,7 +28,7 @@ namespace Ephemera.MidiLibLite.Test
             btnOne = new System.Windows.Forms.Button();
             btnTwo = new System.Windows.Forms.Button();
             propGrid = new System.Windows.Forms.PropertyGrid();
-            timeBar1 = new TimeBar();
+            timeBar = new TimeBar();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -129,24 +129,20 @@ namespace Ephemera.MidiLibLite.Test
             propGrid.Size = new System.Drawing.Size(251, 231);
             propGrid.TabIndex = 109;
             // 
-            // timeBar1
+            // timeBar
             // 
-            timeBar1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            timeBar1.ControlColor = System.Drawing.Color.Red;
-            timeBar1.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
-            timeBar1.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
-            timeBar1.Location = new System.Drawing.Point(381, 41);
-            timeBar1.Name = "timeBar1";
-            timeBar1.Size = new System.Drawing.Size(638, 45);
-            timeBar1.Snap = SnapType.Bar;
-            timeBar1.TabIndex = 110;
+            timeBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            timeBar.Location = new System.Drawing.Point(381, 41);
+            timeBar.Name = "timeBar";
+            timeBar.Size = new System.Drawing.Size(638, 45);
+            timeBar.TabIndex = 110;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1092, 600);
-            Controls.Add(timeBar1);
+            Controls.Add(timeBar);
             Controls.Add(propGrid);
             Controls.Add(btnOne);
             Controls.Add(btnTwo);
@@ -178,7 +174,7 @@ namespace Ephemera.MidiLibLite.Test
         private System.Windows.Forms.PropertyGrid propGrid;
         private System.Windows.Forms.Button btnOne;
         private System.Windows.Forms.Button btnTwo;
-        private TimeBar timeBar1;
+        private TimeBar timeBar;
     }
 }
 
