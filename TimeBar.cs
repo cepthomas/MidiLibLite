@@ -103,7 +103,7 @@ namespace Ephemera.MidiLibLite
         public List<(int tick, string name)> SectionInfo //TODO1 doesn't really belong here
         {
             get { return _sectionInfo; }
-            set { _sectionInfo = value; _length = _sectionInfo.Last().tick; ValidateTimes(); }
+            set { _sectionInfo = value; }// _length = _sectionInfo.Last().tick; ValidateTimes(); }
         }
         List<(int tick, string name)> _sectionInfo = [];
 
@@ -143,10 +143,10 @@ namespace Ephemera.MidiLibLite
         public void InitSectionInfo(Dictionary<int, string> sectInfo)
         {
             _sectionInfo.Clear();
-            _length = 0;//.Reset();
-            _selStart = 0;
-            _selEnd = 0;
-            _current = 0;
+            _length.TotalSubs = 0;//.Reset();
+            _selStart.TotalSubs = 0;
+            _selEnd.TotalSubs = 0;
+            _current.TotalSubs = 0;
 
             if (sectInfo.Count > 0)
             {
@@ -154,7 +154,7 @@ namespace Ephemera.MidiLibLite
                 var spos = sectInfo.Keys.OrderBy(k => k).ToList();
                 spos.ForEach(sp => _sectionInfo.Add((sp, sectInfo[sp])));
 
-                _length = _sectionInfo.Last().tick;
+                _length.TotalSubs = _sectionInfo.Last().tick;
                 ValidateTimes();
             }
         }
@@ -166,20 +166,20 @@ namespace Ephemera.MidiLibLite
         /// </summary>
         void ValidateTimes()
         {
-            if (_length > 0)
+            if (_length.TotalSubs > 0)
             {
                 // Fix loop points.
-                int lstart = _selStart.Sub < 0 ? 0 : _selStart.Sub;
-                int lend = _selEnd.Sub < 0 ? _length.Sub : _selEnd.Sub;
-                _selStart = Math.Min(lstart, lend);
-                _selEnd = Math.Min(lend, _length.Sub);
-                _current = MathUtils.Constrain(_current.Sub, lstart, lend);
+                int lstart = _selStart.TotalSubs < 0 ? 0 : _selStart.TotalSubs;
+                int lend = _selEnd.TotalSubs < 0 ? _length.TotalSubs : _selEnd.TotalSubs;
+                _selStart.TotalSubs = Math.Min(lstart, lend);
+                _selEnd.TotalSubs = Math.Min(lend, _length.TotalSubs);
+                _current.Constrain(_selStart, _selEnd);
             }
             else // free-running
             {
-                _selStart = 0;
-                _selEnd = 0;
-                // _current = 0;
+                _selStart.TotalSubs = 0;
+                _selEnd.TotalSubs = 0;
+                // _current.TotalSubs = 0;
             }
         }
         #endregion
@@ -442,8 +442,8 @@ namespace Ephemera.MidiLibLite
             if (!IsFreeRunning && e.KeyData == Keys.Escape)
             {
                 // Reset.
-                SelStart = -1;
-                SelEnd = -1;
+                SelStart.TotalSubs = -1;
+                SelEnd.TotalSubs = -1;
                 Invalidate();
             }
 #else // !_NEW_ML TODO1
@@ -513,7 +513,7 @@ namespace Ephemera.MidiLibLite
                 {
                     if (newval < lend)
                     {
-                        SelStart = newval;
+                        SelStart.TotalSubs = newval;
                     }
                     // else beeeeeep?
                 }
@@ -521,13 +521,13 @@ namespace Ephemera.MidiLibLite
                 {
                     if (newval > lstart)
                     {
-                        SelEnd = newval;
+                        SelEnd.TotalSubs = newval;
                     }
                     // else beeeeeep?
                 }
                 else
                 {
-                    Current = newval;
+                    Current.TotalSubs = newval;
                 }
             }
 #else // !_NEW_ML TODO1
@@ -607,7 +607,7 @@ namespace Ephemera.MidiLibLite
         /// <returns></returns>
         int GetClientFromTick(int tick)
         {
-            return Length > 0 ? tick * Width / Length.Sub : 0;
+            return Length.TotalBeats > 0 ? tick * Width / Length.Sub : 0;
         }
 
         /// <summary>

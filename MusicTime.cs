@@ -9,7 +9,7 @@ using Ephemera.NBagOfTricks;
 namespace Ephemera.MidiLibLite
 {
     /// <summary>Sort of like DateTime but for musical terminology.</summary>
-    public struct MusicTime : IEquatable<MusicTime>
+    public class MusicTime : IEquatable<MusicTime>
     {
         #region Fields
         /// <summary>For hashing comparable.</summary>
@@ -48,19 +48,20 @@ bool _valid = false;
 
         #region Properties
         /// <summary>The total time in subs. Zero-based.</summary>
-        public int TotalSubs { get; private set; }
+        public int TotalSubs { get; set; }
+        //public int TotalSubs { get; private set; }
 
         /// <summary>The total time in beats. Zero-based.</summary>
-        public readonly int TotalBeats { get { return TotalSubs / SubsPerBeat; } }
+        public int TotalBeats { get { return TotalSubs / SubsPerBeat; } }
 
         /// <summary>The bar number.</summary>
-        public readonly int Bar { get { return TotalSubs / SubsPerBar; } }
+        public int Bar { get { return TotalSubs / SubsPerBar; } }
 
         /// <summary>The beat number in the bar.</summary>
-        public readonly int Beat { get { return TotalSubs / SubsPerBeat % BeatsPerBar; } }
+        public int Beat { get { return TotalSubs / SubsPerBeat % BeatsPerBar; } }
 
         /// <summary>The sub in the beat.</summary>
-        public readonly int Sub { get { return TotalSubs % SubsPerBeat; } }
+        public int Sub { get { return TotalSubs % SubsPerBeat; } }
         #endregion
 
         #region Lifecycle
@@ -175,9 +176,6 @@ bool _valid = false;
         /// <param name="subs">By this number of subs. Can be negative aka decrement.</param>
         public void Increment(int subs)
         {
-            var t = this;
-
-
             TotalSubs += subs;
             if (TotalSubs < 0)
             {
@@ -217,7 +215,7 @@ bool _valid = false;
         /// Format a readable string.
         /// </summary>
         /// <returns></returns>
-        public override readonly string ToString()
+        public override string ToString()
         {
             return $"{Bar}.{Beat}.{Sub:00} [{_id}:{TotalSubs}]";
         }
@@ -254,7 +252,7 @@ bool _valid = false;
 
 
 
-        public override readonly int GetHashCode() { return _id; }
+        public override int GetHashCode() { return _id; }
 
         // Needed because properly overloading ++ and -- aren't feasible.
         //public void Inc() { TotalSubs += 1; }
@@ -263,7 +261,7 @@ bool _valid = false;
 
         #region Operator implementations
 
-        public static implicit operator MusicTime(int value) { return new MusicTime(value); }
+    //    public static implicit operator MusicTime(int value) { return new MusicTime(value); }
         
         public static bool operator ==(MusicTime a, MusicTime b) { return a.TotalSubs == b.TotalSubs; }
 
@@ -283,9 +281,9 @@ bool _valid = false;
         #endregion
 
         #region IEquatable
-        public readonly bool Equals(MusicTime other) { return other is MusicTime tm && tm.TotalSubs == TotalSubs; }
+        public bool Equals(MusicTime other) { return other is MusicTime tm && tm.TotalSubs == TotalSubs; }
 
-        public override readonly bool Equals(object obj) { return obj is MusicTime time && Equals(time); }
+        public override bool Equals(object obj) { return obj is MusicTime time && Equals(time); }
         #endregion
     }
 }

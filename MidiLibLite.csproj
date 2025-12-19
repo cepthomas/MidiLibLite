@@ -33,6 +33,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Compile Remove="Clock.cs" />
       <Compile Remove="HoldingTank.cs" />
       <Compile Remove="MusicTimeZ.cs" />
     </ItemGroup>

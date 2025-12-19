@@ -209,13 +209,8 @@ namespace Ephemera.MidiLibLite.Test
 
             timeBar.Invalidate();
 
-            for (int i = 0; i < 500; i++)
+            for (int i = 0; i < 100; i++)
             {
-                var tt = timeBar.Current;
-                tt.Increment(5);
-
-
-
                 timeBar.Current.Increment(1);
 
                 if (!timeBar.IsFreeRunning)
