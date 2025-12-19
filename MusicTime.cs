@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Ephemera.NBagOfTricks;
@@ -7,21 +8,9 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLibLite
 {
-    /// <summary>Misc musical timing functions.</summary>
     /// <summary>Sort of like DateTime but for musical terminology.</summary>
-    //    public class MusicTime : IComparable
-    public struct MusicTime : IEquatable<MusicTime> //IComparable
+    public struct MusicTime : IEquatable<MusicTime>
     {
-        // https://stackoverflow.com/a/4537848
-
-        // For a value type, you should always implement IEquatable<T> and override Equals(Object) for better performance.
-        // Equals(Object) boxes value types and relies on reflection to compare two values for equality. Both your
-        // implementation of Equals(T) and your override of Equals(Object) should return consistent results.
-
-        // If you implement IEquatable<T>, you should also implement IComparable<T> if instances of your type can be
-        // ordered or sorted. If your type implements IComparable<T>, you almost always also implement IEquatable<T>.
-
-
         #region Fields
         /// <summary>For hashing comparable.</summary>
         readonly int _id;
@@ -34,7 +23,7 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Constants
-        // MidiLib version:
+        ///// MidiLib version:
         public static int InternalPPQ { get; set; } = 32;
         // Properties - internal
         /// <summary>Only 4/4 time supported.</summary>
@@ -45,7 +34,7 @@ namespace Ephemera.MidiLibLite
         // or?? public const int SubsPerBar = SubsPerBeat * BeatsPerBar;
         // TotalSubs = beats * MidiSettings.
 
-        // nebulua version:
+        ///// nebulua version:
         // /// <summary>Only 4/4 time supported.</summary>
         // public const int BEATS_PER_BAR = 4;
         // /// <summary>GOur resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.</summary>
@@ -57,13 +46,11 @@ namespace Ephemera.MidiLibLite
 
 bool _valid = false;
 
-       // public const MusicTime ZERO = new MusicTime(0);
-
         #region Properties
-        /// <summary>The time in subs. Always zero-based.</summary>
+        /// <summary>The time in subs. Zero-based.</summary>
         public int TotalSubs { get; private set; }
 
-        /// <summary>The time in beats. Always zero-based.</summary>
+        /// <summary>The time in beats. Zero-based.</summary>
         public readonly int TotalBeats { get { return TotalSubs / SubsPerBeat; } }
 
         /// <summary>The bar number.</summary>
@@ -87,18 +74,6 @@ bool _valid = false;
         }
 
         /// <summary>
-        /// Constructor from bar/beat/sub.
-        /// </summary>
-        /// <param name="bar"></param>
-        /// <param name="beat"></param>
-        /// <param name="sub"></param>
-        public MusicTime(int bar, int beat, int sub)
-        {
-            TotalSubs = (bar * SubsPerBar) + (beat * SubsPerBeat) + sub;
-            _id = _all_ids++;
-        }
-
-        /// <summary>
         /// Constructor from subs.
         /// </summary>
         /// <param name="subs">Number of subs.</param>
@@ -110,6 +85,18 @@ bool _valid = false;
             }
 
             TotalSubs = subs;
+            _id = _all_ids++;
+        }
+
+        /// <summary>
+        /// Constructor from bar/beat/sub.
+        /// </summary>
+        /// <param name="bar"></param>
+        /// <param name="beat"></param>
+        /// <param name="sub"></param>
+        public MusicTime(int bar, int beat, int sub)
+        {
+            TotalSubs = (bar * SubsPerBar) + (beat * SubsPerBeat) + sub;
             _id = _all_ids++;
         }
 
@@ -158,7 +145,7 @@ bool _valid = false;
         /// <summary>
         /// Update current value.
         /// </summary>
-        /// <param name="subs">By this number of subs.</param>
+        /// <param name="subs">By this number of subs. Can be negative aka decrement.</param>
         public void Increment(int subs)
         {
             TotalSubs += subs;
@@ -200,30 +187,41 @@ bool _valid = false;
         /// Format a readable string.
         /// </summary>
         /// <returns></returns>
-        public readonly string Format()
-        {
-           return $"{Bar}.{Beat}.{Sub:00}";
-        }
-
-        /// <summary>
-        /// Format a readable string.
-        /// </summary>
-        /// <returns></returns>
         public override readonly string ToString()
         {
-            return Format();
+            return $"{Bar}.{Beat}.{Sub:00} id:{_id} total:{TotalSubs}";
+
         }
         #endregion
 
-        #region Conversions between music time and absolute
-        /// <summary>Get the bar number.</summary>
-        public static int BAR(int tick) { return tick / SubsPerBar; }
 
-        /// <summary>Get the beat number in the bar.</summary>
-        public static int BEAT(int tick) { return tick / SubsPerBeat % BeatsPerBar; }
+        ///// <summary>Get the bar number.</summary>
+        //public static int BAR(int tick) { return tick / SubsPerBar; }
 
-        /// <summary>Get the sub in the beat.</summary>
-        public static int SUB(int tick) { return tick % SubsPerBeat; }
+        ///// <summary>Get the beat number in the bar.</summary>
+        //public static int BEAT(int tick) { return tick / SubsPerBeat % BeatsPerBar; }
+
+        ///// <summary>Get the sub in the beat.</summary>
+        //public static int SUB(int tick) { return tick % SubsPerBeat; }
+
+        ///// <summary>Convert a position/tick to string bar time.</summary>
+        ///// <param name="tick"></param>
+        ///// <returns></returns>
+        //public static string Format(int tick)
+        //{
+        //    if (tick >= 0)
+        //    {
+        //        int bar = BAR(tick);
+        //        int beat = BEAT(tick);
+        //        int sub = SUB(tick);
+        //        return $"{bar}.{beat}.{sub}";
+        //    }
+        //    else
+        //    {
+        //        return "Invalid";
+        //    }
+        //}
+
 
         /// <summary>Convert a string bar time to absolute position/tick.</summary>
         /// <param name="sbt">time string can be "1.2.3" or "1.2" or "1".</param>
@@ -251,130 +249,39 @@ bool _valid = false;
             return tick;
         }
 
-        /// <summary>Convert a position/tick to string bar time.</summary>
-        /// <param name="tick"></param>
-        /// <returns></returns>
-        public static string Format(int tick)
-        {
-            if (tick >= 0)
-            {
-                int bar = BAR(tick);
-                int beat = BEAT(tick);
-                int sub = SUB(tick);
-                return $"{bar}.{beat}.{sub}";
-            }
-            else
-            {
-                return "Invalid";
-            }
-        }
+
+        public override readonly int GetHashCode() { return _id; }
+
+        // Needed because properly overloading ++ and -- aren't feasible.
+        //public void Inc() { TotalSubs += 1; }
+        //public void Dec() { TotalSubs--; }
+
+
+        #region Operator implementations
+
+        public static implicit operator MusicTime(int value) { return new MusicTime(value); }
+        
+        public static bool operator ==(MusicTime a, MusicTime b) { return a.TotalSubs == b.TotalSubs; }
+
+        public static bool operator !=(MusicTime a, MusicTime b) { return !(a == b); }
+
+        public static MusicTime operator +(MusicTime a, MusicTime b) { return new MusicTime(a.TotalSubs + b.TotalSubs); }
+
+        public static MusicTime operator -(MusicTime a, MusicTime b) { return new MusicTime(a.TotalSubs - b.TotalSubs); }
+
+        public static bool operator <(MusicTime a, MusicTime b) { return a.TotalSubs < b.TotalSubs; }
+
+        public static bool operator >(MusicTime a, MusicTime b) { return a.TotalSubs > b.TotalSubs; }
+
+        public static bool operator <=(MusicTime a, MusicTime b) { return a.TotalSubs <= b.TotalSubs; }
+
+        public static bool operator >=(MusicTime a, MusicTime b) { return a.TotalSubs >= b.TotalSubs; }
         #endregion
 
+        #region IEquatable
+        public readonly bool Equals(MusicTime other) { return other is MusicTime tm && tm.TotalSubs == TotalSubs; }
 
-
-        public static implicit operator MusicTime(int value)
-        {
-            return new MusicTime(value);
-        }
-        
-        public static bool operator ==(MusicTime a, MusicTime b)
-        {
-            return a.TotalSubs == b.TotalSubs;
-        }
-
-        public static bool operator !=(MusicTime a, MusicTime b)
-        {
-            return !(a == b);
-        }
-
-        public static MusicTime operator +(MusicTime a, MusicTime b)
-        {
-            return new MusicTime(a.TotalSubs + b.TotalSubs);
-        }
-
-
-        public void Inc() { TotalSubs += 1; }
-        public void Dec() { TotalSubs--; }
-
-
-        //public static MusicTime operator ++(MusicTime obj)
-        //{
-        //    obj.TotalSubs = ++obj.TotalSubs;
-        //    return obj;
-        //}
-
-        //public static MusicTime operator --(MusicTime obj)
-        //{
-        //    obj.TotalSubs = --obj.TotalSubs;
-        //    return obj;
-        //}
-
-
-
-
-        public static MusicTime operator -(MusicTime a, MusicTime b)
-        {
-            return new MusicTime(a.TotalSubs - b.TotalSubs);
-        }
-
-        public static bool operator <(MusicTime a, MusicTime b)
-        {
-            return a.TotalSubs < b.TotalSubs;
-        }
-
-        public static bool operator >(MusicTime a, MusicTime b)
-        {
-            return a.TotalSubs > b.TotalSubs;
-        }
-
-        public static bool operator <=(MusicTime a, MusicTime b)
-        {
-            return a.TotalSubs <= b.TotalSubs;
-        }
-
-        public static bool operator >=(MusicTime a, MusicTime b)
-        {
-            return a.TotalSubs >= b.TotalSubs;
-        }
-
-
-
-        public override readonly int GetHashCode()
-        {
-            return _id;
-        }
-
-        ////////////////// IEquatable
-        public readonly bool Equals(MusicTime other)
-        {
-            return other is MusicTime tm && tm.TotalSubs == TotalSubs;
-        }
-
-        public override readonly bool Equals(object obj)
-        {
-            return obj is MusicTime time && Equals(time);
-        }
-
-
-
-        // public int CompareTo(object? obj)
-        // {
-        //     if (obj is null)
-        //     {
-        //         throw new ArgumentException("Object is null");
-        //     }
-
-        //     MusicTime? other = obj as MusicTime;
-        //     if (other is not null)
-        //     {
-        //         return TotalSubs.CompareTo(other.TotalSubs);
-        //     }
-        //     else
-        //     {
-        //         throw new ArgumentException("Object is not a MusicTime");
-        //     }
-        // }
-
+        public override readonly bool Equals(object obj) { return obj is MusicTime time && Equals(time); }
+        #endregion
     }
-
 }

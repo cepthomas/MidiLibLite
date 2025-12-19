@@ -42,28 +42,23 @@ namespace Ephemera.MidiLibLite
 
         #region Properties
         /// <summary>Big font.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Font FontLarge { get; set; } = new("Microsoft Sans Serif", 20, FontStyle.Regular, GraphicsUnit.Point, 0);
 
         /// <summary>Baby font.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Font FontSmall { get; set; } = new("Microsoft Sans Serif", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
 
         /// <summary>Drawing the active elements of a control.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Color ControlColor { get; set; } = Color.Red;
 
         /// <summary>Drawing the control when selected.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Color SelectedColor { get; set; } = Color.Blue;
 
         /// <summary>How to select times.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public SnapType Snap { get; set; }
         #endregion
 
@@ -98,7 +93,7 @@ namespace Ephemera.MidiLibLite
 
         #region Events => MidiLib OK
         /// <summary>Value changed by user.</summary>
-        public event EventHandler? CurrentTimeChanged;
+        public event EventHandler? CurrentTimeChanged; //TODO1
         #endregion
 
         #region Public functions => MidiLib OK
@@ -263,15 +258,18 @@ namespace Ephemera.MidiLibLite
             // Time text.
             _format.Alignment = StringAlignment.Center;
             _format.LineAlignment = StringAlignment.Center;
-            pe.Graphics.DrawString(MusicTime.Format(Clock.Instance.Current.Sub), FontLarge, Brushes.Black, ClientRectangle, _format);
-            
+            pe.Graphics.DrawString(Clock.Instance.Current.ToString(), FontLarge, Brushes.Black, ClientRectangle, _format);
+            //pe.Graphics.DrawString(MusicTime.Format(Clock.Instance.Current.Sub), FontLarge, Brushes.Black, ClientRectangle, _format);
+
             _format.Alignment = StringAlignment.Near;
             _format.LineAlignment = StringAlignment.Near;
-            pe.Graphics.DrawString(MusicTime.Format(Clock.Instance.SelStart.Sub), FontSmall, Brushes.Black, ClientRectangle, _format);
-            
+            pe.Graphics.DrawString(Clock.Instance.SelStart.ToString(), FontSmall, Brushes.Black, ClientRectangle, _format);
+            //pe.Graphics.DrawString(MusicTime.Format(Clock.Instance.SelStart.Sub), FontSmall, Brushes.Black, ClientRectangle, _format);
+
             _format.Alignment = StringAlignment.Far;
             _format.LineAlignment = StringAlignment.Near;
-            pe.Graphics.DrawString(MusicTime.Format(Clock.Instance.SelEnd.Sub), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(Clock.Instance.SelEnd.ToString(), FontSmall, Brushes.Black, ClientRectangle, _format);
+            //pe.Graphics.DrawString(MusicTime.Format(Clock.Instance.SelEnd.Sub), FontSmall, Brushes.Black, ClientRectangle, _format);
 
 #else // !_NEW_ML TODO1
             // Setup.
@@ -365,7 +363,7 @@ namespace Ephemera.MidiLibLite
                 var bs = GetRounded(sub, Snap);
                 var sdef = GetTimeDefString(bs);
 
-                _toolTip.SetToolTip(this, $"{MusicTime.Format(bs)} {sdef}");
+                _toolTip.SetToolTip(this, $"TODO1 {bs} {sdef}");
 
                 _lastXPos = e.X;
             }

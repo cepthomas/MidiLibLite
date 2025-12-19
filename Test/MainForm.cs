@@ -152,11 +152,29 @@ namespace Ephemera.MidiLibLite.Test
         {
             Tell(INFO, $">>>>> Two.");
 
-            TestTimeBar();
+            TestTime();
+
+            //TestTimeBar();
         }
         #endregion
 
 
+        //-------------------------------------------------------------------------------//
+        /// <summary>Test time.</summary>
+        void TestTime()
+        {
+            var t1 = new MusicTime();
+            t1.Increment(5);
+
+            var t2 = t1;
+
+            var t3 = new MusicTime();
+
+
+
+
+
+        }
 
         //-------------------------------------------------------------------------------//
         /// <summary>Test time bar.</summary>
@@ -176,16 +194,10 @@ namespace Ephemera.MidiLibLite.Test
 
             for (int i = 0; i < 500; i++)
             {
-                if (Clock.Instance.IsFreeRunning)
-                {
-                    Clock.Instance.Current.Inc();
-                }
-                else
-                {
-                    // Bump time and check state.
-                    //Clock.Instance.Current.Inc();
-                    Clock.Instance.Current = Clock.Instance.Current + 1;
+                Clock.Instance.Current.Increment(1);
 
+                if (!Clock.Instance.IsFreeRunning)
+                {
                     if (Clock.Instance.Current >= Clock.Instance.Length) // done
                     {
                         // Keep going? else stop/rewind.
@@ -200,16 +212,16 @@ namespace Ephemera.MidiLibLite.Test
                             //CurrentState = ExecState.Idle;
                             Clock.Instance.Current = Clock.Instance.SelStart;
 
-                            //// just in case
+                            // anything else?
                             //_mgr.Kill();
                         }
                     }
                 }
+                // else just increment
 
                 timeBar.Invalidate();
                 Thread.Sleep(2);
             }
-
         }
 
 

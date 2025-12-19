@@ -56,7 +56,7 @@ namespace Ephemera.MidiLibLite
 // public Dictionary<int, string> TimeDefs { get; set; } = [];
 
         /// <summary>Metadata.</summary>
-        public List<(int tick, string name)> SectionInfo //TODO1 doesn't belong here
+        public List<(int tick, string name)> SectionInfo //TODO1 doesn't really belong here
         {
             get { return _sectionInfo; }
             set { _sectionInfo = value; _length = _sectionInfo.Last().tick; ValidateTimes(); }
