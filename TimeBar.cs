@@ -8,6 +8,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using System.Runtime.CompilerServices;
 using Ephemera.NBagOfTricks;
 
 
@@ -72,17 +73,17 @@ namespace Ephemera.MidiLibLite
 
         /// <summary>Start of marked region.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public MusicTime Start { get { return _start; } set { _start = value; Invalidate(); } }
-        MusicTime _start = new();
+        public MusicTime SelStart { get { return _selStart; } set { _selStart = value; ValidateTimes(); Invalidate(); } }
+        MusicTime _selStart = new();
 
         /// <summary>End of marked region.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public MusicTime End { get { return _end; } set { _end = value; Invalidate(); } }
-        MusicTime _end = new();
+        public MusicTime SelEnd { get { return _selEnd; } set { _selEnd = value; ValidateTimes(); Invalidate(); } }
+        MusicTime _selEnd = new();
 
         /// <summary>Where we be now.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public MusicTime Current { get { return _current; } set { _current = value; Invalidate(); } }
+        public MusicTime Current { get { return _current; } set { _current = value; ValidateTimes(); NotifyStateChanged(); Invalidate(); } }
         MusicTime _current = new();
 
 // /// <summary>All the important beat points with their names. Used also by tooltip.</summary>
@@ -90,6 +91,111 @@ namespace Ephemera.MidiLibLite
 // public Dictionary<int, string> TimeDefs { get; set; } = [];
 
         #endregion
+
+
+
+
+//////////////////////////// added ///////////////////////////////////
+//////////////////////////// added ///////////////////////////////////
+//////////////////////////// added ///////////////////////////////////
+        /// <summary>Metadata.</summary>
+        public List<(int tick, string name)> SectionInfo //TODO1 doesn't really belong here
+        {
+            get { return _sectionInfo; }
+            set { _sectionInfo = value; _length = _sectionInfo.Last().tick; ValidateTimes(); }
+        }
+        List<(int tick, string name)> _sectionInfo = [];
+
+        /// <summary>Current tempo in bpm. Notifies client.</summary>
+        public int Tempo
+        {
+            get { return _tempo; }
+            set { if (value != _tempo) { _tempo = value; NotifyStateChanged(); } }
+        }
+        int _tempo = 100;
+
+        /// <summary>Keep going at end of loop.</summary> 
+        public bool DoLoop { get; set; } = false;
+
+        /// <summary>Master volume.</summary>
+        public double Volume { get; set; } = 0.8;
+
+        /// <summary>Convenience for readability.</summary>
+        public bool IsFreeRunning { get { return _length.TotalBeats == 0; } }
+
+
+        #region Events
+        public event EventHandler<string>? ValueChangeEvent;
+        public void NotifyStateChanged([CallerMemberName] string name = "")
+        {
+            ValueChangeEvent?.Invoke(this, name);
+        }
+        #endregion
+
+
+
+        #region Public functions
+        /// <summary>
+        /// Convert script version into internal format.
+        /// </summary>
+        /// <param name="sectInfo"></param>
+        public void InitSectionInfo(Dictionary<int, string> sectInfo)
+        {
+            _sectionInfo.Clear();
+            _length = 0;//.Reset();
+            _selStart = 0;
+            _selEnd = 0;
+            _current = 0;
+
+            if (sectInfo.Count > 0)
+            {
+                List<(int tick, string name)> sinfo = [];
+                var spos = sectInfo.Keys.OrderBy(k => k).ToList();
+                spos.ForEach(sp => _sectionInfo.Add((sp, sectInfo[sp])));
+
+                _length = _sectionInfo.Last().tick;
+                ValidateTimes();
+            }
+        }
+        #endregion
+
+        #region Private functions
+        /// <summary>
+        /// Validate and correct all times. 0 -> loop-start -> loop-end -> length
+        /// </summary>
+        void ValidateTimes()
+        {
+            if (_length > 0)
+            {
+                // Fix loop points.
+                int lstart = _selStart.Sub < 0 ? 0 : _selStart.Sub;
+                int lend = _selEnd.Sub < 0 ? _length.Sub : _selEnd.Sub;
+                _selStart = Math.Min(lstart, lend);
+                _selEnd = Math.Min(lend, _length.Sub);
+                _current = MathUtils.Constrain(_current.Sub, lstart, lend);
+            }
+            else // free-running
+            {
+                _selStart = 0;
+                _selEnd = 0;
+                // _current = 0;
+            }
+        }
+        #endregion
+//////////////////////////// added ///////////////////////////////////
+//////////////////////////// added ///////////////////////////////////
+//////////////////////////// added ///////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
 
         #region Events => MidiLib OK
         /// <summary>Value changed by user.</summary>
@@ -110,14 +216,14 @@ namespace Ephemera.MidiLibLite
             {
                 _current.Reset();
             }
-            else if (_current < _start)
+            else if (_current < _selStart)
             {
-                _current.SetRounded(_start.TotalSubs, SnapType.Sub);
+                _current.SetRounded(_selStart.TotalSubs, SnapType.Sub);
                 done = true;
             }
-            else if (_current > _end)
+            else if (_current > _selEnd)
             {
-                _current.SetRounded(_end.TotalSubs, SnapType.Sub);
+                _current.SetRounded(_selEnd.TotalSubs, SnapType.Sub);
                 done = true;
             }
 
@@ -134,8 +240,8 @@ namespace Ephemera.MidiLibLite
             _lastXPos = 0;
             _length.Reset();
             _current.Reset();
-            _start.Reset();
-            _end.Reset();
+            _selStart.Reset();
+            _selEnd.Reset();
 
             Invalidate();
         }
@@ -277,25 +383,25 @@ namespace Ephemera.MidiLibLite
 
             // Validate times.
             MusicTime zero = new();
-            _start.Constrain(zero, _length);
-            _start.Constrain(zero, _end);
-            _end.Constrain(zero, _length);
-            _end.Constrain(_start, _length);
-            _current.Constrain(_start, _end);
+            _selStart.Constrain(zero, _length);
+            _selStart.Constrain(zero, _selEnd);
+            _selEnd.Constrain(zero, _length);
+            _selEnd.Constrain(_selStart, _length);
+            _current.Constrain(_selStart, _selEnd);
 
             // Draw the bar.
             if (_current < _length)
             {
-                int dstart = Scale(_start);
-                int dend = _current > _end ? Scale(_end) : Scale(_current);
+                int dstart = Scale(_selStart);
+                int dend = _current > _selEnd ? Scale(_selEnd) : Scale(_current);
                 pe.Graphics.FillRectangle(_penMarker.Brush, dstart, 0, dend - dstart, Height); // was _brush
             }
 
             // Draw start/end markers.
-            if (_start != zero || _end != _length)
+            if (_selStart != zero || _selEnd != _length)
             {
-                int mstart = Scale(_start);
-                int mend = Scale(_end);
+                int mstart = Scale(_selStart);
+                int mend = Scale(_selEnd);
                 pe.Graphics.DrawLine(_penMarker, mstart, 0, mstart, Height);
                 pe.Graphics.DrawLine(_penMarker, mend, 0, mend, Height);
             }
@@ -315,9 +421,9 @@ namespace Ephemera.MidiLibLite
                 _format.Alignment = StringAlignment.Center;
                 pe.Graphics.DrawString(_current.Format(), FontLarge, Brushes.Black, ClientRectangle, _format);
                 _format.Alignment = StringAlignment.Near;
-                pe.Graphics.DrawString(_start.Format(), FontSmall, Brushes.Black, ClientRectangle, _format);
+                pe.Graphics.DrawString(_selStart.Format(), FontSmall, Brushes.Black, ClientRectangle, _format);
                 _format.Alignment = StringAlignment.Far;
-                pe.Graphics.DrawString(_end.Format(), FontSmall, Brushes.Black, ClientRectangle, _format);
+                pe.Graphics.DrawString(_selEnd.Format(), FontSmall, Brushes.Black, ClientRectangle, _format);
             }
 #endif
 
@@ -343,8 +449,8 @@ namespace Ephemera.MidiLibLite
             if (e.KeyData == Keys.Escape)
             {
                 // Reset.
-                _start.Reset();
-                _end.Reset();
+                _selStart.Reset();
+                _selEnd.Reset();
                 Invalidate();
             }
 #endif
@@ -426,11 +532,11 @@ namespace Ephemera.MidiLibLite
 #else // !_NEW_ML TODO1
             if (ModifierKeys.HasFlag(Keys.Control))
             {
-                _start.SetRounded(GetSubFromMouse(e.X), Snap);
+                _selStart.SetRounded(GetSubFromMouse(e.X), Snap);
             }
             else if (ModifierKeys.HasFlag(Keys.Alt))
             {
-                _end.SetRounded(GetSubFromMouse(e.X), Snap);
+                _selEnd.SetRounded(GetSubFromMouse(e.X), Snap);
             }
             else
             {
