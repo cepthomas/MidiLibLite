@@ -152,9 +152,9 @@ namespace Ephemera.MidiLibLite.Test
         {
             Tell(INFO, $">>>>> Two.");
 
-            TestTime();
+            //TestTime();
 
-            //TestTimeBar();
+            TestTimeBar();
         }
         #endregion
 
@@ -163,14 +163,27 @@ namespace Ephemera.MidiLibLite.Test
         /// <summary>Test time.</summary>
         void TestTime()
         {
+            var d1 = new DateTime();
+            //var hd1 = d1.GetHashCode();
+            //d1.AddDays(11);
+            //d1.AddYears(333);
+
+            //var d2 = d1;
+            //var hd2 = d2.GetHashCode();
+
+
+
+
             var t1 = new MusicTime();
             t1.Increment(5);
 
             var t2 = t1;
 
-            var t3 = new MusicTime();
+            var t3 = new MusicTime(1, 2, 3);
 
 
+            //timeBar.Current = new();
+            //timeBar.Current.Increment(9);
 
 
 
@@ -178,8 +191,12 @@ namespace Ephemera.MidiLibLite.Test
 
         //-------------------------------------------------------------------------------//
         /// <summary>Test time bar.</summary>
-        void TestTimeBar()
+        void TestTimeBar() 
         {
+            var t3 = new MusicTime(1, 2, 3);
+
+            t3.Increment(100);
+
             // Sections.
             Dictionary<int, string> sectInfo = [];
             sectInfo.Add(0, "sect1");
@@ -188,29 +205,34 @@ namespace Ephemera.MidiLibLite.Test
             sectInfo.Add(300, "sect4");
             sectInfo.Add(400, "END");
 
-            Clock.Instance.InitSectionInfo(sectInfo);
+            timeBar.InitSectionInfo(sectInfo);
 
             timeBar.Invalidate();
 
             for (int i = 0; i < 500; i++)
             {
-                Clock.Instance.Current.Increment(1);
+                var tt = timeBar.Current;
+                tt.Increment(5);
 
-                if (!Clock.Instance.IsFreeRunning)
+
+
+                timeBar.Current.Increment(1);
+
+                if (!timeBar.IsFreeRunning)
                 {
-                    if (Clock.Instance.Current >= Clock.Instance.Length) // done
+                    if (timeBar.Current >= timeBar.Length) // done
                     {
                         // Keep going? else stop/rewind.
-                        if (Clock.Instance.DoLoop)
+                        if (timeBar.DoLoop)
                         {
                             // Keep going.
-                            Clock.Instance.Current = Clock.Instance.SelStart;
+                            timeBar.Current = timeBar.SelStart;
                         }
                         else
                         {
                             // Stop and rewind.
                             //CurrentState = ExecState.Idle;
-                            Clock.Instance.Current = Clock.Instance.SelStart;
+                            timeBar.Current = timeBar.SelStart;
 
                             // anything else?
                             //_mgr.Kill();

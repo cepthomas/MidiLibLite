@@ -34,6 +34,7 @@
 
     <ItemGroup>
       <Compile Remove="HoldingTank.cs" />
+      <Compile Remove="MusicTimeZ.cs" />
     </ItemGroup>
 
     <ItemGroup>

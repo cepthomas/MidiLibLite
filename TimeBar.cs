@@ -83,21 +83,22 @@ namespace Ephemera.MidiLibLite
 
         /// <summary>Where we be now.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public MusicTime Current { get { return _current; } set { _current = value; ValidateTimes(); NotifyStateChanged(); Invalidate(); } }
+        //public MusicTime Current { get { return _current; } set { _current = value; ValidateTimes(); NotifyStateChanged(); Invalidate(); } }
+        public MusicTime Current { get { return _current; } set { _current = value; } }
         MusicTime _current = new();
 
-// /// <summary>All the important beat points with their names. Used also by tooltip.</summary>
-// [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-// public Dictionary<int, string> TimeDefs { get; set; } = [];
+        // /// <summary>All the important beat points with their names. Used also by tooltip.</summary>
+        // [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+        // public Dictionary<int, string> TimeDefs { get; set; } = [];
 
         #endregion
 
 
 
 
-//////////////////////////// added ///////////////////////////////////
-//////////////////////////// added ///////////////////////////////////
-//////////////////////////// added ///////////////////////////////////
+        //////////////////////////// added ///////////////////////////////////
+        //////////////////////////// added ///////////////////////////////////
+        //////////////////////////// added ///////////////////////////////////
         /// <summary>Metadata.</summary>
         public List<(int tick, string name)> SectionInfo //TODO1 doesn't really belong here
         {
@@ -328,13 +329,13 @@ namespace Ephemera.MidiLibLite
 
 #if _NEW_ML
 
-            if (!Clock.Instance.IsFreeRunning)
+            if (!IsFreeRunning)
             {
                 var vpos = Height / 2;
 
                 // Loop area.
-                int lstart = GetClientFromTick(Clock.Instance.SelStart.Sub);
-                int lend = GetClientFromTick(Clock.Instance.SelEnd.Sub);
+                int lstart = GetClientFromTick(SelStart.Sub);
+                int lend = GetClientFromTick(SelEnd.Sub);
                 pe.Graphics.DrawLine(_penMarker, lstart, 0, lstart, Height);
                 pe.Graphics.DrawLine(_penMarker, lend, 0, lend, Height);
                 pe.Graphics.FillPolygon(_penMarker.Brush, new PointF[] { new(lstart, vpos - 5), new(lstart, vpos + 5), new(lstart + 10, vpos) });
@@ -345,7 +346,7 @@ namespace Ephemera.MidiLibLite
                 // Sections.
                 var fsize = pe.Graphics.MeasureString("X", FontSmall).Height;
 
-                foreach (var (tick, name) in Clock.Instance.SectionInfo)
+                foreach (var (tick, name) in SectionInfo)
                 {
                     int sect = GetClientFromTick(tick);
                     pe.Graphics.DrawLine(_penMarker, sect, 0, sect, Height);
@@ -355,7 +356,7 @@ namespace Ephemera.MidiLibLite
                 }
 
                 // Current pos.
-                int cpos = GetClientFromTick(Clock.Instance.Current.Sub);
+                int cpos = GetClientFromTick(Current.Sub);
                 pe.Graphics.DrawLine(_penMarker, cpos, 0, cpos, Height);
                 pe.Graphics.FillPolygon(_penMarker.Brush, new PointF[] { new(cpos - 5, 0), new(cpos + 5, 0), new(cpos, 10) });
             }
@@ -364,18 +365,18 @@ namespace Ephemera.MidiLibLite
             // Time text.
             _format.Alignment = StringAlignment.Center;
             _format.LineAlignment = StringAlignment.Center;
-            pe.Graphics.DrawString(Clock.Instance.Current.ToString(), FontLarge, Brushes.Black, ClientRectangle, _format);
-            //pe.Graphics.DrawString(MusicTime.Format(Clock.Instance.Current.Sub), FontLarge, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(Current.ToString(), FontLarge, Brushes.Black, ClientRectangle, _format);
+            //pe.Graphics.DrawString(MusicTime.Format(Current.Sub), FontLarge, Brushes.Black, ClientRectangle, _format);
 
             _format.Alignment = StringAlignment.Near;
             _format.LineAlignment = StringAlignment.Near;
-            pe.Graphics.DrawString(Clock.Instance.SelStart.ToString(), FontSmall, Brushes.Black, ClientRectangle, _format);
-            //pe.Graphics.DrawString(MusicTime.Format(Clock.Instance.SelStart.Sub), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(SelStart.ToString(), FontSmall, Brushes.Black, ClientRectangle, _format);
+            //pe.Graphics.DrawString(MusicTime.Format(SelStart.Sub), FontSmall, Brushes.Black, ClientRectangle, _format);
 
             _format.Alignment = StringAlignment.Far;
             _format.LineAlignment = StringAlignment.Near;
-            pe.Graphics.DrawString(Clock.Instance.SelEnd.ToString(), FontSmall, Brushes.Black, ClientRectangle, _format);
-            //pe.Graphics.DrawString(MusicTime.Format(Clock.Instance.SelEnd.Sub), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(SelEnd.ToString(), FontSmall, Brushes.Black, ClientRectangle, _format);
+            //pe.Graphics.DrawString(MusicTime.Format(SelEnd.Sub), FontSmall, Brushes.Black, ClientRectangle, _format);
 
 #else // !_NEW_ML TODO1
             // Setup.
@@ -438,11 +439,11 @@ namespace Ephemera.MidiLibLite
         protected override void OnKeyDown(KeyEventArgs e) // Nebulua simple
         {
 #if _NEW_ML
-            if (!Clock.Instance.IsFreeRunning && e.KeyData == Keys.Escape)
+            if (!IsFreeRunning && e.KeyData == Keys.Escape)
             {
                 // Reset.
-                Clock.Instance.SelStart = -1;
-                Clock.Instance.SelEnd = -1;
+                SelStart = -1;
+                SelEnd = -1;
                 Invalidate();
             }
 #else // !_NEW_ML TODO1
@@ -463,7 +464,7 @@ namespace Ephemera.MidiLibLite
         protected override void OnMouseMove(MouseEventArgs e) // Nebulua simple
         {
 #if _NEW_ML
-         if (!Clock.Instance.IsFreeRunning)
+         if (!IsFreeRunning)
             {
                 var sub = GetTickFromClient(e.X);
                 var bs = GetRounded(sub, Snap);
@@ -502,17 +503,17 @@ namespace Ephemera.MidiLibLite
         protected override void OnMouseDown(MouseEventArgs e) // Nebulua simple
         {
 #if _NEW_ML
-            if (!Clock.Instance.IsFreeRunning)
+            if (!IsFreeRunning)
             {
-                int lstart = Clock.Instance.SelStart.Sub;
-                int lend = Clock.Instance.SelEnd.Sub;
+                int lstart = SelStart.Sub;
+                int lend = SelEnd.Sub;
                 int newval = GetRounded(GetTickFromClient(e.X), Snap);
 
                 if (ModifierKeys.HasFlag(Keys.Control))
                 {
                     if (newval < lend)
                     {
-                        Clock.Instance.SelStart = newval;
+                        SelStart = newval;
                     }
                     // else beeeeeep?
                 }
@@ -520,13 +521,13 @@ namespace Ephemera.MidiLibLite
                 {
                     if (newval > lstart)
                     {
-                        Clock.Instance.SelEnd = newval;
+                        SelEnd = newval;
                     }
                     // else beeeeeep?
                 }
                 else
                 {
-                    Clock.Instance.Current = newval;
+                    Current = newval;
                 }
             }
 #else // !_NEW_ML TODO1
@@ -550,21 +551,22 @@ namespace Ephemera.MidiLibLite
         }
 #endregion
 
+
         #region Private functions
         /// <summary>
         /// Gets the time def string associated with val.
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        static string GetTimeDefString(int val)
+        string GetTimeDefString(int val)
         {
             string s = "";
 #if _NEW_ML
-            Clock.Instance.SectionInfo.TakeWhile(si => si.tick <= val).ForEach(si => s = si.name);
+            SectionInfo.TakeWhile(si => si.tick <= val).ForEach(si => s = si.name);
 
 #else // !_NEW_ML TODO1
 
-            foreach (KeyValuePair<int, string> kv in TimeDefs) // => Clock.Instance.SectionInfo
+            foreach (KeyValuePair<int, string> kv in TimeDefs) // => SectionInfo
             {
                 if (kv.Key > val)
                 {
@@ -589,10 +591,10 @@ namespace Ephemera.MidiLibLite
         {
             int tick = 0;
 
-            if (Clock.Instance.Current < Clock.Instance.Length)
+            if (Current < Length)
             {
-                tick = x * Clock.Instance.Length.Sub / Width;
-                tick = MathUtils.Constrain(tick, 0, Clock.Instance.Length.Sub);
+                tick = x * Length.Sub / Width;
+                tick = MathUtils.Constrain(tick, 0, Length.Sub);
             }
 
             return tick;
@@ -605,7 +607,7 @@ namespace Ephemera.MidiLibLite
         /// <returns></returns>
         int GetClientFromTick(int tick)
         {
-            return Clock.Instance.Length > 0 ? tick * Width / Clock.Instance.Length.Sub : 0;
+            return Length > 0 ? tick * Width / Length.Sub : 0;
         }
 
         /// <summary>

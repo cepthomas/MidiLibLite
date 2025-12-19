@@ -13,7 +13,7 @@ namespace Ephemera.MidiLibLite
     /// Can be fixed duration or free-running.
     /// Some property changes (like from UI) can notify clients.
     /// </summary>
-    public class Clock
+    public class ClockX
     {
 
         #region Properties
@@ -135,20 +135,20 @@ namespace Ephemera.MidiLibLite
 
         #region Lifecycle
         /// <summary>Prevent client multiple instantiation.</summary>
-        Clock() { }
+        ClockX() { }
 
         /// <summary>The singleton instance.</summary>
-        public static Clock Instance
+        public static ClockX Instance
         {
             get
             {
-                _instance ??= new Clock();
+                _instance ??= new ClockX();
                 return _instance;
             }
         }
 
         /// <summary>The singleton instance.</summary>
-        static Clock? _instance;
+        static ClockX? _instance;
         #endregion
 
         #region Public functions
