@@ -137,7 +137,7 @@ namespace Ephemera.MidiLibLite.Test
         #region Start here
         void One_Click(object sender, EventArgs e)
         {
-            Tell(INFO, $">>>>> One.");
+            Tell(INFO, $">>>>> One start.");
 
             TestScriptApp();
 
@@ -146,24 +146,26 @@ namespace Ephemera.MidiLibLite.Test
             TestPropertyEditor();
 
             TestChannel();
+            Tell(INFO, $">>>>> One end.");
         }
 
         void Two_Click(object sender, EventArgs e)
         {
-            Tell(INFO, $">>>>> Two.");
+            Tell(INFO, $">>>>> Two start.");
 
             //TestTime();
 
             TestTimeBar();
+
+            Tell(INFO, $">>>>> Two end.");
         }
         #endregion
-
 
         //-------------------------------------------------------------------------------//
         /// <summary>Test time.</summary>
         void TestTime()
         {
-            var d1 = new DateTime();
+            //var d1 = new DateTime();
             //var hd1 = d1.GetHashCode();
             //d1.AddDays(11);
             //d1.AddYears(333);
@@ -171,22 +173,12 @@ namespace Ephemera.MidiLibLite.Test
             //var d2 = d1;
             //var hd2 = d2.GetHashCode();
 
+            //var t1 = new MusicTime();
+            //t1.Increment(5);
 
+            //var t2 = t1;
 
-
-            var t1 = new MusicTime();
-            t1.Increment(5);
-
-            var t2 = t1;
-
-            var t3 = new MusicTime(1, 2, 3);
-
-
-            //timeBar.Current = new();
-            //timeBar.Current.Increment(9);
-
-
-
+            //var t3 = new MusicTime(1, 2, 3);
         }
 
         //-------------------------------------------------------------------------------//
@@ -209,38 +201,73 @@ namespace Ephemera.MidiLibLite.Test
 
             timeBar.Invalidate();
 
-            for (int i = 0; i < 100; i++)
-            {
-                timeBar.Current.Increment(1);
+            timer1.Tick += Timer1_Tick;
+            timer1.Interval = 3;
+            timer1.Start();
 
-                if (!timeBar.IsFreeRunning)
-                {
-                    if (timeBar.Current >= timeBar.Length) // done
-                    {
-                        // Keep going? else stop/rewind.
-                        if (timeBar.DoLoop)
-                        {
-                            // Keep going.
-                            timeBar.Current = timeBar.SelStart;
-                        }
-                        else
-                        {
-                            // Stop and rewind.
-                            //CurrentState = ExecState.Idle;
-                            timeBar.Current = timeBar.SelStart;
+            //for (int i = 0; i < 100; i++)
+            //{
+            //    timeBar.Current.Increment(1);
 
-                            // anything else?
-                            //_mgr.Kill();
-                        }
-                    }
-                }
-                // else just increment
+            //    if (!timeBar.IsFreeRunning)
+            //    {
+            //        if (timeBar.Current >= timeBar.Length) // done
+            //        {
+            //            // Keep going? else stop/rewind.
+            //            if (timeBar.DoLoop)
+            //            {
+            //                // Keep going.
+            //                timeBar.Current = timeBar.SelStart;
+            //            }
+            //            else
+            //            {
+            //                // Stop and rewind.
+            //                //CurrentState = ExecState.Idle;
+            //                timeBar.Current = timeBar.SelStart;
 
-                timeBar.Invalidate();
-                Thread.Sleep(2);
-            }
+            //                // anything else?
+            //                //_mgr.Kill();
+            //            }
+            //        }
+            //    }
+            //    // else just increment
+
+            //    timeBar.Invalidate();
+            //    Thread.Sleep(2);
+            //}
         }
 
+        void Timer1_Tick(object? sender, EventArgs e)
+        {
+            timeBar.Current.Increment(1);
+
+            if (!timeBar.IsFreeRunning)
+            {
+                if (timeBar.Current >= timeBar.Length) // done
+                {
+                    // Keep going? else stop/rewind.
+                    if (timeBar.DoLoop)
+                    {
+                        // Keep going.
+                        timeBar.Current = timeBar.SelStart;
+                    }
+                    else
+                    {
+                        // Stop and rewind.
+                        //CurrentState = ExecState.Idle;
+                        timeBar.Current = timeBar.SelStart;
+
+                        timer1.Stop();
+
+                        // anything else?
+                        //_mgr.Kill();
+                    }
+                }
+            }
+            // else just increment
+
+            timeBar.Invalidate();
+        }
 
         //-------------------------------------------------------------------------------//
         /// <summary>Test channel logic.</summary>

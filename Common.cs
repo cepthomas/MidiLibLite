@@ -17,7 +17,7 @@ namespace Ephemera.MidiLibLite
     /// <summary>User selection options.</summary>
     public enum SnapType { Bar, Beat, Sub }
 
-    public class Stuff
+    public class Stuff // TODO2 home?
     {
         /// <summary>Default value.</summary>
         public const double DEFAULT_VOLUME = 0.8;
@@ -25,15 +25,10 @@ namespace Ephemera.MidiLibLite
         /// <summary>Allow UI controls some more headroom.</summary>
         public const double MAX_VOLUME = 2.0;
 
-
-        // from MidiSettings TODO1 somewhere else?
-        public static int DefaultTempo { get; set; } = 100;
-        public static SnapType Snap { get; set; } = SnapType.Beat;
-
+        // // from MidiSettings - somewhere else?
+        // public static int DefaultTempo { get; set; } = 100;
+        // public static SnapType Snap { get; set; } = SnapType.Beat;
     }
-
-
-
 
     public class Utils // TODO2 home?
     {

@@ -18,6 +18,8 @@ namespace Ephemera.MidiLibLite.Test
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             toolStrip1 = new System.Windows.Forms.ToolStrip();
             btnLogMidi = new System.Windows.Forms.ToolStripButton();
             btnKillMidi = new System.Windows.Forms.ToolStripButton();
@@ -29,6 +31,7 @@ namespace Ephemera.MidiLibLite.Test
             btnTwo = new System.Windows.Forms.Button();
             propGrid = new System.Windows.Forms.PropertyGrid();
             timeBar = new TimeBar();
+            timer1 = new System.Windows.Forms.Timer(components);
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -132,6 +135,7 @@ namespace Ephemera.MidiLibLite.Test
             // timeBar
             // 
             timeBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            timeBar.DoLoop = false;
             timeBar.Location = new System.Drawing.Point(381, 41);
             timeBar.Name = "timeBar";
             timeBar.Size = new System.Drawing.Size(638, 45);
@@ -175,6 +179,7 @@ namespace Ephemera.MidiLibLite.Test
         private System.Windows.Forms.Button btnOne;
         private System.Windows.Forms.Button btnTwo;
         private TimeBar timeBar;
+        private System.Windows.Forms.Timer timer1;
     }
 }
 

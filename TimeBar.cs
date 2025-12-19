@@ -25,6 +25,7 @@ using Ephemera.NBagOfTricks;
 namespace Ephemera.MidiLibLite
 {
     /// <summary>The control.</summary>
+    [Browsable(false)]
     public class TimeBar : UserControl
     {
         #region Fields
@@ -100,6 +101,7 @@ namespace Ephemera.MidiLibLite
         //////////////////////////// added ///////////////////////////////////
         //////////////////////////// added ///////////////////////////////////
         /// <summary>Metadata.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public List<(int tick, string name)> SectionInfo //TODO1 doesn't really belong here
         {
             get { return _sectionInfo; }
@@ -107,21 +109,24 @@ namespace Ephemera.MidiLibLite
         }
         List<(int tick, string name)> _sectionInfo = [];
 
-        /// <summary>Current tempo in bpm. Notifies client.</summary>
-        public int Tempo
-        {
-            get { return _tempo; }
-            set { if (value != _tempo) { _tempo = value; NotifyStateChanged(); } }
-        }
-        int _tempo = 100;
+        ///// <summary>Current tempo in bpm. Notifies client.</summary>
+        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+        //public int Tempo
+        //{
+        //    get { return _tempo; }
+        //    set { if (value != _tempo) { _tempo = value; NotifyStateChanged(); } }
+        //}
+        //int _tempo = 100;
 
         /// <summary>Keep going at end of loop.</summary> 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public bool DoLoop { get; set; } = false;
 
-        /// <summary>Master volume.</summary>
-        public double Volume { get; set; } = 0.8;
+        ///// <summary>Master volume.</summary>
+        //public double Volume { get; set; } = 0.8;
 
         /// <summary>Convenience for readability.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public bool IsFreeRunning { get { return _length.TotalBeats == 0; } }
 
 
@@ -334,8 +339,8 @@ namespace Ephemera.MidiLibLite
                 var vpos = Height / 2;
 
                 // Loop area.
-                int lstart = GetClientFromTick(SelStart.Sub);
-                int lend = GetClientFromTick(SelEnd.Sub);
+                int lstart = GetClientFromTick(SelStart.TotalSubs);
+                int lend = GetClientFromTick(SelEnd.TotalSubs);
                 pe.Graphics.DrawLine(_penMarker, lstart, 0, lstart, Height);
                 pe.Graphics.DrawLine(_penMarker, lend, 0, lend, Height);
                 pe.Graphics.FillPolygon(_penMarker.Brush, new PointF[] { new(lstart, vpos - 5), new(lstart, vpos + 5), new(lstart + 10, vpos) });
@@ -356,7 +361,7 @@ namespace Ephemera.MidiLibLite
                 }
 
                 // Current pos.
-                int cpos = GetClientFromTick(Current.Sub);
+                int cpos = GetClientFromTick(Current.TotalSubs);
                 pe.Graphics.DrawLine(_penMarker, cpos, 0, cpos, Height);
                 pe.Graphics.FillPolygon(_penMarker.Brush, new PointF[] { new(cpos - 5, 0), new(cpos + 5, 0), new(cpos, 10) });
             }
@@ -366,17 +371,17 @@ namespace Ephemera.MidiLibLite
             _format.Alignment = StringAlignment.Center;
             _format.LineAlignment = StringAlignment.Center;
             pe.Graphics.DrawString(Current.ToString(), FontLarge, Brushes.Black, ClientRectangle, _format);
-            //pe.Graphics.DrawString(MusicTime.Format(Current.Sub), FontLarge, Brushes.Black, ClientRectangle, _format);
+            //pe.Graphics.DrawString(MusicTime.Format(Current.TotalSubs), FontLarge, Brushes.Black, ClientRectangle, _format);
 
             _format.Alignment = StringAlignment.Near;
             _format.LineAlignment = StringAlignment.Near;
             pe.Graphics.DrawString(SelStart.ToString(), FontSmall, Brushes.Black, ClientRectangle, _format);
-            //pe.Graphics.DrawString(MusicTime.Format(SelStart.Sub), FontSmall, Brushes.Black, ClientRectangle, _format);
+            //pe.Graphics.DrawString(MusicTime.Format(SelStart.TotalSubs), FontSmall, Brushes.Black, ClientRectangle, _format);
 
             _format.Alignment = StringAlignment.Far;
             _format.LineAlignment = StringAlignment.Near;
             pe.Graphics.DrawString(SelEnd.ToString(), FontSmall, Brushes.Black, ClientRectangle, _format);
-            //pe.Graphics.DrawString(MusicTime.Format(SelEnd.Sub), FontSmall, Brushes.Black, ClientRectangle, _format);
+            //pe.Graphics.DrawString(MusicTime.Format(SelEnd.TotalSubs), FontSmall, Brushes.Black, ClientRectangle, _format);
 
 #else // !_NEW_ML TODO1
             // Setup.
@@ -505,8 +510,8 @@ namespace Ephemera.MidiLibLite
 #if _NEW_ML
             if (!IsFreeRunning)
             {
-                int lstart = SelStart.Sub;
-                int lend = SelEnd.Sub;
+                int lstart = SelStart.TotalSubs;
+                int lend = SelEnd.TotalSubs;
                 int newval = GetRounded(GetTickFromClient(e.X), Snap);
 
                 if (ModifierKeys.HasFlag(Keys.Control))
@@ -593,8 +598,8 @@ namespace Ephemera.MidiLibLite
 
             if (Current < Length)
             {
-                tick = x * Length.Sub / Width;
-                tick = MathUtils.Constrain(tick, 0, Length.Sub);
+                tick = x * Length.TotalSubs / Width;
+                tick = MathUtils.Constrain(tick, 0, Length.TotalSubs);
             }
 
             return tick;
@@ -607,7 +612,7 @@ namespace Ephemera.MidiLibLite
         /// <returns></returns>
         int GetClientFromTick(int tick)
         {
-            return Length.TotalBeats > 0 ? tick * Width / Length.Sub : 0;
+            return Length.TotalBeats > 0 ? tick * Width / Length.TotalSubs : 0;
         }
 
         /// <summary>

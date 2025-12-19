@@ -281,9 +281,9 @@ bool _valid = false;
         #endregion
 
         #region IEquatable
-        public bool Equals(MusicTime other) { return other is MusicTime tm && tm.TotalSubs == TotalSubs; }
+        public bool Equals(MusicTime? other) { return other is MusicTime tm && tm.TotalSubs == TotalSubs; }
 
-        public override bool Equals(object obj) { return obj is MusicTime time && Equals(time); }
+        public override bool Equals(object? obj) { return obj is MusicTime time && Equals(time); }
         #endregion
     }
 }
