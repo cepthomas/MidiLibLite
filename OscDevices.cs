@@ -5,6 +5,7 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLibLite
 {
+    //----------------------------------------------------------------
     /// <summary>Provides midi over OSC. Server side.</summary>
     public class OscInputDevice : IInputDevice
     {
@@ -104,6 +105,7 @@ namespace Ephemera.MidiLibLite
         #endregion
     }
 
+    //----------------------------------------------------------------
     /// <summary>Provides midi over OSC. Client side.</summary>
     public class OscOutputDevice : IOutputDevice
     {

@@ -5,7 +5,7 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.MidiLibLite
 {
-    /// <summary>Used as default of for testing/mock.</summary>
+    //----------------------------------------------------------------
     public class NullInputDevice : IInputDevice
     {
         /// <inheritdoc />
@@ -44,6 +44,7 @@ namespace Ephemera.MidiLibLite
         #endregion
     }
 
+    //----------------------------------------------------------------
     public class NullOutputDevice : IOutputDevice
     {
         /// <inheritdoc />

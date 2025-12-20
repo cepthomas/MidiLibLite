@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ephemera.MidiLibLite
 {
-    #region Event definitions
+    //----------------------------------------------------------------
     public class BaseMidiEvent
     {
         /// <summary>Channel number.</summary>
@@ -28,6 +28,7 @@ namespace Ephemera.MidiLibLite
         }
     }
 
+    //----------------------------------------------------------------
     public class NoteOn : BaseMidiEvent
     {
         /// <summary>The note number to play.</summary>
@@ -56,6 +57,7 @@ namespace Ephemera.MidiLibLite
         }
     }
 
+    //----------------------------------------------------------------
     public class NoteOff : BaseMidiEvent
     {
         /// <summary>The note number to play.</summary>
@@ -78,6 +80,7 @@ namespace Ephemera.MidiLibLite
         }
     }
 
+    //----------------------------------------------------------------
     public class Controller : BaseMidiEvent
     {
         /// <summary>Specific controller id.</summary>
@@ -106,6 +109,7 @@ namespace Ephemera.MidiLibLite
         }
     }
 
+    //----------------------------------------------------------------
     public class Patch : BaseMidiEvent
     {
         /// <summary>Payload.</summary>
@@ -127,5 +131,4 @@ namespace Ephemera.MidiLibLite
             return $"Channel:{ChannelNumber} Patch:{Value}"; // get patch name from channel?
         }
     }
-    #endregion
 }

@@ -16,52 +16,42 @@ namespace Ephemera.MidiLibLite
         readonly int _id;
 
         /// <summary>Increment for unique value.</summary>
-        static int _all_ids = 1;
-
-        /// <summary>Some features are at a lower resolution.</summary>
-        public const int LOW_RES_PPQ = 8;
+        static int _allIds = 1;
         #endregion
 
-        #region Constants
-        ///// MidiLib version:
-        public static int InternalPPQ { get; set; } = 32;
-        // Properties - internal
-        /// <summary>Only 4/4 time supported.</summary>
+        #region Static Properties
+        /// <summary>Only 4/4 time supported currently.</summary>
         public static int BeatsPerBar { get { return 4; } }
+
         /// <summary>Our resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.</summary>
-        public static int SubsPerBeat { get { return InternalPPQ; } }
-        public static int SubsPerBar { get { return InternalPPQ * BeatsPerBar; } }
-        // or?? public const int SubsPerBar = SubsPerBeat * BeatsPerBar;
-        // TotalSubs = beats * MidiSettings.
+        public static int SubsPerBeat { get; set; } = 32; // { return InternalPPQ; } }
 
-        ///// nebulua version:
-        // /// <summary>Only 4/4 time supported.</summary>
-        // public const int BEATS_PER_BAR = 4;
-        // /// <summary>GOur resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.</summary>
-        // public const int SUBS_PER_BEAT = 8;
-        // /// <summary>Convenience.</summary>
-        // public const int SUBS_PER_BAR = SUBS_PER_BEAT * BEATS_PER_BAR;
+        /// <summary>Convenience.</summary>
+        public static int SubsPerBar { get { return SubsPerBeat * BeatsPerBar; } }
         #endregion
-
-
-bool _valid = false;
 
         #region Properties
-        /// <summary>The total time in subs. Zero-based.</summary>
-        public int TotalSubs { get; set; }
-        //public int TotalSubs { get; private set; }
+        /// <summary>The total time in ticks. Zero-based.</summary>
+        public int Tick { get; set; }
 
-        /// <summary>The total time in beats. Zero-based.</summary>
-        public int TotalBeats { get { return TotalSubs / SubsPerBeat; } }
+        // /// <summary>The total time in beats. Zero-based.</summary>
+        // public int TotalBeats { get { return TotalSubs / SubsPerBeat; } }
 
-        /// <summary>The bar number.</summary>
-        public int Bar { get { return TotalSubs / SubsPerBar; } }
+        // /// <summary>The time in music form.</summary>
+        public (int bar, int beat, int sub) Parts
+        {
+            get { return (Tick / SubsPerBar, Tick / SubsPerBeat % BeatsPerBar, Tick % SubsPerBeat); }
+        }
 
-        /// <summary>The beat number in the bar.</summary>
-        public int Beat { get { return TotalSubs / SubsPerBeat % BeatsPerBar; } }
 
-        /// <summary>The sub in the beat.</summary>
-        public int Sub { get { return TotalSubs % SubsPerBeat; } }
+        // /// <summary>The bar number.</summary>
+        // public int Bar { get { return Tick / SubsPerBar; } }
+
+        // /// <summary>The beat number in the bar.</summary>
+        // public int Beat { get { return Tick / SubsPerBeat % BeatsPerBar; } }
+
+        // /// <summary>The sub in the beat.</summary>
+        // public int Sub { get { return Tick % SubsPerBeat; } }
         #endregion
 
         #region Lifecycle
@@ -70,23 +60,23 @@ bool _valid = false;
         /// </summary>
         public MusicTime()
         {
-            TotalSubs = 0;
-            _id = _all_ids++;
+            Tick = 0;
+            _id = _allIds++;
         }
 
         /// <summary>
-        /// Constructor from subs.
+        /// Constructor from tick.
         /// </summary>
-        /// <param name="subs">Number of subs.</param>
-        public MusicTime(int subs)
+        /// <param name="tick">Number of tick.</param>
+        public MusicTime(int tick)
         {
-            if (subs < 0)
+            if (tick < 0)
             {
                 throw new ArgumentException("Negative value is invalid");
             }
 
-            TotalSubs = subs;
-            _id = _all_ids++;
+            Tick = tick;
+            _id = _allIds++;
         }
 
         /// <summary>
@@ -97,8 +87,8 @@ bool _valid = false;
         /// <param name="sub"></param>
         public MusicTime(int bar, int beat, int sub)
         {
-            TotalSubs = (bar * SubsPerBar) + (beat * SubsPerBeat) + sub;
-            _id = _all_ids++;
+            Tick = (bar * SubsPerBar) + (beat * SubsPerBeat) + sub;
+            _id = _allIds++;
         }
 
         /// <summary>
@@ -106,30 +96,30 @@ bool _valid = false;
         /// </summary>
         /// <param name="beat"></param>
         /// <returns>New MusicTime.</returns>
-        public MusicTime(double beat)
-        {
-            var (integral, fractional) = MathUtils.SplitDouble(beat);
-            var beats = (int)integral;
-            var subs = (int)Math.Round(fractional * 10.0);
+        //public MusicTime(double beat)
+        //{
+        //    var (integral, fractional) = MathUtils.SplitDouble(beat);
+        //    var beats = (int)integral;
+        //    var subs = (int)Math.Round(fractional * 10.0);
 
-            if (subs >= LOW_RES_PPQ)
-            {
-                throw new ArgumentException($"Invalid sub value: {beat}");
-            }
+        //    if (subs >= LOW_RES_PPQ)
+        //    {
+        //        throw new ArgumentException($"Invalid sub value: {beat}");
+        //    }
 
-            // Scale subs to native.
-            subs = subs * InternalPPQ / LOW_RES_PPQ;
-            TotalSubs = beats * SubsPerBeat + subs;
-        }
+        //    // Scale subs to native.
+        //    subs = subs * InternalPPQ / LOW_RES_PPQ;
+        //    Tick = beats * SubsPerBeat + subs;
+        //}
 
         /// <summary>
         /// Construct a MusicTime from a string repr.
         /// </summary>
         /// <param name="sbt">time string can be "1.2.3" or "1.2" or "1".</param>
-        public MusicTime(string sbt)
+        public MusicTime(string s)
         {
             int tick = 0;
-            var parts = StringUtils.SplitByToken(sbt, ".");
+            var parts = StringUtils.SplitByToken(s, ".");
 
             if (tick >= 0 && parts.Count > 0)
             {
@@ -146,7 +136,7 @@ bool _valid = false;
                 tick = (int.TryParse(parts[2], out int v) && v >= 0 && v <= SubsPerBeat - 1) ? tick + v : -1;
             }
 
-            TotalSubs = tick;
+            Tick = tick;
         }
         #endregion
 
@@ -156,8 +146,8 @@ bool _valid = false;
         /// </summary>
         public void Reset()
         {
-            TotalSubs = 0;
-            _valid = false;
+            Tick = 0;
+            //_valid = false;
         }
 
         /// <summary>
@@ -167,7 +157,7 @@ bool _valid = false;
         /// <param name="upper"></param>
         public void Constrain(MusicTime lower, MusicTime upper)
         {
-            TotalSubs = MathUtils.Constrain(TotalSubs, lower.TotalSubs, upper.TotalSubs);
+            Tick = MathUtils.Constrain(Tick, lower.Tick, upper.Tick);
         }
 
         /// <summary>
@@ -176,10 +166,10 @@ bool _valid = false;
         /// <param name="subs">By this number of subs. Can be negative aka decrement.</param>
         public void Increment(int subs)
         {
-            TotalSubs += subs;
-            if (TotalSubs < 0)
+            Tick += subs;
+            if (Tick < 0)
             {
-                TotalSubs = 0;
+                Tick = 0;
             }
         }
 
@@ -208,7 +198,7 @@ bool _valid = false;
                 }
             }
 
-            TotalSubs = sub;
+            Tick = sub;
         }
 
         /// <summary>
@@ -217,71 +207,33 @@ bool _valid = false;
         /// <returns></returns>
         public override string ToString()
         {
-            return $"{Bar}.{Beat}.{Sub:00} [{_id}:{TotalSubs}]";
+            var p = Parts;
+            return $"{p.bar}.{p.beat}.{p.sub:00} [{_id}:{Tick}]";
         }
         #endregion
 
-
-        ///// <summary>Get the bar number.</summary>
-        //public static int BAR(int tick) { return tick / SubsPerBar; }
-
-        ///// <summary>Get the beat number in the bar.</summary>
-        //public static int BEAT(int tick) { return tick / SubsPerBeat % BeatsPerBar; }
-
-        ///// <summary>Get the sub in the beat.</summary>
-        //public static int SUB(int tick) { return tick % SubsPerBeat; }
-
-        ///// <summary>Convert a position/tick to string bar time.</summary>
-        ///// <param name="tick"></param>
-        ///// <returns></returns>
-        //public static string Format(int tick)
-        //{
-        //    if (tick >= 0)
-        //    {
-        //        int bar = BAR(tick);
-        //        int beat = BEAT(tick);
-        //        int sub = SUB(tick);
-        //        return $"{bar}.{beat}.{sub}";
-        //    }
-        //    else
-        //    {
-        //        return "Invalid";
-        //    }
-        //}
-
-
-
-
+        #region Operator implementations
         public override int GetHashCode() { return _id; }
 
-        // Needed because properly overloading ++ and -- aren't feasible.
-        //public void Inc() { TotalSubs += 1; }
-        //public void Dec() { TotalSubs--; }
-
-
-        #region Operator implementations
-
-    //    public static implicit operator MusicTime(int value) { return new MusicTime(value); }
-        
-        public static bool operator ==(MusicTime a, MusicTime b) { return a.TotalSubs == b.TotalSubs; }
+        public static bool operator ==(MusicTime a, MusicTime b) { return a.Tick == b.Tick; }
 
         public static bool operator !=(MusicTime a, MusicTime b) { return !(a == b); }
 
-        public static MusicTime operator +(MusicTime a, MusicTime b) { return new MusicTime(a.TotalSubs + b.TotalSubs); }
+        public static MusicTime operator +(MusicTime a, MusicTime b) { return new MusicTime(a.Tick + b.Tick); }
 
-        public static MusicTime operator -(MusicTime a, MusicTime b) { return new MusicTime(a.TotalSubs - b.TotalSubs); }
+        public static MusicTime operator -(MusicTime a, MusicTime b) { return new MusicTime(a.Tick - b.Tick); }
 
-        public static bool operator <(MusicTime a, MusicTime b) { return a.TotalSubs < b.TotalSubs; }
+        public static bool operator <(MusicTime a, MusicTime b) { return a.Tick < b.Tick; }
 
-        public static bool operator >(MusicTime a, MusicTime b) { return a.TotalSubs > b.TotalSubs; }
+        public static bool operator >(MusicTime a, MusicTime b) { return a.Tick > b.Tick; }
 
-        public static bool operator <=(MusicTime a, MusicTime b) { return a.TotalSubs <= b.TotalSubs; }
+        public static bool operator <=(MusicTime a, MusicTime b) { return a.Tick <= b.Tick; }
 
-        public static bool operator >=(MusicTime a, MusicTime b) { return a.TotalSubs >= b.TotalSubs; }
+        public static bool operator >=(MusicTime a, MusicTime b) { return a.Tick >= b.Tick; }
         #endregion
 
         #region IEquatable
-        public bool Equals(MusicTime? other) { return other is MusicTime tm && tm.TotalSubs == TotalSubs; }
+        public bool Equals(MusicTime? other) { return other is MusicTime tm && tm.Tick == Tick; }
 
         public override bool Equals(object? obj) { return obj is MusicTime time && Equals(time); }
         #endregion

@@ -14,6 +14,7 @@ using System.Reflection;
 
 namespace Ephemera.MidiLibLite
 {
+    //----------------------------------------------------------------
     /// <summary>Select from list supplied to cache. Value can be int or string.</summary>
     public class GenericListTypeEditor : UITypeEditor // TODO2 put in NBUI
     {
@@ -67,6 +68,7 @@ namespace Ephemera.MidiLibLite
         public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) { return UITypeEditorEditStyle.DropDown; }
     }
 
+    //----------------------------------------------------------------
     /// <summary>Convert between list int and string versions.</summary>
     public class GenericConverter : Int64Converter
     {
@@ -90,7 +92,7 @@ namespace Ephemera.MidiLibLite
         }
     }
 
-    #region Midi value editing
+    //----------------------------------------------------------------
     /// <summary>Select a midi value from a range. Handles special case of channel number.</summary>
     public class MidiValueTypeEditor : UITypeEditor
     {
@@ -112,5 +114,4 @@ namespace Ephemera.MidiLibLite
 
         public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) { return UITypeEditorEditStyle.DropDown; }
     }
-    #endregion    
 }

@@ -15,7 +15,7 @@ using Ephemera.NBagOfTricks;
 // TODO2 ? zoom, drag, shift
 
 // Basic version is from Nebulua, simpler. MidiLib version knows about MusicTime.
-// TODO1 Look at how client uses API. Nebulator, Midifrier
+// TODO1 Look at how other clients use MidiLib API: Nebulator, Midifrier
 // - TimeDefs => use SectionInfo
 // - public event EventHandler? CurrentTimeChanged;
 // - IncrementCurrent(1)
@@ -45,7 +45,7 @@ namespace Ephemera.MidiLibLite
         #region Properties
         /// <summary>Big font.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public Font FontLarge { get; set; } = new("Microsoft Sans Serif", 20, FontStyle.Regular, GraphicsUnit.Point, 0);
+        public Font FontLarge { get; set; } = new("Microsoft Sans Serif", 16, FontStyle.Regular, GraphicsUnit.Point, 0);
 
         /// <summary>Baby font.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -62,11 +62,8 @@ namespace Ephemera.MidiLibLite
         /// <summary>How to select times.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public SnapType Snap { get; set; }
-        #endregion
 
-
-
-        #region Properties => MidiLib
+        // TODO1 all these for validate/notify?
         /// <summary>Total length of the sequence.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public MusicTime Length { get { return _length; } set { _length = value; Invalidate(); } }
@@ -88,204 +85,35 @@ namespace Ephemera.MidiLibLite
         public MusicTime Current { get { return _current; } set { _current = value; } }
         MusicTime _current = new();
 
-        // /// <summary>All the important beat points with their names. Used also by tooltip.</summary>
-        // [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        // public Dictionary<int, string> TimeDefs { get; set; } = [];
-
-        #endregion
-
-
-
-
-        //////////////////////////// added ///////////////////////////////////
-        //////////////////////////// added ///////////////////////////////////
-        //////////////////////////// added ///////////////////////////////////
         /// <summary>Metadata.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public List<(int tick, string name)> SectionInfo //TODO1 doesn't really belong here
+        public List<(int tick, string name)> SectionInfo //TODO2 doesn't really belong here
         {
             get { return _sectionInfo; }
             set { _sectionInfo = value; }// _length = _sectionInfo.Last().tick; ValidateTimes(); }
         }
         List<(int tick, string name)> _sectionInfo = [];
 
-        ///// <summary>Current tempo in bpm. Notifies client.</summary>
-        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        //public int Tempo
-        //{
-        //    get { return _tempo; }
-        //    set { if (value != _tempo) { _tempo = value; NotifyStateChanged(); } }
-        //}
-        //int _tempo = 100;
-
         /// <summary>Keep going at end of loop.</summary> 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public bool DoLoop { get; set; } = false;
 
-        ///// <summary>Master volume.</summary>
-        //public double Volume { get; set; } = 0.8;
-
         /// <summary>Convenience for readability.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public bool IsFreeRunning { get { return _length.TotalBeats == 0; } }
-
+        public bool IsFreeRunning { get { return _length.Tick == 0; } }
+        #endregion
 
         #region Events
-        public event EventHandler<string>? ValueChangeEvent;
-        public void NotifyStateChanged([CallerMemberName] string name = "")
-        {
-            ValueChangeEvent?.Invoke(this, name);
-        }
-        #endregion
+//public event EventHandler<string>? ValueChangeEvent;
+//public void NotifyStateChanged([CallerMemberName] string name = "")
+//{
+//    ValueChangeEvent?.Invoke(this, name);
+//}
 
-
-
-        #region Public functions
-        /// <summary>
-        /// Convert script version into internal format.
-        /// </summary>
-        /// <param name="sectInfo"></param>
-        public void InitSectionInfo(Dictionary<int, string> sectInfo)
-        {
-            _sectionInfo.Clear();
-            _length.TotalSubs = 0;//.Reset();
-            _selStart.TotalSubs = 0;
-            _selEnd.TotalSubs = 0;
-            _current.TotalSubs = 0;
-
-            if (sectInfo.Count > 0)
-            {
-                List<(int tick, string name)> sinfo = [];
-                var spos = sectInfo.Keys.OrderBy(k => k).ToList();
-                spos.ForEach(sp => _sectionInfo.Add((sp, sectInfo[sp])));
-
-                _length.TotalSubs = _sectionInfo.Last().tick;
-                ValidateTimes();
-            }
-        }
-        #endregion
-
-        #region Private functions
-        /// <summary>
-        /// Validate and correct all times. 0 -> loop-start -> loop-end -> length
-        /// </summary>
-        void ValidateTimes()
-        {
-            if (_length.TotalSubs > 0)
-            {
-                // Fix loop points.
-                int lstart = _selStart.TotalSubs < 0 ? 0 : _selStart.TotalSubs;
-                int lend = _selEnd.TotalSubs < 0 ? _length.TotalSubs : _selEnd.TotalSubs;
-                _selStart.TotalSubs = Math.Min(lstart, lend);
-                _selEnd.TotalSubs = Math.Min(lend, _length.TotalSubs);
-                _current.Constrain(_selStart, _selEnd);
-            }
-            else // free-running
-            {
-                _selStart.TotalSubs = 0;
-                _selEnd.TotalSubs = 0;
-                // _current.TotalSubs = 0;
-            }
-        }
-        #endregion
-//////////////////////////// added ///////////////////////////////////
-//////////////////////////// added ///////////////////////////////////
-//////////////////////////// added ///////////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-
-        #region Events => MidiLib OK
         /// <summary>Value changed by user.</summary>
         public event EventHandler? CurrentTimeChanged; //TODO1
+
         #endregion
-
-        #region Public functions => MidiLib OK
-        /// <summary>Change current time programmatically.</summary>
-        /// <param name="num">Subs/ticks.</param>
-        /// <returns>True if at the end of the sequence.</returns>
-        public bool IncrementCurrent(int num)
-        {
-            bool done = false;
-
-            _current.Increment(num);
-
-            if (_current < new MusicTime(0))
-            {
-                _current.Reset();
-            }
-            else if (_current < _selStart)
-            {
-                _current.SetRounded(_selStart.TotalSubs, SnapType.Sub);
-                done = true;
-            }
-            else if (_current > _selEnd)
-            {
-                _current.SetRounded(_selEnd.TotalSubs, SnapType.Sub);
-                done = true;
-            }
-
-            Invalidate();
-
-            return done;
-        }
-
-        /// <summary>
-        /// Clear everything.
-        /// </summary>
-        public void Reset()
-        {
-            _lastXPos = 0;
-            _length.Reset();
-            _current.Reset();
-            _selStart.Reset();
-            _selEnd.Reset();
-
-            Invalidate();
-        }
-        #endregion
-
-        #region Private functions => MidiLib OK
-        /// <summary>
-        /// Convert x pos to sub.
-        /// </summary>
-        /// <param name="x"></param>
-        int GetSubFromMouse(int x)
-        {
-            int sub = 0;
-
-            if(_current < _length)
-            {
-                sub = x * _length.TotalSubs / Width;
-                sub = MathUtils.Constrain(sub, 0, _length.TotalSubs);
-            }
-
-            return sub;
-        }
-
-        /// <summary>
-        /// Map from time to UI pixels.
-        /// </summary>
-        /// <param name="val"></param>
-        /// <returns></returns>
-        public int Scale(MusicTime val)
-        {
-            return val.TotalSubs * Width / _length.TotalSubs;
-        }
-        #endregion
-
-
-
-
-
 
         #region Lifecycle
         /// <summary>
@@ -317,9 +145,76 @@ namespace Ephemera.MidiLibLite
                 _toolTip.Dispose();
                 _penMarker.Dispose();
                 _format.Dispose();
-//                _brush.Dispose();
             }
             base.Dispose(disposing);
+        }
+        #endregion
+
+        #region Public functions
+        /// <summary>
+        /// Client supplies metadata about sections in the time range.
+        /// </summary>
+        /// <param name="sectInfo"></param>
+        public void InitSectionInfo(Dictionary<int, string> sectInfo)
+        {
+            _sectionInfo.Clear();
+            _length.Tick = 0;//.Reset();
+            _selStart.Tick = 0;
+            _selEnd.Tick = 0;
+            _current.Tick = 0;
+
+            if (sectInfo.Count > 0)
+            {
+                List<(int tick, string name)> sinfo = [];
+                var spos = sectInfo.Keys.OrderBy(k => k).ToList();
+                spos.ForEach(sp => _sectionInfo.Add((sp, sectInfo[sp])));
+
+                _length.Tick = _sectionInfo.Last().tick;
+                ValidateTimes();
+            }
+        }
+
+        /// <summary>Change current time programmatically.</summary>
+        /// <param name="num">Subs/ticks.</param>
+        /// <returns>True if at the end of the sequence.</returns>
+        public bool IncrementCurrent(int num)
+        {
+            bool done = false;
+
+            _current.Increment(num);
+
+            if (_current < new MusicTime(0))
+            {
+                _current.Reset();
+            }
+            else if (_current < _selStart)
+            {
+                _current.SetRounded(_selStart.Tick, SnapType.Sub);
+                done = true;
+            }
+            else if (_current > _selEnd)
+            {
+                _current.SetRounded(_selEnd.Tick, SnapType.Sub);
+                done = true;
+            }
+
+            Invalidate();
+
+            return done;
+        }
+
+        /// <summary>
+        /// Clear everything.
+        /// </summary>
+        public void Reset()
+        {
+            _lastXPos = 0;
+            _length.Reset();
+            _current.Reset();
+            _selStart.Reset();
+            _selEnd.Reset();
+
+            Invalidate();
         }
         #endregion
 
@@ -327,20 +222,18 @@ namespace Ephemera.MidiLibLite
         /// <summary>
         /// Draw the control.
         /// </summary>
-        protected override void OnPaint(PaintEventArgs pe) // Nebulua simple
+        protected override void OnPaint(PaintEventArgs pe)
         {
             // Setup.
             pe.Graphics.Clear(BackColor);
-
-#if _NEW_ML
 
             if (!IsFreeRunning)
             {
                 var vpos = Height / 2;
 
                 // Loop area.
-                int lstart = GetClientFromTick(SelStart.TotalSubs);
-                int lend = GetClientFromTick(SelEnd.TotalSubs);
+                int lstart = GetClientFromTick(SelStart.Tick);
+                int lend = GetClientFromTick(SelEnd.Tick);
                 pe.Graphics.DrawLine(_penMarker, lstart, 0, lstart, Height);
                 pe.Graphics.DrawLine(_penMarker, lend, 0, lend, Height);
                 pe.Graphics.FillPolygon(_penMarker.Brush, new PointF[] { new(lstart, vpos - 5), new(lstart, vpos + 5), new(lstart + 10, vpos) });
@@ -361,7 +254,7 @@ namespace Ephemera.MidiLibLite
                 }
 
                 // Current pos.
-                int cpos = GetClientFromTick(Current.TotalSubs);
+                int cpos = GetClientFromTick(Current.Tick);
                 pe.Graphics.DrawLine(_penMarker, cpos, 0, cpos, Height);
                 pe.Graphics.FillPolygon(_penMarker.Brush, new PointF[] { new(cpos - 5, 0), new(cpos + 5, 0), new(cpos, 10) });
             }
@@ -371,68 +264,64 @@ namespace Ephemera.MidiLibLite
             _format.Alignment = StringAlignment.Center;
             _format.LineAlignment = StringAlignment.Center;
             pe.Graphics.DrawString(Current.ToString(), FontLarge, Brushes.Black, ClientRectangle, _format);
-            //pe.Graphics.DrawString(MusicTime.Format(Current.TotalSubs), FontLarge, Brushes.Black, ClientRectangle, _format);
+            //pe.Graphics.DrawString(MusicTime.Format(Current.Tick), FontLarge, Brushes.Black, ClientRectangle, _format);
 
             _format.Alignment = StringAlignment.Near;
             _format.LineAlignment = StringAlignment.Near;
             pe.Graphics.DrawString(SelStart.ToString(), FontSmall, Brushes.Black, ClientRectangle, _format);
-            //pe.Graphics.DrawString(MusicTime.Format(SelStart.TotalSubs), FontSmall, Brushes.Black, ClientRectangle, _format);
+            //pe.Graphics.DrawString(MusicTime.Format(SelStart.Tick), FontSmall, Brushes.Black, ClientRectangle, _format);
 
             _format.Alignment = StringAlignment.Far;
             _format.LineAlignment = StringAlignment.Near;
             pe.Graphics.DrawString(SelEnd.ToString(), FontSmall, Brushes.Black, ClientRectangle, _format);
-            //pe.Graphics.DrawString(MusicTime.Format(SelEnd.TotalSubs), FontSmall, Brushes.Black, ClientRectangle, _format);
+            //pe.Graphics.DrawString(MusicTime.Format(SelEnd.Tick), FontSmall, Brushes.Black, ClientRectangle, _format);
 
-#else // !_NEW_ML TODO1
-            // Setup.
-            pe.Graphics.Clear(BackColor);
 
-            // Validate times.
-            MusicTime zero = new();
-            _selStart.Constrain(zero, _length);
-            _selStart.Constrain(zero, _selEnd);
-            _selEnd.Constrain(zero, _length);
-            _selEnd.Constrain(_selStart, _length);
-            _current.Constrain(_selStart, _selEnd);
+            // Old MidiLib:
+            // // Validate times.
+            // MusicTime zero = new();
+            // _selStart.Constrain(zero, _length);
+            // _selStart.Constrain(zero, _selEnd);
+            // _selEnd.Constrain(zero, _length);
+            // _selEnd.Constrain(_selStart, _length);
+            // _current.Constrain(_selStart, _selEnd);
 
-            // Draw the bar.
-            if (_current < _length)
-            {
-                int dstart = Scale(_selStart);
-                int dend = _current > _selEnd ? Scale(_selEnd) : Scale(_current);
-                pe.Graphics.FillRectangle(_penMarker.Brush, dstart, 0, dend - dstart, Height); // was _brush
-            }
+            // // Draw the bar.
+            // if (_current < _length)
+            // {
+            //     int dstart = Scale(_selStart);
+            //     int dend = _current > _selEnd ? Scale(_selEnd) : Scale(_current);
+            //     pe.Graphics.FillRectangle(_penMarker.Brush, dstart, 0, dend - dstart, Height); // was _brush
+            // }
 
-            // Draw start/end markers.
-            if (_selStart != zero || _selEnd != _length)
-            {
-                int mstart = Scale(_selStart);
-                int mend = Scale(_selEnd);
-                pe.Graphics.DrawLine(_penMarker, mstart, 0, mstart, Height);
-                pe.Graphics.DrawLine(_penMarker, mend, 0, mend, Height);
-            }
+            // // Draw start/end markers.
+            // if (_selStart != zero || _selEnd != _length)
+            // {
+            //     int mstart = Scale(_selStart);
+            //     int mend = Scale(_selEnd);
+            //     pe.Graphics.DrawLine(_penMarker, mstart, 0, mstart, Height);
+            //     pe.Graphics.DrawLine(_penMarker, mend, 0, mend, Height);
+            // }
 
-            // Text.
-            if (DesignMode) // Can't access LibSettings yet.
-            {
-                _format.Alignment = StringAlignment.Center;
-                pe.Graphics.DrawString("CENTER", FontLarge, Brushes.Black, ClientRectangle, _format);
-                _format.Alignment = StringAlignment.Near;
-                pe.Graphics.DrawString("NEAR", FontSmall, Brushes.Black, ClientRectangle, _format);
-                _format.Alignment = StringAlignment.Far;
-                pe.Graphics.DrawString("FAR", FontSmall, Brushes.Black, ClientRectangle, _format);
-            }
-            else
-            {
-                _format.Alignment = StringAlignment.Center;
-                pe.Graphics.DrawString(_current.Format(), FontLarge, Brushes.Black, ClientRectangle, _format);
-                _format.Alignment = StringAlignment.Near;
-                pe.Graphics.DrawString(_selStart.Format(), FontSmall, Brushes.Black, ClientRectangle, _format);
-                _format.Alignment = StringAlignment.Far;
-                pe.Graphics.DrawString(_selEnd.Format(), FontSmall, Brushes.Black, ClientRectangle, _format);
-            }
-#endif
-
+            // // Text.
+            // if (DesignMode) // Can't access LibSettings yet.
+            // {
+            //     _format.Alignment = StringAlignment.Center;
+            //     pe.Graphics.DrawString("CENTER", FontLarge, Brushes.Black, ClientRectangle, _format);
+            //     _format.Alignment = StringAlignment.Near;
+            //     pe.Graphics.DrawString("NEAR", FontSmall, Brushes.Black, ClientRectangle, _format);
+            //     _format.Alignment = StringAlignment.Far;
+            //     pe.Graphics.DrawString("FAR", FontSmall, Brushes.Black, ClientRectangle, _format);
+            // }
+            // else
+            // {
+            //     _format.Alignment = StringAlignment.Center;
+            //     pe.Graphics.DrawString(_current.Format(), FontLarge, Brushes.Black, ClientRectangle, _format);
+            //     _format.Alignment = StringAlignment.Near;
+            //     pe.Graphics.DrawString(_selStart.Format(), FontSmall, Brushes.Black, ClientRectangle, _format);
+            //     _format.Alignment = StringAlignment.Far;
+            //     pe.Graphics.DrawString(_selEnd.Format(), FontSmall, Brushes.Black, ClientRectangle, _format);
+            // }
         }
         #endregion
 
@@ -441,34 +330,33 @@ namespace Ephemera.MidiLibLite
         /// Handle selection operations.
         /// </summary>
         /// <param name="e"></param>
-        protected override void OnKeyDown(KeyEventArgs e) // Nebulua simple
+        protected override void OnKeyDown(KeyEventArgs e)
         {
-#if _NEW_ML
             if (!IsFreeRunning && e.KeyData == Keys.Escape)
             {
                 // Reset.
-                SelStart.TotalSubs = -1;
-                SelEnd.TotalSubs = -1;
+                SelStart.Tick = -1;
+                SelEnd.Tick = -1;
                 Invalidate();
             }
-#else // !_NEW_ML TODO1
-            if (e.KeyData == Keys.Escape)
-            {
-                // Reset.
-                _selStart.Reset();
-                _selEnd.Reset();
-                Invalidate();
-            }
-#endif
+
+            // Old MidiLib:
+            // if (e.KeyData == Keys.Escape)
+            // {
+            //     // Reset.
+            //     _selStart.Reset();
+            //     _selEnd.Reset();
+            //     Invalidate();
+            // }
+
             base.OnKeyDown(e);
         }
 
         /// <summary>
         /// Handle mouse position changes.
         /// </summary>
-        protected override void OnMouseMove(MouseEventArgs e) // Nebulua simple
+        protected override void OnMouseMove(MouseEventArgs e)
         {
-#if _NEW_ML
          if (!IsFreeRunning)
             {
                 var sub = GetTickFromClient(e.X);
@@ -479,24 +367,25 @@ namespace Ephemera.MidiLibLite
 
                 _lastXPos = e.X;
             }
-#else // !_NEW_ML TODO1
-            if (e.Button == MouseButtons.Left)
-            {
-                _current.SetRounded(GetSubFromMouse(e.X), Snap);
-                CurrentTimeChanged?.Invoke(this, new EventArgs());
-            }
-            else if (e.X != _lastXPos)
-            {
-                MusicTime bs = new();
-                // var vv = MidiSettings.LibSettings;
 
-                var sub = GetSubFromMouse(e.X);
-                bs.SetRounded(sub, Snap);
-                string sdef = GetTimeDefString(bs.TotalBeats);
-                _toolTip.SetToolTip(this, $"{bs.Format()} {sdef}");
-                _lastXPos = e.X;
-            }
-#endif
+            // Old MidiLib:
+            // if (e.Button == MouseButtons.Left)
+            // {
+            //     _current.SetRounded(GetSubFromMouse(e.X), Snap);
+            //     CurrentTimeChanged?.Invoke(this, new EventArgs());
+            // }
+            // else if (e.X != _lastXPos)
+            // {
+            //     MusicTime bs = new();
+            //     // var vv = MidiSettings.LibSettings;
+
+            //     var sub = GetSubFromMouse(e.X);
+            //     bs.SetRounded(sub, Snap);
+            //     string sdef = GetTimeDefString(bs.TotalBeats);
+            //     _toolTip.SetToolTip(this, $"{bs.Format()} {sdef}");
+            //     _lastXPos = e.X;
+            // }
+
             Invalidate();
 
             base.OnMouseMove(e);
@@ -505,59 +394,104 @@ namespace Ephemera.MidiLibLite
         /// <summary>
         /// Selection of time and loop points.
         /// </summary>
-        protected override void OnMouseDown(MouseEventArgs e) // Nebulua simple
+        protected override void OnMouseDown(MouseEventArgs e)
         {
-#if _NEW_ML
             if (!IsFreeRunning)
             {
-                int lstart = SelStart.TotalSubs;
-                int lend = SelEnd.TotalSubs;
                 int newval = GetRounded(GetTickFromClient(e.X), Snap);
 
                 if (ModifierKeys.HasFlag(Keys.Control))
                 {
-                    if (newval < lend)
+                    if (newval < SelEnd.Tick)
                     {
-                        SelStart.TotalSubs = newval;
+                        SelStart.Tick = newval;
                     }
-                    // else beeeeeep?
                 }
                 else if (ModifierKeys.HasFlag(Keys.Alt))
                 {
-                    if (newval > lstart)
+                    if (newval > SelStart.Tick)
                     {
-                        SelEnd.TotalSubs = newval;
+                        SelEnd.Tick = newval;
                     }
-                    // else beeeeeep?
                 }
                 else
                 {
-                    Current.TotalSubs = newval;
+                    Current.Tick = newval;
                 }
             }
-#else // !_NEW_ML TODO1
-            if (ModifierKeys.HasFlag(Keys.Control))
-            {
-                _selStart.SetRounded(GetSubFromMouse(e.X), Snap);
-            }
-            else if (ModifierKeys.HasFlag(Keys.Alt))
-            {
-                _selEnd.SetRounded(GetSubFromMouse(e.X), Snap);
-            }
-            else
-            {
-                _current.SetRounded(GetSubFromMouse(e.X), Snap);
-            }
 
-            CurrentTimeChanged?.Invoke(this, new EventArgs());
-#endif
+            // Old MidiLib:
+            // if (ModifierKeys.HasFlag(Keys.Control))
+            // {
+            //     _selStart.SetRounded(GetSubFromMouse(e.X), Snap);
+            // }
+            // else if (ModifierKeys.HasFlag(Keys.Alt))
+            // {
+            //     _selEnd.SetRounded(GetSubFromMouse(e.X), Snap);
+            // }
+            // else
+            // {
+            //     _current.SetRounded(GetSubFromMouse(e.X), Snap);
+            // }
+
+            // CurrentTimeChanged?.Invoke(this, new EventArgs());
+
             Invalidate();
             base.OnMouseDown(e);
         }
-#endregion
+        #endregion
 
 
         #region Private functions
+        /// <summary>
+        /// Validate and correct all times. 0 -> loop-start -> loop-end -> length
+        /// </summary>
+        void ValidateTimes()
+        {
+            if (_length.Tick > 0)
+            {
+                // Fix loop points.
+                int lstart = _selStart.Tick < 0 ? 0 : _selStart.Tick;
+                int lend = _selEnd.Tick < 0 ? _length.Tick : _selEnd.Tick;
+                _selStart.Tick = Math.Min(lstart, lend);
+                _selEnd.Tick = Math.Min(lend, _length.Tick);
+                _current.Constrain(_selStart, _selEnd);
+            }
+            else // free-running
+            {
+                _selStart.Tick = 0;
+                _selEnd.Tick = 0;
+                // _current.Tick = 0;
+            }
+        }
+
+        /// <summary>
+        /// Convert x pos to sub.
+        /// </summary>
+        /// <param name="x"></param>
+        int GetSubFromMouse(int x)
+        {
+            int sub = 0;
+
+            if(_current < _length)
+            {
+                sub = x * _length.Tick / Width;
+                sub = MathUtils.Constrain(sub, 0, _length.Tick);
+            }
+
+            return sub;
+        }
+
+        /// <summary>
+        /// Map from time to UI pixels.
+        /// </summary>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        public int Scale(MusicTime val)
+        {
+            return val.Tick * Width / _length.Tick;
+        }
+
         /// <summary>
         /// Gets the time def string associated with val.
         /// </summary>
@@ -566,24 +500,20 @@ namespace Ephemera.MidiLibLite
         string GetTimeDefString(int val)
         {
             string s = "";
-#if _NEW_ML
-            SectionInfo.TakeWhile(si => si.tick <= val).ForEach(si => s = si.name);
+            _sectionInfo.TakeWhile(si => si.tick <= val).ForEach(si => s = si.name);
 
-#else // !_NEW_ML TODO1
-
-            foreach (KeyValuePair<int, string> kv in TimeDefs) // => SectionInfo
-            {
-                if (kv.Key > val)
-                {
-                    break;
-                }
-                else
-                {
-                    s = kv.Value;
-                }
-            }
-
-#endif
+            // Old MidiLib:
+            // foreach (KeyValuePair<int, string> kv in TimeDefs) // => SectionInfo
+            // {
+            //     if (kv.Key > val)
+            //     {
+            //         break;
+            //     }
+            //     else
+            //     {
+            //         s = kv.Value;
+            //     }
+            // }
 
             return s;
         }
@@ -598,8 +528,8 @@ namespace Ephemera.MidiLibLite
 
             if (Current < Length)
             {
-                tick = x * Length.TotalSubs / Width;
-                tick = MathUtils.Constrain(tick, 0, Length.TotalSubs);
+                tick = x * Length.Tick / Width;
+                tick = MathUtils.Constrain(tick, 0, Length.Tick);
             }
 
             return tick;
@@ -612,7 +542,7 @@ namespace Ephemera.MidiLibLite
         /// <returns></returns>
         int GetClientFromTick(int tick)
         {
-            return Length.TotalBeats > 0 ? tick * Width / Length.TotalSubs : 0;
+            return Length.Tick > 0 ? tick * Width / Length.Tick : 0;
         }
 
         /// <summary>
