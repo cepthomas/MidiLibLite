@@ -42,16 +42,6 @@ namespace Ephemera.MidiLibLite
         {
             get { return (Tick / SubsPerBar, Tick / SubsPerBeat % BeatsPerBar, Tick % SubsPerBeat); }
         }
-
-
-        // /// <summary>The bar number.</summary>
-        // public int Bar { get { return Tick / SubsPerBar; } }
-
-        // /// <summary>The beat number in the bar.</summary>
-        // public int Beat { get { return Tick / SubsPerBeat % BeatsPerBar; } }
-
-        // /// <summary>The sub in the beat.</summary>
-        // public int Sub { get { return Tick % SubsPerBeat; } }
         #endregion
 
         #region Lifecycle
@@ -91,31 +81,31 @@ namespace Ephemera.MidiLibLite
             _id = _allIds++;
         }
 
-        /// <summary>
-        /// Construct a MusicTime from Beat.Sub representation as a double. Sub is LOW_RES_PPQ.
-        /// </summary>
-        /// <param name="beat"></param>
-        /// <returns>New MusicTime.</returns>
+        ///// <summary>
+        ///// Construct a MusicTime from Beat.Sub representation as a double. Sub is 0-7.
+        ///// </summary>
+        ///// <param name="beat"></param>
+        ///// <returns>New MusicTime.</returns>
         //public MusicTime(double beat)
         //{
         //    var (integral, fractional) = MathUtils.SplitDouble(beat);
         //    var beats = (int)integral;
         //    var subs = (int)Math.Round(fractional * 10.0);
 
-        //    if (subs >= LOW_RES_PPQ)
+        //    if (subs >= 8)
         //    {
         //        throw new ArgumentException($"Invalid sub value: {beat}");
         //    }
 
         //    // Scale subs to native.
-        //    subs = subs * InternalPPQ / LOW_RES_PPQ;
+        //    subs = subs * InternalPPQ / 8;
         //    Tick = beats * SubsPerBeat + subs;
         //}
 
         /// <summary>
         /// Construct a MusicTime from a string repr.
         /// </summary>
-        /// <param name="sbt">time string can be "1.2.3" or "1.2" or "1".</param>
+        /// <param name="s">time string can be "1.2.3" or "1.2" or "1".</param>
         public MusicTime(string s)
         {
             int tick = 0;
@@ -140,15 +130,27 @@ namespace Ephemera.MidiLibLite
         }
         #endregion
 
+        // TODO1 these operators instead of copy values?
+        //public static explicit operator MusicTime(int value)
+        //{
+        //    return new MusicTime(value);
+        //}
+
+        //public static implicit operator int(MusicTime me)
+        //{
+        //    return me.Tick;
+        //}
+
+
         #region Public functions
-        /// <summary>
-        /// Hard reset.
-        /// </summary>
-        public void Reset()
-        {
-            Tick = 0;
-            //_valid = false;
-        }
+        ///// <summary>
+        ///// Hard reset.
+        ///// </summary>
+        //public void Reset()
+        //{
+        //    Tick = 0;
+        //    //_valid = false;
+        //}
 
         /// <summary>
         /// Utility helper function.
@@ -181,7 +183,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="up">To ceiling otherwise closest.</param>
         public void SetRounded(int sub, SnapType snapType, bool up = false)
         {
-            if(sub > 0 && snapType != SnapType.Sub)
+            if (sub > 0 && snapType != SnapType.Sub)
             {
                 // res:32 in:27 floor=(in%aim)*aim  ceiling=floor+aim
                 int res = snapType == SnapType.Bar ? SubsPerBar : SubsPerBeat;

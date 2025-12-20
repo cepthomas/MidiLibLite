@@ -19,7 +19,6 @@ namespace Ephemera.MidiLibLite.Test
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             toolStrip1 = new System.Windows.Forms.ToolStrip();
             btnLogMidi = new System.Windows.Forms.ToolStripButton();
             btnKillMidi = new System.Windows.Forms.ToolStripButton();
@@ -32,6 +31,8 @@ namespace Ephemera.MidiLibLite.Test
             propGrid = new System.Windows.Forms.PropertyGrid();
             timeBar = new TimeBar();
             timer1 = new System.Windows.Forms.Timer(components);
+            chkLoop = new System.Windows.Forms.CheckBox();
+            btnRewind = new System.Windows.Forms.Button();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -135,17 +136,38 @@ namespace Ephemera.MidiLibLite.Test
             // timeBar
             // 
             timeBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            timeBar.DoLoop = false;
-            timeBar.Location = new System.Drawing.Point(381, 41);
+            timeBar.Location = new System.Drawing.Point(434, 41);
             timeBar.Name = "timeBar";
             timeBar.Size = new System.Drawing.Size(638, 45);
             timeBar.TabIndex = 110;
+            // 
+            // chkLoop
+            // 
+            chkLoop.Appearance = System.Windows.Forms.Appearance.Button;
+            chkLoop.AutoSize = true;
+            chkLoop.Location = new System.Drawing.Point(373, 41);
+            chkLoop.Name = "chkLoop";
+            chkLoop.Size = new System.Drawing.Size(46, 29);
+            chkLoop.TabIndex = 111;
+            chkLoop.Text = "loop";
+            chkLoop.UseVisualStyleBackColor = true;
+            // 
+            // btnRewind
+            // 
+            btnRewind.Location = new System.Drawing.Point(373, 71);
+            btnRewind.Name = "btnRewind";
+            btnRewind.Size = new System.Drawing.Size(46, 26);
+            btnRewind.TabIndex = 112;
+            btnRewind.Text = "<=";
+            btnRewind.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1092, 600);
+            Controls.Add(btnRewind);
+            Controls.Add(chkLoop);
             Controls.Add(timeBar);
             Controls.Add(propGrid);
             Controls.Add(btnOne);
@@ -180,6 +202,8 @@ namespace Ephemera.MidiLibLite.Test
         private System.Windows.Forms.Button btnTwo;
         private TimeBar timeBar;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.CheckBox chkLoop;
+        private System.Windows.Forms.Button btnRewind;
     }
 }
 
