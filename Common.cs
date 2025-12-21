@@ -15,7 +15,7 @@ namespace Ephemera.MidiLibLite
     public class MidiLibException(string message) : Exception(message) { }
 
     /// <summary>User selection options.</summary>
-    public enum SnapType { Bar, Beat, Sub }
+    public enum SnapType { Bar, Beat, Subbeat }
 
     public class Stuff // TODO2 home?
     {

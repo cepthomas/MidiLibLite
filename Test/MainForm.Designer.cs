@@ -33,6 +33,7 @@ namespace Ephemera.MidiLibLite.Test
             timer1 = new System.Windows.Forms.Timer(components);
             chkLoop = new System.Windows.Forms.CheckBox();
             btnRewind = new System.Windows.Forms.Button();
+            timeBar1 = new TimeBar();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -136,9 +137,15 @@ namespace Ephemera.MidiLibLite.Test
             // timeBar
             // 
             timeBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            timeBar.ControlColor = System.Drawing.Color.Red;
+            timeBar.DoLoop = false;
+            timeBar.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            timeBar.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             timeBar.Location = new System.Drawing.Point(434, 41);
             timeBar.Name = "timeBar";
+            timeBar.SelectedColor = System.Drawing.Color.Blue;
             timeBar.Size = new System.Drawing.Size(638, 45);
+            timeBar.Snap = SnapType.Bar;
             timeBar.TabIndex = 110;
             // 
             // chkLoop
@@ -161,11 +168,25 @@ namespace Ephemera.MidiLibLite.Test
             btnRewind.Text = "<=";
             btnRewind.UseVisualStyleBackColor = true;
             // 
+            // timeBar1
+            // 
+            timeBar1.ControlColor = System.Drawing.Color.Red;
+            timeBar1.DoLoop = false;
+            timeBar1.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            timeBar1.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            timeBar1.Location = new System.Drawing.Point(805, 130);
+            timeBar1.Name = "timeBar1";
+            timeBar1.SelectedColor = System.Drawing.Color.Blue;
+            timeBar1.Size = new System.Drawing.Size(172, 172);
+            timeBar1.Snap = SnapType.Bar;
+            timeBar1.TabIndex = 113;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1092, 600);
+            Controls.Add(timeBar1);
             Controls.Add(btnRewind);
             Controls.Add(chkLoop);
             Controls.Add(timeBar);
@@ -204,6 +225,7 @@ namespace Ephemera.MidiLibLite.Test
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.CheckBox chkLoop;
         private System.Windows.Forms.Button btnRewind;
+        private TimeBar timeBar1;
     }
 }
 

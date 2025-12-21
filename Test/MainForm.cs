@@ -30,10 +30,10 @@ namespace Ephemera.MidiLibLite.Test
         readonly List<ChannelControl> _channelControls = [];
 
         /// <summary>Cosmetics.</summary>
-        readonly Color _controlColor = Color.SpringGreen;
+//        readonly Color _controlColor = Color.SpringGreen;
 
         /// <summary>Cosmetics.</summary>
-        readonly Color _selectedColor = Color.Yellow;
+//        readonly Color _selectedColor = Color.Yellow;
 
         /// <summary>The boss.</summary>
         readonly Manager _mgr = new();
@@ -70,16 +70,17 @@ namespace Ephemera.MidiLibLite.Test
             txtViewer.MatchText.Add(WARN, Color.Plum);
 
             // Master volume.
-            sldMasterVolume.DrawColor = _controlColor;
+            sldMasterVolume.DrawColor = Color.SpringGreen;
             sldMasterVolume.Minimum = 0.0;
             sldMasterVolume.Maximum = Stuff.MAX_VOLUME;
             sldMasterVolume.Resolution = Stuff.MAX_VOLUME / 50;
             sldMasterVolume.Value = Stuff.DEFAULT_VOLUME;
             sldMasterVolume.Label = "master volume";
 
-            timeBar.ControlColor = _controlColor;
+            timeBar.ControlColor = Color.SpringGreen;
+            timeBar.SelectedColor = Color.Yellow;
             timeBar.Snap = SnapType.Beat;
-            timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged;
+//            timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged;
 
             // Simple UI handlers.
             btnKillMidi.Click += (_, __) => { _mgr.Kill(); };
@@ -148,6 +149,7 @@ namespace Ephemera.MidiLibLite.Test
             TestPropertyEditor();
 
             TestChannel();
+
             Tell(INFO, $">>>>> One end.");
         }
 
@@ -179,79 +181,21 @@ namespace Ephemera.MidiLibLite.Test
 
             timer1.Tick += Timer1_Tick;
             timer1.Interval = 3;
-            _count = 500;
+            _count = 275;
             timer1.Start();
-
-            //for (int i = 0; i < 100; i++)
-            //{
-            //    timeBar.Current.Increment(1);
-
-            //    if (!timeBar.IsFreeRunning)
-            //    {
-            //        if (timeBar.Current >= timeBar.Length) // done
-            //        {
-            //            // Keep going? else stop/rewind.
-            //            if (timeBar.DoLoop)
-            //            {
-            //                // Keep going.
-            //                timeBar.Current = timeBar.SelStart;
-            //            }
-            //            else
-            //            {
-            //                // Stop and rewind.
-            //                //CurrentState = ExecState.Idle;
-            //                timeBar.Current = timeBar.SelStart;
-
-            //                // anything else?
-            //                //_mgr.Kill();
-            //            }
-            //        }
-            //    }
-            //    // else just increment
-
-            //    timeBar.Invalidate();
-            //    Thread.Sleep(2);
-            //}
         }
 
         int _count = 0;
         void Timer1_Tick(object? sender, EventArgs e)
         {
             timeBar.IncrementCurrent(1);
-            _count--;
 
-            if (_count <= 0)
+            if (--_count <= 0)
             {
                 Tell(INFO, $">>>>> Timer done.");
                 timer1.Stop();
                 timer1.Tick -= Timer1_Tick;
             }
-
-
-            //if (!timeBar.FreeRunning)
-            //{
-            //    if (timeBar.CurrentX >= timeBar.Length) // done
-            //    {
-            //        // Keep going? else stop/rewind.
-            //        if (timeBar.DoLoop)
-            //        {
-            //            // Keep going.
-            //            timeBar.CurrentX = timeBar.SelStartX;
-            //        }
-            //        else
-            //        {
-            //            // Stop and rewind.
-            //            //CurrentState = ExecState.Idle;
-            //            timeBar.CurrentX.Tick = 0;// timeBar.SelStart;
-
-            //            timer1.Stop();
-
-            //            // anything else?
-            //            //_mgr.Kill();
-            //        }
-            //    }
-            //}
-            // else just increment
 
             timeBar.Invalidate();
         }
@@ -377,8 +321,8 @@ namespace Ephemera.MidiLibLite.Test
                     UserRenderer = rend,
                     Location = new(x, y),
                     BorderStyle = BorderStyle.FixedSingle,
-                    ControlColor = _controlColor,
-                    SelectedColor = _selectedColor,
+                    ControlColor = Color.SpringGreen,
+                    SelectedColor = Color.Yellow,
                     Volume = Stuff.DEFAULT_VOLUME,
                 };
                 ctrl.ChannelChange += ChannelControl_ChannelChange;
@@ -415,8 +359,8 @@ namespace Ephemera.MidiLibLite.Test
             channels.ForEach(ch =>
             {
                 ch.Item2.BorderStyle = BorderStyle.FixedSingle;
-                ch.Item2.ControlColor = _controlColor;
-                ch.Item2.SelectedColor = _selectedColor;
+                ch.Item2.ControlColor = Color.SpringGreen;
+                ch.Item2.SelectedColor = Color.Yellow;
                 ch.Item2.Volume = Stuff.DEFAULT_VOLUME;
                 ch.Item2.ChannelChange += ChannelControl_ChannelChange;
                 ch.Item2.SendMidi += ChannelControl_SendMidi;
