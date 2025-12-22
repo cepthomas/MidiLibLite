@@ -25,18 +25,18 @@ namespace Ephemera.MidiLibLite.Test
 {
     public partial class MainForm : Form
     {
-        #region Fields - app
+        #region Fields
         /// <summary>All the channel controls.</summary>
         readonly List<ChannelControl> _channelControls = [];
 
-        /// <summary>Cosmetics.</summary>
-//        readonly Color _controlColor = Color.SpringGreen;
-
-        /// <summary>Cosmetics.</summary>
-//        readonly Color _selectedColor = Color.Yellow;
-
         /// <summary>The boss.</summary>
         readonly Manager _mgr = new();
+
+        /// <summary>Where to put things.</summary>
+        readonly string _outPath = @"???";
+
+        /// <summary>Debug.</summary>
+        int _count = 0;
 
         const string ERROR = "ERR";
         const string WARN = "WRN";
@@ -46,9 +46,6 @@ namespace Ephemera.MidiLibLite.Test
         const string OUTDEV1 = "VirtualMIDISynth #1";
         const string OUTDEV2 = "Microsoft GS Wavetable Synth";
         #endregion
-
-        /// <summary>Where to put things.</summary>
-        readonly string _outPath = @"???";
 
         #region Lifecycle
         /// <summary>
@@ -72,28 +69,24 @@ namespace Ephemera.MidiLibLite.Test
             // Master volume.
             sldMasterVolume.DrawColor = Color.SpringGreen;
             sldMasterVolume.Minimum = 0.0;
-            sldMasterVolume.Maximum = Stuff.MAX_VOLUME;
-            sldMasterVolume.Resolution = Stuff.MAX_VOLUME / 50;
-            sldMasterVolume.Value = Stuff.DEFAULT_VOLUME;
+            sldMasterVolume.Maximum = Defs.MAX_VOLUME;
+            sldMasterVolume.Resolution = Defs.MAX_VOLUME / 50;
+            sldMasterVolume.Value = Defs.DEFAULT_VOLUME;
             sldMasterVolume.Label = "master volume";
 
-            timeBar.ControlColor = Color.SpringGreen;
-            timeBar.SelectedColor = Color.Yellow;
+            timeBar.ControlColor = Color.Green;
+            timeBar.SelectedColor = Color.LightYellow;
             timeBar.Snap = SnapType.Beat;
-//            timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged;
+            //timeBar.CurrentTimeChanged += (_, __) => { ... };
 
             // Simple UI handlers.
             btnKillMidi.Click += (_, __) => { _mgr.Kill(); };
             chkLoop.CheckedChanged += (_, __) => { timeBar.DoLoop = chkLoop.Checked; };
             btnRewind.Click += (_, __) => { timeBar.Rewind(); };
+            btnGo.Click += Go_Click;
 
             //_mgr.MessageReceive += Mgr_MessageReceive;
             //_mgr.MessageSend += Mgr_MessageSend;
-        }
-
-        void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -102,20 +95,6 @@ namespace Ephemera.MidiLibLite.Test
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            try
-            {
-                //TestScriptApp();
-
-                //TestStandardApp();
-            }
-            catch (Exception ex)
-            {
-                // MidiLibException ex
-                // AppException ex
-
-                Tell(ERROR, ex.Message);
-            }
-
             base.OnLoad(e);
         }
 
@@ -137,29 +116,22 @@ namespace Ephemera.MidiLibLite.Test
         }
         #endregion
 
-        #region Start here
-        void One_Click(object sender, EventArgs e)
+        #region Do work
+        void Go_Click(object? sender, EventArgs e)
         {
-            Tell(INFO, $">>>>> One start.");
-
-            TestScriptApp();
-
-            TestDefFile();
-
-            TestPropertyEditor();
-
-            TestChannel();
-
-            Tell(INFO, $">>>>> One end.");
-        }
-
-        void Two_Click(object sender, EventArgs e)
-        {
-            Tell(INFO, $">>>>> Two start.");
+            Tell(INFO, $">>>>> Go start.");
 
             TestTimeBar();
 
-            Tell(INFO, $">>>>> Two end.");
+            //TestScriptApp();
+
+            //TestDefFile();
+
+            //TestPropertyEditor();
+
+            //TestChannel();
+
+            Tell(INFO, $">>>>> Go end.");
         }
         #endregion
 
@@ -170,10 +142,9 @@ namespace Ephemera.MidiLibLite.Test
             // Sections.
             Dictionary<int, string> sectInfo = [];
             sectInfo.Add(0, "sect1");
-            sectInfo.Add(100, "sect2");
-            sectInfo.Add(200, "sect3");
-            sectInfo.Add(300, "sect4");
-            sectInfo.Add(400, "END");
+            sectInfo.Add(128, "sect2");
+            sectInfo.Add(256, "sect3");
+            sectInfo.Add(384, "END");
 
             timeBar.InitSectionInfo(sectInfo);
 
@@ -181,14 +152,15 @@ namespace Ephemera.MidiLibLite.Test
 
             timer1.Tick += Timer1_Tick;
             timer1.Interval = 3;
-            _count = 275;
+
+            _count = 10000;// 350;
+
             timer1.Start();
         }
 
-        int _count = 0;
         void Timer1_Tick(object? sender, EventArgs e)
         {
-            timeBar.IncrementCurrent(1);
+            timeBar.Increment();
 
             if (--_count <= 0)
             {
@@ -198,6 +170,19 @@ namespace Ephemera.MidiLibLite.Test
             }
 
             timeBar.Invalidate();
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (timeBar.Valid && e.KeyData == Keys.Escape)
+            {
+                // Reset.
+                timeBar.ResetSelection();
+
+                Invalidate();
+            }
+
+            base.OnKeyDown(e);
         }
 
         //-------------------------------------------------------------------------------//
@@ -253,7 +238,7 @@ namespace Ephemera.MidiLibLite.Test
             //IEnumerable<string> orderedValues = insts.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value);
             //var instsList = orderedValues.ToList();
 
-            var instsList = Utils.CreateOrderedMidiList(MidiDefs.Instance.GetDefaultInstrumentDefs(), true, true);
+            var instsList = CreateOrderedMidiList(MidiDefs.Instance.GetDefaultInstrumentDefs(), true, true);
 
 
             GenericListTypeEditor.SetOptions("DeviceName", MidiOutputDevice.GetAvailableDevices());
@@ -411,7 +396,7 @@ namespace Ephemera.MidiLibLite.Test
         }
 
 
-        #region Script api functions ????
+        #region Script api functions TODO2???? Nebulua?
 
         // /// api.send_midi_note(hnd_strings, note_num, volume)
         // void SendMidiNote(int chnd, int note_num, double volume)
@@ -429,7 +414,7 @@ namespace Ephemera.MidiLibLite.Test
         //     }
         //     else
         //     {
-        //         //TODO2 error?
+        //         // error?
         //     }
         // }
 
@@ -446,7 +431,7 @@ namespace Ephemera.MidiLibLite.Test
         //     }
         //     else
         //     {
-        //         //TODO2 error?
+        //         // error?
         //     }
         // }
 
@@ -573,6 +558,32 @@ namespace Ephemera.MidiLibLite.Test
         {
             var fn = Path.GetFileName(file);
             txtViewer.AppendLine($"{cat} {fn}({line}) {s}");
+        }
+
+        /// <summary>
+        /// Convert a midi dictionary into ordered list of strings.
+        /// </summary>
+        /// <param name="source">The dictionary to process</param>
+        /// <param name="addKey">Add the index number to the entry</param>
+        /// <param name="fill">Add mising midi values</param>
+        /// <returns></returns>
+        public List<string> CreateOrderedMidiList(Dictionary<int, string> source, bool addKey, bool fill)
+        {
+            List<string> res = [];
+
+            for (int i = 0; i < MidiDefs.MAX_MIDI; i++)
+            {
+                if (source.ContainsKey(i))
+                {
+                    res.Add(addKey ? $"{i:000} {source[i]}" : $"{source[i]}");
+                }
+                else if (fill)
+                {
+                    res.Add($"{i:000}");
+                }
+            }
+
+            return res;
         }
         #endregion
     }

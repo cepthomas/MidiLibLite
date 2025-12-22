@@ -95,7 +95,7 @@ namespace Ephemera.MidiLibLite
                 ChannelName = channelName,
                 Patch = patch,
                 Enable = true,
-                Volume = Stuff.DEFAULT_VOLUME
+                Volume = Defs.DEFAULT_VOLUME
             };
             _outputChannels.Add(ch);
 
@@ -236,7 +236,7 @@ namespace Ephemera.MidiLibLite
         /// <param name="channel">Specific channel or all if null.</param>
         public void Kill(OutputChannel? channel = null)
         {
-            int cc = 123; // TODO2 fix magical knowledge => "AllNotesOff"
+            int cc = 123; // TODO fix magical knowledge => "AllNotesOff"
 
             if (channel is null)
             {

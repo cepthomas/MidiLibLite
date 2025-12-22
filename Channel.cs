@@ -15,7 +15,8 @@ using Ephemera.NBagOfTricks;
 namespace Ephemera.MidiLibLite
 {
     //----------------------------------------------------------------
-    public class ChannelHandle //TODO2 better name/home? HandleOps
+    /// <summary>Encode device/channel info for round trip through script.</summary>
+    public static class ChannelHandle
     {
         const int OUTPUT_FLAG = 0x0800;
 
@@ -100,8 +101,8 @@ namespace Ephemera.MidiLibLite
         int _patch = 0;
 
         /// <summary>Current volume.</summary>
-        [Range(0.0, Stuff.MAX_VOLUME)]
-        public double Volume { get; set; } = Stuff.DEFAULT_VOLUME;
+        [Range(0.0, Defs.MAX_VOLUME)]
+        public double Volume { get; set; } = Defs.DEFAULT_VOLUME;
     
         /// <summary>Edit current controller number.</summary>
         [Range(0, MidiDefs.MAX_MIDI)]
@@ -133,7 +134,7 @@ namespace Ephemera.MidiLibLite
         {
             Device = device;
             ChannelNumber = channelNumber;
-            Volume = Stuff.DEFAULT_VOLUME;
+            Volume = Defs.DEFAULT_VOLUME;
             Handle = ChannelHandle.Create(device.Id, ChannelNumber, true);
         }
 

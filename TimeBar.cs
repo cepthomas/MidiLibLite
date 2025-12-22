@@ -9,10 +9,11 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Runtime.CompilerServices;
+using System.Drawing.Drawing2D;
 using Ephemera.NBagOfTricks;
 
 
-// TODO2 ? zoom, drag, shift
+// TODO zoom, drag, shift
 
 // Hook into Nebulua.
 // TODO1 Look at how other clients use old MidiLib API: Nebulator, Midifrier
@@ -20,6 +21,7 @@ using Ephemera.NBagOfTricks;
 // ? public event EventHandler? CurrentTimeChanged;
 // X IncrementCurrent(1)
 // X MidiSettings.LibSettings
+
 
 
 namespace Ephemera.MidiLibLite
@@ -34,7 +36,7 @@ namespace Ephemera.MidiLibLite
         int _lastXPos = 0;
 
         /// <summary>Metadata.</summary>
-        List<(int tick, string name)> _sectionInfo = [];
+        readonly List<(int tick, string name)> _sectionInfo = [];
 
         /// <summary>Tooltip for mousing.</summary>
         readonly ToolTip _toolTip = new();
@@ -43,18 +45,18 @@ namespace Ephemera.MidiLibLite
         readonly StringFormat _format = new();
 
         /// <summary>For drawing lines etc.</summary>
-        readonly Pen _penMarker = new(Color.Red, 2);
+        readonly Pen _penMarker = new(Color.Red, 1);
 
         /// <summary>For drawing lines etc.</summary>
         readonly Pen _penSel = new(Color.Blue, 1);
 
-        /// <summary>Total length of the sequence.</summary>
+        /// <summary>Total length.</summary>
         readonly MusicTime _length = new();
 
-        ///// <summary>Start of marked region.</summary>
+        ///// <summary>Start of selected region.</summary>
         readonly MusicTime _selStart = new();
 
-        ///// <summary>End of marked region.</summary>
+        ///// <summary>End of selected region.</summary>
         readonly MusicTime _selEnd = new();
 
         /// <summary>Where we be now.</summary>
@@ -64,7 +66,7 @@ namespace Ephemera.MidiLibLite
         readonly MusicTime ZERO = new();
 
         /// <summary>Avoid creating many transient objects.</summary>
-        readonly MusicTime TRANSIENT = new();
+        readonly MusicTime TEMP = new();
         #endregion
 
         #region Properties
@@ -86,26 +88,27 @@ namespace Ephemera.MidiLibLite
         /// <summary>How to select times.</summary>
         public SnapType Snap { get; set; } = SnapType.Beat;
 
-        /// <summary>Keep going at end of loop.</summary> 
+        /// <summary>Keep going at end.</summary>
         public bool DoLoop { get { return _doLoop; } set { _doLoop = value; Invalidate(); } }
         bool _doLoop = false;
 
         /// <summary>Convenience for readability.</summary>
-        public bool FreeRunning { get { return _length.Tick == 0; } }
+        public bool Valid { get { return _length.Tick > 0; } }
 
-        // public MusicTime Length { get { return _length; } }
-        // public MusicTime Current { get { return _current; } }
+        /// <summary>Convenience for readability.</summary>
+        public MusicTime Length { get { return _length; } }
+
+        /// <summary>Convenience for readability.</summary>
+        public MusicTime Current { get { return _current; } }
         #endregion
 
-        #region Events  TODO1 what does client really need?
-        //public event EventHandler<string>? ValueChangeEvent;
-        //public void NotifyStateChanged([CallerMemberName] string name = "")
-        //{
-        //    ValueChangeEvent?.Invoke(this, name);
-        //}
-        //
-        // /// <summary>Value changed by user.</summary>
-        // public event EventHandler? CurrentTimeChanged;
+        #region Events
+        /// <summary>Something happened. TODO future useful?</summary>
+        public event EventHandler<StateChangeEventArgs>? StateChange;
+        public class StateChangeEventArgs : EventArgs
+        {
+            public bool CurrentTimeChange { get; set; } = false;
+        }
         #endregion
 
         #region Lifecycle
@@ -117,7 +120,7 @@ namespace Ephemera.MidiLibLite
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
         }
 
-        /// <summary> 
+        /// <summary>
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -131,6 +134,16 @@ namespace Ephemera.MidiLibLite
                 _format.Dispose();
             }
             base.Dispose(disposing);
+        }
+
+        /// <summary>
+        /// Something to say.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            var s = $"C:{_current.Tick} L:{_length.Tick} {_selStart.Tick}=>{_selEnd.Tick}";
+            return s;
         }
         #endregion
 
@@ -153,46 +166,54 @@ namespace Ephemera.MidiLibLite
                 var spos = sectInfo.Keys.OrderBy(k => k).ToList();
                 spos.ForEach(sp => _sectionInfo.Add((sp, sectInfo[sp])));
                 _length.Set(_sectionInfo.Last().tick);
+                _selEnd.Set(_length.Tick);
 
                 ValidateTimes();
                 Invalidate();
             }
         }
 
-        /// <summary>Back up dude.</summary>
-        public void Rewind()
+        /// <summary>
+        ///
+        /// </summary>
+        public void ResetSelection()
         {
-            _current.Set(DoLoop ? _selStart.Tick : 0);
+            _selStart.Set(0);
+            _selEnd.Set(_length.Tick);
 
             ValidateTimes();
             Invalidate();
         }
 
-        /// <summary>Change current time programmatically.</summary>
-        /// <param name="num">Subs/ticks.</param>
-        public void IncrementCurrent(int num)
+        /// <summary>
+        /// Back up dude.
+        /// </summary>
+        public void Rewind()
         {
-            _current.Increment(num);
+            _current.Set(_doLoop ? _selStart.Tick : 0);
 
-            if (FreeRunning)
+            ValidateTimes();
+            Invalidate();
+        }
+
+        /// <summary>
+        /// Step current time.
+        /// </summary>
+        public void Increment()
+        {
+            if (Valid)
             {
-                // Nothing to do.
-            }
-            else if (DoLoop)
-            {
-                if (_current >= _selEnd)
+                if (_current >= _selEnd) // at end
                 {
-                    _current.Set(_selEnd.Tick, Snap);
+                    if (_doLoop)
+                    {
+                        _current.Set(_selStart.Tick);
+                    }
                 }
-                else if (_current <= _selStart)
+                else // continue
                 {
-                    _current.Set(_selStart.Tick, Snap);
+                    _current.Update(1);
                 }
-                // else keep going.
-            }
-            else // not looping
-            {
-                _current.Constrain(ZERO, _length);
             }
 
             ValidateTimes();
@@ -209,13 +230,11 @@ namespace Ephemera.MidiLibLite
             // Setup.
             pe.Graphics.Clear(BackColor);
 
-            if (FreeRunning)
+            if (!Valid)
             {
-                // Simple text only.
                 _format.Alignment = StringAlignment.Center;
-                _format.LineAlignment = StringAlignment.Near; // Center;
-                pe.Graphics.DrawString(_current.ToString(), FontLarge, Brushes.Black, ClientRectangle, _format);
-
+                _format.LineAlignment = StringAlignment.Center;
+                pe.Graphics.DrawString("Invalid", FontLarge, Brushes.Black, ClientRectangle, _format);
                 return;
             }
 
@@ -223,16 +242,11 @@ namespace Ephemera.MidiLibLite
             _penSel.Color = SelectedColor;
 
             ///// Loop area.
-            if (DoLoop)
-            {
-                // box:
-                int lstart = GetClientFromTick(_selStart.Tick);
-                int lend = GetClientFromTick(_selEnd.Tick);
-                pe.Graphics.FillPolygon(_penSel.Brush, new PointF[]
-                    { new(lstart, 0), new(lend, 0), new(lend, Height), new(lstart, Height) });
-            }
-
-            // Bars? vert line per bar or ?
+            // box:
+            int lstart = GetClientFromTick(_selStart.Tick);
+            int lend = GetClientFromTick(_selEnd.Tick);
+            PointF[] ploc = [new(lstart, 0), new(lend, 0), new(lend, Height), new(lstart, Height)];
+            pe.Graphics.FillPolygon(_penSel.Brush, ploc);
 
             ///// Sections.
             var fsize = pe.Graphics.MeasureString("X", FontSmall).Height;
@@ -245,10 +259,23 @@ namespace Ephemera.MidiLibLite
                 pe.Graphics.DrawString(name, FontSmall, Brushes.Black, sect + 2, Height - fsize - 2);
             }
 
+            ///// Some vertical lines.
+            var incr = MusicTime.TicksPerBeat; // TODO or bar if dense.
+            _penMarker.DashStyle = DashStyle.Custom;
+            _penMarker.DashPattern = [5, 5]; 
+            for (int i = 0; i < _length.Tick; i += incr)
+            {
+                int x = GetClientFromTick(i);
+                pe.Graphics.DrawLine(_penMarker, x, 0, x, Height);
+            }
+            _penMarker.DashStyle = DashStyle.Solid;
+
             ///// Current pos.
+            int markSize = 7;
             int cpos = GetClientFromTick(_current.Tick);
             pe.Graphics.DrawLine(_penMarker, cpos, 0, cpos, Height);
-            pe.Graphics.FillPolygon(_penMarker.Brush, new PointF[] { new(cpos - 10, 0), new(cpos + 10, 0), new(cpos, 20) });
+            ploc = [new(cpos - markSize, 0), new(cpos + markSize, 0), new(cpos, 2 * markSize)];
+            pe.Graphics.FillPolygon(_penMarker.Brush, ploc);
 
             ///// Text.
             _format.Alignment = StringAlignment.Center;
@@ -267,40 +294,28 @@ namespace Ephemera.MidiLibLite
 
         #region UI handlers
         /// <summary>
-        /// Handle selection operations.
-        /// </summary>
-        /// <param name="e"></param>
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            if (!FreeRunning && e.KeyData == Keys.Escape)
-            {
-                // Reset.
-                _selStart.Set(0);
-                _selEnd.Set(0);
-
-                Invalidate();
-            }
-
-            base.OnKeyDown(e);
-        }
-
-        /// <summary>
-        /// Handle mouse position changes.
+        /// Mouse position changes.
         /// </summary>
         protected override void OnMouseMove(MouseEventArgs e)
         {
             // SetToolTip triggers mouse move event - infernal loop.
-            if (!FreeRunning && e.X != _lastXPos)
+            if (Valid && e.X != _lastXPos)
             {
                 _lastXPos = e.X;
 
-                var tick = GetTickFromClient(e.X);
-                TRANSIENT.Set(tick);
-                var roundedTick = GetRounded(tick, Snap);
-                var sdef = GetTimeDefString(roundedTick);
-                //var tdef = new MusicTime(roundTick);
+                // Assemble info.
+                var actualTick = GetTickFromClient(e.X);
+                var roundedTick = GetRounded(actualTick);
 
-                _toolTip.SetToolTip(this, $"{TRANSIENT} {sdef}");
+                string sectionName = "???";
+                _sectionInfo.TakeWhile(si => si.tick <= roundedTick).ForEach(si => sectionName = si.name);
+
+                TEMP.Set(actualTick);
+                _toolTip.SetToolTip(this, $"{TEMP} {sectionName}");
+
+                // var debugInfo1 = $"ID:{TEMP.Id} T:{actualTick}";
+                // var debugInfo2 = $"L:{_length.Tick} {_selStart.Tick}=>{_selEnd.Tick}";
+                // _toolTip.SetToolTip(this, $"{TEMP} {sectionName}{Environment.NewLine}{debugInfo1}{Environment.NewLine}{debugInfo2}");
             }
 
             base.OnMouseMove(e);
@@ -311,7 +326,7 @@ namespace Ephemera.MidiLibLite
         /// </summary>
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            if (!FreeRunning)
+            if (Valid)
             {
                 int newval = GetTickFromClient(e.X);
 
@@ -338,54 +353,14 @@ namespace Ephemera.MidiLibLite
 
         #region Private functions
         /// <summary>
-        /// Validate and correct all times. 0 -> sel-start -> sel-end -> length
+        /// Validate and correct all important times.
         /// </summary>
         void ValidateTimes()
         {
-            if (FreeRunning)
-            {
-                // Reset.
-                _selStart.Set(0);
-                _selEnd.Set(0);
-                _current.Set(0);
-            }
-            else if (DoLoop)
-            {
-                // Fix loop points.
-                _selEnd.Constrain(ZERO, _length);
-                _selStart.Constrain(ZERO, _selEnd);
-                _current.Constrain(_selStart, _selEnd);
-            }
-            // else do nothing
-        }
-
-        /// <summary>
-        /// Convert x pos to sub.
-        /// </summary>
-        /// <param name="x"></param>
-        int GetSubFromMouse(int x)
-        {
-            int sub = 0;
-
-            if(_current < _length)
-            {
-                sub = x * _length.Tick / Width;
-                sub = MathUtils.Constrain(sub, 0, _length.Tick);
-            }
-
-            return sub;
-        }
-
-        /// <summary>
-        /// Gets the time def string associated with val.
-        /// </summary>
-        /// <param name="val"></param>
-        /// <returns></returns>
-        string GetTimeDefString(int val)
-        {
-            string s = "";
-            _sectionInfo.TakeWhile(si => si.tick <= val).ForEach(si => s = si.name);
-            return s;
+            // Maybe fix loop points.
+            _selEnd.Constrain(ZERO, _length);
+            _selStart.Constrain(ZERO, _selEnd);
+            _current.Constrain(_selStart, _selEnd);
         }
 
         /// <summary>
@@ -419,13 +394,12 @@ namespace Ephemera.MidiLibLite
         /// Set to sub using specified rounding.
         /// </summary>
         /// <param name="tick"></param>
-        /// <param name="snapType"></param>
         /// <param name="up">To ceiling otherwise closest.</param>
-        static int GetRounded(int tick, SnapType snapType, bool up = false)
+        int GetRounded(int tick, bool up = false)
         {
-            if (tick > 0 && snapType != SnapType.Subbeat)
+            if (tick > 0 && Snap != SnapType.Tick)
             {
-                int res = snapType == SnapType.Bar ? MusicTime.SubbeatsPerBar : MusicTime.SubbeatsPerBeat;
+                int res = Snap == SnapType.Bar ? MusicTime.TicksPerBar : MusicTime.TicksPerBeat;
 
                 double dtick = Math.Floor((double)tick);
                 int floor = (int)(dtick / res) * res;

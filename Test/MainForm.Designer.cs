@@ -26,8 +26,7 @@ namespace Ephemera.MidiLibLite.Test
             sldMasterVolume = new Ephemera.NBagOfUis.Slider();
             ch_ctrl1 = new ChannelControl();
             ch_ctrl2 = new ChannelControl();
-            btnOne = new System.Windows.Forms.Button();
-            btnTwo = new System.Windows.Forms.Button();
+            btnGo = new System.Windows.Forms.Button();
             propGrid = new System.Windows.Forms.PropertyGrid();
             timeBar = new TimeBar();
             timer1 = new System.Windows.Forms.Timer(components);
@@ -107,25 +106,14 @@ namespace Ephemera.MidiLibLite.Test
             ch_ctrl2.Size = new System.Drawing.Size(356, 56);
             ch_ctrl2.TabIndex = 106;
             // 
-            // btnOne
+            // btnGo
             // 
-            btnOne.Location = new System.Drawing.Point(161, 41);
-            btnOne.Name = "btnOne";
-            btnOne.Size = new System.Drawing.Size(89, 45);
-            btnOne.TabIndex = 107;
-            btnOne.Text = "1";
-            btnOne.UseVisualStyleBackColor = true;
-            btnOne.Click += One_Click;
-            // 
-            // btnTwo
-            // 
-            btnTwo.Location = new System.Drawing.Point(266, 41);
-            btnTwo.Name = "btnTwo";
-            btnTwo.Size = new System.Drawing.Size(89, 45);
-            btnTwo.TabIndex = 108;
-            btnTwo.Text = "2";
-            btnTwo.UseVisualStyleBackColor = true;
-            btnTwo.Click += Two_Click;
+            btnGo.Location = new System.Drawing.Point(275, 41);
+            btnGo.Name = "btnGo";
+            btnGo.Size = new System.Drawing.Size(89, 45);
+            btnGo.TabIndex = 107;
+            btnGo.Text = "Go Go Go";
+            btnGo.UseVisualStyleBackColor = true;
             // 
             // propGrid
             // 
@@ -170,14 +158,15 @@ namespace Ephemera.MidiLibLite.Test
             // 
             // timeBar1
             // 
+            timeBar1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             timeBar1.ControlColor = System.Drawing.Color.Red;
             timeBar1.DoLoop = false;
             timeBar1.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             timeBar1.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
-            timeBar1.Location = new System.Drawing.Point(805, 130);
+            timeBar1.Location = new System.Drawing.Point(846, 178);
             timeBar1.Name = "timeBar1";
             timeBar1.SelectedColor = System.Drawing.Color.Blue;
-            timeBar1.Size = new System.Drawing.Size(172, 172);
+            timeBar1.Size = new System.Drawing.Size(172, 67);
             timeBar1.Snap = SnapType.Bar;
             timeBar1.TabIndex = 113;
             // 
@@ -191,10 +180,9 @@ namespace Ephemera.MidiLibLite.Test
             Controls.Add(chkLoop);
             Controls.Add(timeBar);
             Controls.Add(propGrid);
-            Controls.Add(btnOne);
-            Controls.Add(btnTwo);
-            Controls.Add(ch_ctrl2);
+            Controls.Add(btnGo);
             Controls.Add(ch_ctrl1);
+            Controls.Add(ch_ctrl2);
             Controls.Add(sldMasterVolume);
             Controls.Add(txtViewer);
             Controls.Add(toolStrip1);
@@ -219,8 +207,7 @@ namespace Ephemera.MidiLibLite.Test
         private ChannelControl ch_ctrl1;
         private ChannelControl ch_ctrl2;
         private System.Windows.Forms.PropertyGrid propGrid;
-        private System.Windows.Forms.Button btnOne;
-        private System.Windows.Forms.Button btnTwo;
+        private System.Windows.Forms.Button btnGo;
         private TimeBar timeBar;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.CheckBox chkLoop;

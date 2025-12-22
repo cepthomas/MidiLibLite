@@ -121,7 +121,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>Current volume.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        [Range(0.0, Stuff.MAX_VOLUME)]
+        [Range(0.0, Defs.MAX_VOLUME)]
         public double Volume
         {
             get { return sldVolume.Value; }
@@ -187,7 +187,7 @@ namespace Ephemera.MidiLibLite
 
             {
                 sldVolume.Minimum = 0.0;
-                sldVolume.Maximum = Stuff.MAX_VOLUME;
+                sldVolume.Maximum = Defs.MAX_VOLUME;
                 sldVolume.Resolution = 0.05;
                 sldVolume.Value = 1.0;
                 sldVolume.BorderStyle = BorderStyle.FixedSingle;
@@ -353,16 +353,11 @@ namespace Ephemera.MidiLibLite
             lblMute.BackColor = _state == ChannelState.Mute ? SelectedColor : BackColor;
         }
 
-        ///// <summary>Read me.</summary>
-        //public override string ToString() // TODO2
-        //{
-        //    return $"{ChannelHandleX.Format(BoundChannel.Handle)} P:{BoundChannel.Patch:000}";
-        //}
-        //public static string Format(int Handle)
-        //{
-        //    var parts = DecodeX(Handle);
-        //    return $"{(parts.Output ? "OUT" : "IN")} {parts.DeviceId}:{parts.ChannelNumber:00}";
-        //}
+        /// <summary>Read me.</summary>
+        public override string ToString()
+        {
+           return $"{ChannelHandle.Format(BoundChannel.Handle)}";
+        }
         #endregion
     }
 }
