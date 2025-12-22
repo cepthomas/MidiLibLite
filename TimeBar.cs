@@ -199,15 +199,22 @@ namespace Ephemera.MidiLibLite
         /// <summary>
         /// Step current time.
         /// </summary>
-        public void Increment()
+        /// <returns>True if still running.</returns>
+        public bool Increment()
         {
-            if (Valid)
+            bool running = Valid;
+
+            if (running)
             {
                 if (_current >= _selEnd) // at end
                 {
-                    if (_doLoop)
+                    if (_doLoop) // continue from start
                     {
                         _current.Set(_selStart.Tick);
+                    }
+                    else // stop
+                    {
+                        running = false;
                     }
                 }
                 else // continue
@@ -218,6 +225,8 @@ namespace Ephemera.MidiLibLite
 
             ValidateTimes();
             Invalidate();
+
+            return running;
         }
         #endregion
 

@@ -168,8 +168,6 @@ namespace Ephemera.MidiLibLite.Test
                 timer1.Stop();
                 timer1.Tick -= Timer1_Tick;
             }
-
-            timeBar.Invalidate();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
