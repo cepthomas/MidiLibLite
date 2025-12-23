@@ -15,14 +15,6 @@ using Ephemera.NBagOfTricks;
 
 // TODO zoom, drag, shift
 
-// Hook into Nebulua.
-// TODO1 Look at how other clients use old MidiLib API: Nebulator, Midifrier
-// X TimeDefs => use SectionInfo
-// ? public event EventHandler? CurrentTimeChanged;
-// X IncrementCurrent(1)
-// X MidiSettings.LibSettings
-
-
 
 namespace Ephemera.MidiLibLite
 {
@@ -103,7 +95,7 @@ namespace Ephemera.MidiLibLite
         #endregion
 
         #region Events
-        /// <summary>Something happened. TODO future useful?</summary>
+        /// <summary>Something happened.</summary>
         public event EventHandler<StateChangeEventArgs>? StateChange;
         public class StateChangeEventArgs : EventArgs
         {
@@ -350,6 +342,8 @@ namespace Ephemera.MidiLibLite
                 else
                 {
                     _current.Set(newval, Snap);
+
+                    StateChange?.Invoke(this, new() { CurrentTimeChange = true });
                 }
 
                 ValidateTimes();

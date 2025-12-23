@@ -33,13 +33,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Remove="MusicTime - Copy.cs" />
-      <Compile Remove="MusicTime_all.cs" />
-      <Compile Remove="TimeBar - Copy.cs" />
-      <Compile Remove="TimeBar_all.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
         <PackageReference Include="NAudio" Version="2.1.0" />
         <PackageReference Include="NAudio.Midi" Version="2.1.0" />
         <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
@@ -61,13 +54,10 @@
       <None Update="def_keymap.ini">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Update="exp_defs.ini">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
       <None Update="gm_defs.ini">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Update="music_defs.ini">
+      <None Update="midi_defs.lua">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

@@ -77,16 +77,23 @@ namespace Ephemera.MidiLibLite.Test
             timeBar.ControlColor = Color.Green;
             timeBar.SelectedColor = Color.LightYellow;
             timeBar.Snap = SnapType.Beat;
-            //timeBar.CurrentTimeChanged += (_, __) => { ... };
+            timeBar.StateChange += TimeBar_StateChange;
 
             // Simple UI handlers.
             btnKillMidi.Click += (_, __) => { _mgr.Kill(); };
             chkLoop.CheckedChanged += (_, __) => { timeBar.DoLoop = chkLoop.Checked; };
             btnRewind.Click += (_, __) => { timeBar.Rewind(); };
+
             btnGo.Click += Go_Click;
+            btnGen.Click += Gen_Click;
 
             //_mgr.MessageReceive += Mgr_MessageReceive;
             //_mgr.MessageSend += Mgr_MessageSend;
+        }
+
+        private void TimeBar_StateChange(object? sender, TimeBar.StateChangeEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -136,6 +143,36 @@ namespace Ephemera.MidiLibLite.Test
         #endregion
 
         //-------------------------------------------------------------------------------//
+        /// <summary>Test def file loading etc.</summary>
+        void Gen_Click(object? sender, EventArgs e)
+        {
+            Tell(INFO, $">>>>> Gen start.");
+            // this file: C:\Dev\Libs\MidiLibLite\Test\MainForm.cs
+
+            string fnIni = Path.Combine(AppContext.BaseDirectory, "gm_defs.ini");
+
+            var myPath = MiscUtils.GetSourcePath();
+            // this path: C:\Dev\Libs\MidiLibLite\Test\
+
+            Tell(INFO, $">>>>> Gen Markdown.");
+            var smd = MidiDefs.Instance.GenMarkdown(fnIni);
+            var fnOut = Path.Join(myPath, "out", "midi_defs.md");
+            File.WriteAllText(fnOut, smd);
+            //C:\Dev\Libs\MidiLibLite\Test\out
+
+
+            Tell(INFO, $">>>>> Gen Lua.");
+            var sld = MidiDefs.Instance.GenLua(fnIni);
+            fnOut = Path.Join(myPath, "..", "midi_defs.lua");
+            File.WriteAllText(fnOut, sld);
+            //C:\Dev\Libs\MidiLibLite\midi_defs.lua
+
+
+
+            Tell(INFO, $">>>>> Gen end.");
+        }
+
+        //-------------------------------------------------------------------------------//
         /// <summary>Test time bar.</summary>
         void TestTimeBar()
         {
@@ -176,7 +213,6 @@ namespace Ephemera.MidiLibLite.Test
             {
                 // Reset.
                 timeBar.ResetSelection();
-
                 Invalidate();
             }
 
@@ -261,16 +297,6 @@ namespace Ephemera.MidiLibLite.Test
             {
                 Tell(INFO, $"section:{ic.Key} => {ic.Value.Values.Count}");
             });
-
-            Tell(INFO, $">>>>> Gen Markdown.");
-            var smd = MidiDefs.Instance.GenMarkdown(fn);
-            File.WriteAllText(@"C:\Dev\Libs\MidiLibLite\Test\mididefs.md", smd);
-            // Tell(INFO, $"Markdown:{smd.Left(200)}");
-
-            Tell(INFO, $">>>>> Gen Lua.");
-            var sld = MidiDefs.Instance.GenLua(fn);
-            File.WriteAllText(@"C:\Dev\Libs\MidiLibLite\Test\mididefs.lua", sld);
-            // Tell(INFO, $"Lua:{sld.Left(200)}");
         }
 
         //-------------------------------------------------------------------------------//
@@ -306,7 +332,7 @@ namespace Ephemera.MidiLibLite.Test
                     BorderStyle = BorderStyle.FixedSingle,
                     ControlColor = Color.SpringGreen,
                     SelectedColor = Color.Yellow,
-                    Volume = Stuff.DEFAULT_VOLUME,
+                    Volume = Defs.DEFAULT_VOLUME,
                 };
                 ctrl.ChannelChange += ChannelControl_ChannelChange;
                 ctrl.SendMidi += Mgr_MessageSend;
@@ -344,7 +370,7 @@ namespace Ephemera.MidiLibLite.Test
                 ch.Item2.BorderStyle = BorderStyle.FixedSingle;
                 ch.Item2.ControlColor = Color.SpringGreen;
                 ch.Item2.SelectedColor = Color.Yellow;
-                ch.Item2.Volume = Stuff.DEFAULT_VOLUME;
+                ch.Item2.Volume = Defs.DEFAULT_VOLUME;
                 ch.Item2.ChannelChange += ChannelControl_ChannelChange;
                 ch.Item2.SendMidi += ChannelControl_SendMidi;
                 ch.Item2.BoundChannel = ch.Item1;

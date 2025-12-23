@@ -19,14 +19,20 @@ namespace Ephemera.MidiLibLite.Test
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             toolStrip1 = new System.Windows.Forms.ToolStrip();
             btnLogMidi = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             btnKillMidi = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            btnGen = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            btnGo = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             txtViewer = new Ephemera.NBagOfUis.TextViewer();
             sldMasterVolume = new Ephemera.NBagOfUis.Slider();
             ch_ctrl1 = new ChannelControl();
             ch_ctrl2 = new ChannelControl();
-            btnGo = new System.Windows.Forms.Button();
             propGrid = new System.Windows.Forms.PropertyGrid();
             timeBar = new TimeBar();
             timer1 = new System.Windows.Forms.Timer(components);
@@ -39,7 +45,7 @@ namespace Ephemera.MidiLibLite.Test
             // toolStrip1
             // 
             toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, btnKillMidi });
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnLogMidi, toolStripSeparator2, btnKillMidi, toolStripSeparator1, btnGen, toolStripSeparator3, btnGo, toolStripSeparator4 });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new System.Drawing.Size(1092, 26);
@@ -56,6 +62,11 @@ namespace Ephemera.MidiLibLite.Test
             btnLogMidi.Text = "log midi";
             btnLogMidi.ToolTipText = "Enable logging midi events";
             // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(6, 26);
+            // 
             // btnKillMidi
             // 
             btnKillMidi.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -64,6 +75,39 @@ namespace Ephemera.MidiLibLite.Test
             btnKillMidi.Size = new System.Drawing.Size(29, 23);
             btnKillMidi.Text = "kill";
             btnKillMidi.ToolTipText = "Kill all midi channels";
+            // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new System.Drawing.Size(6, 26);
+            // 
+            // btnGen
+            // 
+            btnGen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            btnGen.Image = (System.Drawing.Image)resources.GetObject("btnGen.Image");
+            btnGen.ImageTransparentColor = System.Drawing.Color.Magenta;
+            btnGen.Name = "btnGen";
+            btnGen.Size = new System.Drawing.Size(36, 23);
+            btnGen.Text = "gen";
+            // 
+            // toolStripSeparator3
+            // 
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new System.Drawing.Size(6, 26);
+            // 
+            // btnGo
+            // 
+            btnGo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            btnGo.Image = (System.Drawing.Image)resources.GetObject("btnGo.Image");
+            btnGo.ImageTransparentColor = System.Drawing.Color.Magenta;
+            btnGo.Name = "btnGo";
+            btnGo.Size = new System.Drawing.Size(49, 23);
+            btnGo.Text = "go go";
+            // 
+            // toolStripSeparator4
+            // 
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            toolStripSeparator4.Size = new System.Drawing.Size(6, 26);
             // 
             // txtViewer
             // 
@@ -105,15 +149,6 @@ namespace Ephemera.MidiLibLite.Test
             ch_ctrl2.Name = "ch_ctrl2";
             ch_ctrl2.Size = new System.Drawing.Size(356, 56);
             ch_ctrl2.TabIndex = 106;
-            // 
-            // btnGo
-            // 
-            btnGo.Location = new System.Drawing.Point(275, 41);
-            btnGo.Name = "btnGo";
-            btnGo.Size = new System.Drawing.Size(89, 45);
-            btnGo.TabIndex = 107;
-            btnGo.Text = "Go Go Go";
-            btnGo.UseVisualStyleBackColor = true;
             // 
             // propGrid
             // 
@@ -180,7 +215,6 @@ namespace Ephemera.MidiLibLite.Test
             Controls.Add(chkLoop);
             Controls.Add(timeBar);
             Controls.Add(propGrid);
-            Controls.Add(btnGo);
             Controls.Add(ch_ctrl1);
             Controls.Add(ch_ctrl2);
             Controls.Add(sldMasterVolume);
@@ -207,12 +241,17 @@ namespace Ephemera.MidiLibLite.Test
         private ChannelControl ch_ctrl1;
         private ChannelControl ch_ctrl2;
         private System.Windows.Forms.PropertyGrid propGrid;
-        private System.Windows.Forms.Button btnGo;
         private TimeBar timeBar;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.CheckBox chkLoop;
         private System.Windows.Forms.Button btnRewind;
         private TimeBar timeBar1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripButton btnGen;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripButton btnGo;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
     }
 }
 

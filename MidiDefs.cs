@@ -128,13 +128,12 @@ namespace Ephemera.MidiLibLite
 
             return _drumKits.TryGetValue(which, out string? value) ? value : $"KIT_{which}";
         }
-        #endregion
 
         /// <summary>
         /// Make content from the definitions.
         /// </summary>
         /// <returns>Content.</returns>
-        public string GenMarkdown(string fn) //TODO2 could be lua script?
+        public string GenMarkdown(string fn)
         {
             // key is section name, value is line
             Dictionary<string, List<string>> res = [];
@@ -142,27 +141,32 @@ namespace Ephemera.MidiLibLite
 
             List<string> ls = [];
             ls.Add("# Midi GM Instruments");
-            ls.Add("Instrument          | Number|");
-            ls.Add("----------          | ------|");
+            ls.Add("|Instrument          | Number|");
+            ls.Add("|----------          | ------|");
             ir.Contents["instruments"].Values.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
+            ls.Add("");
 
             ls.Add("# Midi GM Controllers");
             ls.Add("- Undefined: 3, 9, 14-15, 20-31, 85-90, 102-119");
             ls.Add("- For most controllers marked on/off, on=127 and off=0");
-            ls.Add("Controller          | Number|");
-            ls.Add("----------          | ------|");
+            ls.Add("|Controller          | Number|");
+            ls.Add("|----------          | ------|");
             ir.Contents["controllers"].Values.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
+            ls.Add("");
 
             ls.Add("# Midi GM Drums");
-            ls.Add("Drum                | Number|");
-            ls.Add("----                | ------|");
+            ls.Add("- These will vary depending on your Soundfont file.");
+            ls.Add("|Drum                | Number|");
+            ls.Add("|----                | ------|");
             ir.Contents["drums"].Values.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
+            ls.Add("");
 
             ls.Add("# Midi GM Drum Kits");
-            ls.Add("Note that these will vary depending on your Soundfont file.");
-            ls.Add("Kit        | Number");
-            ls.Add("-----------| ------");
+            ls.Add("- These will vary depending on your Soundfont file.");
+            ls.Add("|Kit        | Number|");
+            ls.Add("|---        | ------|");
             ir.Contents["drumkits"].Values.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
+            ls.Add("");
 
             return string.Join(Environment.NewLine, ls);
         }
@@ -171,7 +175,7 @@ namespace Ephemera.MidiLibLite
         /// Make content from the definitions.
         /// </summary>
         /// <returns>Content.</returns>
-        public string GenLua(string fn) //TODO2 could be lua script?
+        public string GenLua(string fn)
         {
             // key is section name, value is line
             Dictionary<string, List<string>> res = [];
@@ -185,30 +189,31 @@ namespace Ephemera.MidiLibLite
             ls.Add("-- The GM midi instrument definitions.");
             ls.Add("M.instruments =");
             ls.Add("{");
-            ir.Contents["instruments"].Values.ForEach(kv => ls.Add($"{kv.Key} = {kv.Value},"));
+            ir.Contents["instruments"].Values.ForEach(kv => ls.Add($"    {kv.Key} = {kv.Value},"));
             ls.Add("}");
 
             ls.Add("-- The GM midi controller definitions.");
             ls.Add("M.controllers =");
             ls.Add("{");
-            ir.Contents["controllers"].Values.ForEach(kv => ls.Add($"{kv.Key} = {kv.Value},"));
+            ir.Contents["controllers"].Values.ForEach(kv => ls.Add($"    {kv.Key} = {kv.Value},"));
             ls.Add("}");
 
             ls.Add("-- The GM midi drum definitions.");
             ls.Add("M.drums =");
             ls.Add("{");
-            ir.Contents["drums"].Values.ForEach(kv => ls.Add($"{kv.Key} = {kv.Value},"));
+            ir.Contents["drums"].Values.ForEach(kv => ls.Add($"     {kv.Key} = {kv.Value},"));
             ls.Add("}");
 
             ls.Add("-- The GM midi drum kit definitions.");
             ls.Add("M.drum_kits =");
             ls.Add("{");
-            ir.Contents["drumkits"].Values.ForEach(kv => ls.Add($"{kv.Key} = {kv.Value},"));
+            ir.Contents["drumkits"].Values.ForEach(kv => ls.Add($"     {kv.Key} = {kv.Value},"));
             ls.Add("}");
 
             ls.Add("return M");
 
             return string.Join(Environment.NewLine, ls);
         }
+        #endregion
     }
 }
