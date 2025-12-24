@@ -239,7 +239,7 @@ namespace Ephemera.MidiLibLite.Test
             var inst1 = ch.Instruments;
             if (inst1.Count != 128) Tell(ERROR, "FAIL");
 
-            ch.AliasFile = Path.Combine(AppContext.BaseDirectory, "exp_defs.ini"); // TODO2 this file does not really belong here
+            ch.AliasFile = Path.Combine(AppContext.BaseDirectory, "exp_defs.ini");
 
             var inst2 = ch.Instruments;
             if (inst2.Count != 66) Tell(ERROR, "FAIL");
@@ -291,7 +291,8 @@ namespace Ephemera.MidiLibLite.Test
 
             // key is section name, value is line
             Dictionary<string, List<string>> res = [];
-            var ir = new IniReader(fn);
+            var ir = new IniReader();
+            ir.DoFile(fn);
 
             ir.Contents.ForEach(ic =>
             {

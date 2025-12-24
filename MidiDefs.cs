@@ -48,13 +48,13 @@ namespace Ephemera.MidiLibLite
         /// <summary>Initialize some collections.</summary>
         MidiDefs()
         {
-            string fn = Path.Combine(AppContext.BaseDirectory, "gm_defs.ini");
-
-            if (!File.Exists(fn)) return; // sloppy assumption about DesignTime.
+            var defs = Properties.Resources.gm_defs;
 
             // key is section name, value is line
             Dictionary<string, List<string>> res = [];
-            var ir = new IniReader(fn);
+            var ir = new IniReader();
+            //ir.DoFile(fn);
+            ir.DoStrings(defs);
 
             // Populate the defs.
             DoSection("instruments", _instruments);
@@ -67,7 +67,7 @@ namespace Ephemera.MidiLibLite
 
             void DoSection(string section, Dictionary<int, string> target)
             {
-                ir.Contents[section].Values.ForEach(kv =>
+                ir.GetValues(section)!.ForEach(kv =>
                 {
                     int index = int.Parse(kv.Key); // can throw
                     if (index < 0 || index > MAX_MIDI) { throw new InvalidOperationException($"Invalid section {section} in file {fn}"); }
@@ -135,15 +135,18 @@ namespace Ephemera.MidiLibLite
         /// <returns>Content.</returns>
         public string GenMarkdown(string fn)
         {
+            var defs = Properties.Resources.gm_defs;
+
             // key is section name, value is line
             Dictionary<string, List<string>> res = [];
-            var ir = new IniReader(fn);
+            var ir = new IniReader();
+            ir.DoStrings(defs);
 
             List<string> ls = [];
             ls.Add("# Midi GM Instruments");
             ls.Add("|Instrument          | Number|");
             ls.Add("|----------          | ------|");
-            ir.Contents["instruments"].Values.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
+            ir.GetValues("instruments")!.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
             ls.Add("");
 
             ls.Add("# Midi GM Controllers");
@@ -151,21 +154,21 @@ namespace Ephemera.MidiLibLite
             ls.Add("- For most controllers marked on/off, on=127 and off=0");
             ls.Add("|Controller          | Number|");
             ls.Add("|----------          | ------|");
-            ir.Contents["controllers"].Values.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
+            ir.GetValues("controllers")!.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
             ls.Add("");
 
             ls.Add("# Midi GM Drums");
             ls.Add("- These will vary depending on your Soundfont file.");
             ls.Add("|Drum                | Number|");
             ls.Add("|----                | ------|");
-            ir.Contents["drums"].Values.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
+            ir.GetValues("drums")!.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
             ls.Add("");
 
             ls.Add("# Midi GM Drum Kits");
             ls.Add("- These will vary depending on your Soundfont file.");
             ls.Add("|Kit        | Number|");
             ls.Add("|---        | ------|");
-            ir.Contents["drumkits"].Values.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
+            ir.GetValues("drumkits")!.ForEach(kv => { ls.Add($"|{kv.Value}|{kv.Key}|"); });
             ls.Add("");
 
             return string.Join(Environment.NewLine, ls);
@@ -175,11 +178,14 @@ namespace Ephemera.MidiLibLite
         /// Make content from the definitions.
         /// </summary>
         /// <returns>Content.</returns>
-        public string GenLua(string fn)
+        public string GenLua(string fn) //TODO1 gen dynamically on startup
         {
+            var defs = Properties.Resources.gm_defs;
+
             // key is section name, value is line
             Dictionary<string, List<string>> res = [];
-            var ir = new IniReader(fn);
+            var ir = new IniReader();
+            ir.DoStrings(defs);
 
             List<string> ls = [];
 
@@ -189,25 +195,25 @@ namespace Ephemera.MidiLibLite
             ls.Add("-- The GM midi instrument definitions.");
             ls.Add("M.instruments =");
             ls.Add("{");
-            ir.Contents["instruments"].Values.ForEach(kv => ls.Add($"    {kv.Key} = {kv.Value},"));
+            ir.GetValues("instruments")!.ForEach(kv => ls.Add($"    {kv.Key} = {kv.Value},"));
             ls.Add("}");
 
             ls.Add("-- The GM midi controller definitions.");
             ls.Add("M.controllers =");
             ls.Add("{");
-            ir.Contents["controllers"].Values.ForEach(kv => ls.Add($"    {kv.Key} = {kv.Value},"));
+            ir.GetValues("controllers")!.ForEach(kv => ls.Add($"    {kv.Key} = {kv.Value},"));
             ls.Add("}");
 
             ls.Add("-- The GM midi drum definitions.");
             ls.Add("M.drums =");
             ls.Add("{");
-            ir.Contents["drums"].Values.ForEach(kv => ls.Add($"     {kv.Key} = {kv.Value},"));
+            ir.GetValues("drums")!.ForEach(kv => ls.Add($"     {kv.Key} = {kv.Value},"));
             ls.Add("}");
 
             ls.Add("-- The GM midi drum kit definitions.");
             ls.Add("M.drum_kits =");
             ls.Add("{");
-            ir.Contents["drumkits"].Values.ForEach(kv => ls.Add($"     {kv.Key} = {kv.Value},"));
+            ir.GetValues("drumkits")!.ForEach(kv => ls.Add($"     {kv.Key} = {kv.Value},"));
             ls.Add("}");
 
             ls.Add("return M");

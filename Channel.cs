@@ -157,10 +157,12 @@ namespace Ephemera.MidiLibLite
                 try
                 {
                     Instruments.Clear();
-                    var ir = new IniReader(_aliasFile);
-                    var defs = ir.Contents["instruments"];
+                    var ir = new IniReader();
+                    ir.DoFile(_aliasFile);
 
-                    defs.Values.ForEach(kv =>
+                    var defs = ir.GetValues("instruments");
+
+                    defs!.ForEach(kv =>
                     {
                         int i = int.Parse(kv.Key); // can throw
                         i = MathUtils.Constrain(i, 0, MidiDefs.MAX_MIDI);
