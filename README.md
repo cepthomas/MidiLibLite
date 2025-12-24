@@ -8,6 +8,10 @@ Errors throw MidiLibException,...
 
 define "sub" => sub-beat + others
 
+gen md and lua files
+
+
+
 other devices:
  - OSCin uses oscin:port for DeviceName
  - OSCout uses oscout:host:port for DeviceName

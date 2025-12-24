@@ -53,8 +53,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"NoteOn {Note}:{Velocity}";
-            //return $"NoteOn:{MusicDefinitions.NoteNumberToName(Note)}({Note}):{Velocity}";TODO2?
+            return $"NoteOn:{Note} V:{Velocity}";
         }
     }
 
@@ -77,8 +76,7 @@ namespace Ephemera.MidiLibLite
         /// <summary>Read me.</summary>
         public override string ToString()
         {
-            return $"NoteOff {Note}";
-            //return $"NoteOff:{MusicDefinitions.NoteNumberToName(Note)}({Note})";TODO2?
+            return $"NoteOff:{Note}";
         }
     }
 

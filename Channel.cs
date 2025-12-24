@@ -158,7 +158,7 @@ namespace Ephemera.MidiLibLite
                 {
                     Instruments.Clear();
                     var ir = new IniReader();
-                    ir.DoFile(_aliasFile);
+                    ir.ParseFile(_aliasFile);
 
                     var defs = ir.GetValues("instruments");
 

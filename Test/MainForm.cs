@@ -91,11 +91,6 @@ namespace Ephemera.MidiLibLite.Test
             //_mgr.MessageSend += Mgr_MessageSend;
         }
 
-        private void TimeBar_StateChange(object? sender, TimeBar.StateChangeEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
         /// Window is set up now.
         /// </summary>
@@ -163,7 +158,7 @@ namespace Ephemera.MidiLibLite.Test
 
             Tell(INFO, $">>>>> Gen Lua.");
             var sld = MidiDefs.Instance.GenLua(fnIni);
-            fnOut = Path.Join(myPath, "..", "midi_defs.lua");
+            fnOut = Path.Join(myPath, "out", "midi_defs.lua");
             File.WriteAllText(fnOut, sld);
             //C:\Dev\Libs\MidiLibLite\midi_defs.lua
 
@@ -190,7 +185,7 @@ namespace Ephemera.MidiLibLite.Test
             timer1.Tick += Timer1_Tick;
             timer1.Interval = 3;
 
-            _count = 10000;// 350;
+            _count = 10000; // 350;
 
             timer1.Start();
         }
@@ -205,6 +200,11 @@ namespace Ephemera.MidiLibLite.Test
                 timer1.Stop();
                 timer1.Tick -= Timer1_Tick;
             }
+        }
+
+        void TimeBar_StateChange(object? sender, TimeBar.StateChangeEventArgs e)
+        {
+            Tell(INFO, $">>>>> TimeBar event. {timeBar.Current}");
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -287,17 +287,13 @@ namespace Ephemera.MidiLibLite.Test
         void TestDefFile()
         {
             Tell(INFO, $">>>>> Low level loading.");
-            string fn = Path.Combine(AppContext.BaseDirectory, "gm_defs.ini");
+            var myPath = MiscUtils.GetSourcePath();
+            string fn = Path.Join(myPath, "..", "gm_defs.ini");
 
-            // key is section name, value is line
-            Dictionary<string, List<string>> res = [];
             var ir = new IniReader();
-            ir.DoFile(fn);
+            ir.ParseFile(fn);
 
-            ir.Contents.ForEach(ic =>
-            {
-                Tell(INFO, $"section:{ic.Key} => {ic.Value.Values.Count}");
-            });
+            ir.GetSectionNames().ForEach(n => Tell(INFO, $"section:{n} => {ir.GetValues(n).Count}"));
         }
 
         //-------------------------------------------------------------------------------//
